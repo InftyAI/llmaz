@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -38,12 +39,18 @@ type ServeSpec struct {
 	// Backend indicates the inference backend under the hood, e.g. vLLM, text-generation-inference.
 	// Default to use huggingface library.
 	Backend *string `json:"backend,omitempty"`
+	// Template describes the pods that will be created.
+	Template *corev1.PodSpec `json:"template,omitempty"`
 }
 
 // ServeStatus defines the observed state of Serve
 type ServeStatus struct {
-	// Conditions represents the Serve condition.
-	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	State string `json:"state,omitempty"`
+	// Associate resources.
+	ResourceRef map[string]string `json:"resourceRef,omitempty"`
+	// Service holds the service name used to access the serve.
+	// +optional
+	Service string `json:"service,omitempty"`
 }
 
 //+kubebuilder:object:root=true

@@ -10,3 +10,15 @@ metadata:
   name: serve-sample
 spec:
   # TODO(user): Add fields here
+  modelNameOrPath: test
+  replicas: 5
+  minReplicas: 1
+  maxReplicas: 10
+  backend: huggingface
+  template:
+    containers:
+      - name: serve # DO NOT change this
+        image: nginx:1.14.2
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 80
