@@ -18,26 +18,40 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
+)
 
 // ServeSpec defines the desired state of Serve
 type ServeSpec struct {
 	// ModelNameOrPath represents the model name or the local path.
 	ModelNameOrPath string `json:"modelNameOrPath,omitempty"`
-	// Replicas indicates the number of Serve instances.
-	Replicas int32 `json:"replicas,omitempty"`
+	// Backend indicates the inference backend under the hood, e.g. vLLM.
+	// Default to use huggingface library.
+	//
+	// +optional
+	// +kubebuilder:validation:Enum={vllm,huggingface}
+	// +kubebuilder:default=huggingface
+	Backend *string `json:"backend,omitempty"`
+	// WorkloadTemplate defines the underlying workload layout and configuration,
+	// e.g. the leader/worker templates and replicas.
+	WorkloadTemplate lws.LeaderWorkerSetSpec `json:"workloadTemplate"`
+	// ElasticConfig defines the configuration for elastic usage,
+	// e.g. the max/min replicas.
+	// Default to 0 ~ Inf+.
+	// +optional
+	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
+}
+
+type ElasticConfig struct {
 	// MinReplicas indicates the minimum number of Serve instances based on the traffic.
 	// Default to nil means we can scale down the instances to 0.
+	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 	// MaxReplicas indicates the maximum number of Serve instances based on the traffic.
 	// Default to nil means there's no limit for the instance number.
+	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
-	// Backend indicates the inference backend under the hood, e.g. vLLM, text-generation-inference.
-	// Default to use huggingface library.
-	Backend *string `json:"backend,omitempty"`
 }
 
 // ServeStatus defines the observed state of Serve
