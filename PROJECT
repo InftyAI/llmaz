@@ -5,7 +5,7 @@
 domain: inftyai.io
 layout:
 - go.kubebuilder.io/v4
-projectName: llmaz-operator
+projectName: llmaz
 repo: inftyai.io/llmaz
 resources:
 - api:
@@ -14,7 +14,7 @@ resources:
   controller: true
   domain: inftyai.io
   group: llmaz
-  kind: Serve
+  kind: Inference
   path: inftyai.io/llmaz/api/v1alpha1
   version: v1alpha1
 version: "3"

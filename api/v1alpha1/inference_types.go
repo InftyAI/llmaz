@@ -18,12 +18,14 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 )
 
-// ServeSpec defines the desired state of Serve
-type ServeSpec struct {
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// InferenceSpec defines the desired state of Inference
+type InferenceSpec struct {
 	// ModelNameOrPath represents the model name or the local path.
 	ModelNameOrPath string `json:"modelNameOrPath,omitempty"`
 	// Backend indicates the inference backend under the hood, e.g. vLLM.
@@ -44,43 +46,43 @@ type ServeSpec struct {
 }
 
 type ElasticConfig struct {
-	// MinReplicas indicates the minimum number of Serve instances based on the traffic.
+	// MinReplicas indicates the minimum number of Inference instances based on the traffic.
 	// Default to nil means we can scale down the instances to 0.
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
-	// MaxReplicas indicates the maximum number of Serve instances based on the traffic.
+	// MaxReplicas indicates the maximum number of Inference instances based on the traffic.
 	// Default to nil means there's no limit for the instance number.
 	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
 }
 
-// ServeStatus defines the observed state of Serve
-type ServeStatus struct {
-	// Conditions represents the Serve condition.
+// InferenceStatus defines the observed state of Inference
+type InferenceStatus struct {
+	// Conditions represents the Inference condition.
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Serve is the Schema for the serves API
-type Serve struct {
+// Inference is the Schema for the inferences API
+type Inference struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ServeSpec   `json:"spec,omitempty"`
-	Status ServeStatus `json:"status,omitempty"`
+	Spec   InferenceSpec   `json:"spec,omitempty"`
+	Status InferenceStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// ServeList contains a list of Serve
-type ServeList struct {
+// InferenceList contains a list of Inference
+type InferenceList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Serve `json:"items"`
+	Items           []Inference `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Serve{}, &ServeList{})
+	SchemeBuilder.Register(&Inference{}, &InferenceList{})
 }

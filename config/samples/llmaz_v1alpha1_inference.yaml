@@ -1,0 +1,12 @@
+apiVersion: llmaz.inftyai.io/v1alpha1
+kind: Inference
+metadata:
+  labels:
+    app.kubernetes.io/name: inference
+    app.kubernetes.io/instance: inference-sample
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: llmaz
+  name: inference-sample
+spec:
+  # TODO(user): Add fields here

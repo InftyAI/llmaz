@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: serves.llmaz.inftyai.io
+  name: inferences.llmaz.inftyai.io
 spec:
   group: llmaz.inftyai.io
   names:
-    kind: Serve
-    listKind: ServeList
-    plural: serves
-    singular: serve
+    kind: Inference
+    listKind: InferenceList
+    plural: inferences
+    singular: inference
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Serve is the Schema for the serves API
+        description: Inference is the Schema for the inferences API
         properties:
           apiVersion:
             description: |-
@@ -37,7 +37,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ServeSpec defines the desired state of Serve
+            description: InferenceSpec defines the desired state of Inference
             properties:
               backend:
                 default: huggingface
@@ -56,13 +56,13 @@ spec:
                 properties:
                   maxReplicas:
                     description: |-
-                      MaxReplicas indicates the maximum number of Serve instances based on the traffic.
+                      MaxReplicas indicates the maximum number of Inference instances based on the traffic.
                       Default to nil means there's no limit for the instance number.
                     format: int32
                     type: integer
                   minReplicas:
                     description: |-
-                      MinReplicas indicates the minimum number of Serve instances based on the traffic.
+                      MinReplicas indicates the minimum number of Inference instances based on the traffic.
                       Default to nil means we can scale down the instances to 0.
                     format: int32
                     type: integer
@@ -15442,10 +15442,10 @@ spec:
             - workloadTemplate
             type: object
           status:
-            description: ServeStatus defines the observed state of Serve
+            description: InferenceStatus defines the observed state of Inference
             properties:
               conditions:
-                description: Conditions represents the Serve condition.
+                description: Conditions represents the Inference condition.
                 items:
                   description: "Condition contains details for one aspect of the current
                     state of this API Resource.\n---\nThis struct is intended for

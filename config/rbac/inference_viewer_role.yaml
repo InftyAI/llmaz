@@ -1,20 +1,20 @@
-# permissions for end users to view serves.
+# permissions for end users to view inferences.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: serve-viewer-role
+    app.kubernetes.io/instance: inference-viewer-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: llmaz-operator
     app.kubernetes.io/part-of: llmaz-operator
     app.kubernetes.io/managed-by: kustomize
-  name: serve-viewer-role
+  name: inference-viewer-role
 rules:
 - apiGroups:
   - llmaz.inftyai.io
   resources:
-  - serves
+  - inferences
   verbs:
   - get
   - list
@@ -22,6 +22,6 @@ rules:
 - apiGroups:
   - llmaz.inftyai.io
   resources:
-  - serves/status
+  - inferences/status
   verbs:
   - get
