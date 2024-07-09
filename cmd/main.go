@@ -32,7 +32,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	llmazv1alpha1 "inftyai.io/llmaz/api/v1alpha1"
+	llmaz "inftyai.io/llmaz/api/v1alpha1"
 	"inftyai.io/llmaz/internal/controller"
 	//+kubebuilder:scaffold:imports
 )
@@ -45,7 +45,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(llmazv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(llmaz.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -89,11 +89,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.ServeReconciler{
+	if err = (&controller.InferenceReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Serve")
+		setupLog.Error(err, "unable to create controller", "controller", "Inference")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

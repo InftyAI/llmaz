@@ -7,7 +7,7 @@ rules:
 - apiGroups:
   - llmaz.inftyai.io
   resources:
-  - serves
+  - inferences
   verbs:
   - create
   - delete
@@ -19,13 +19,13 @@ rules:
 - apiGroups:
   - llmaz.inftyai.io
   resources:
-  - serves/finalizers
+  - inferences/finalizers
   verbs:
   - update
 - apiGroups:
   - llmaz.inftyai.io
   resources:
-  - serves/status
+  - inferences/status
   verbs:
   - get
   - patch

@@ -24,29 +24,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	llmazv1alpha1 "inftyai.io/llmaz/api/v1alpha1"
+	llmaz "inftyai.io/llmaz/api/v1alpha1"
 )
 
-// ServeReconciler reconciles a Serve object
-type ServeReconciler struct {
+// InferenceReconciler reconciles a Inference object
+type InferenceReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=serves,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=serves/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=serves/finalizers,verbs=update
+//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=inferences,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=inferences/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=inferences/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Serve object against the actual cluster state, and then
+// the Inference object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
-func (r *ServeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *InferenceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
@@ -55,8 +55,8 @@ func (r *ServeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *ServeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *InferenceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&llmazv1alpha1.Serve{}).
+		For(&llmaz.Inference{}).
 		Complete(r)
 }
