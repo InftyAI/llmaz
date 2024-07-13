@@ -1,0 +1,30 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: service
+    app.kubernetes.io/instance: service-sample
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: llmaz
+  name: service-sample
+spec:
+  multiModelsClaims:
+  - modelNames:
+    - "llama2-7B"
+  workloadTemplate:
+    replicas: 1
+    leaderWorkerTemplate:
+      size: 1
+      workerTemplate:
+        spec:
+          containers:
+          - name: nginx
+            image: nginx:1.14.2
+            resources:
+              limits:
+                cpu: "100m"
+              requests:
+                cpu: "50m"
+            ports:
+            - containerPort: 8080

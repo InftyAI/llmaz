@@ -1,5 +1,5 @@
 /*
-Copyright 2023.
+Copyright 2024.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package controller
+package inference
 
 import (
 	"context"
@@ -24,29 +24,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	llmaz "inftyai.io/llmaz/api/v1alpha1"
+	inferencev1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
 )
 
-// InferenceReconciler reconciles a Inference object
-type InferenceReconciler struct {
+// PlaygroundReconciler reconciles a Playground object
+type PlaygroundReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=inferences,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=inferences/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=llmaz.inftyai.io,resources=inferences/finalizers,verbs=update
+//+kubebuilder:rbac:groups=inference.llmaz.io,resources=playgrounds,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=inference.llmaz.io,resources=playgrounds/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=inference.llmaz.io,resources=playgrounds/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the Inference object against the actual cluster state, and then
+// the Playground object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
-func (r *InferenceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
 	// TODO(user): your logic here
@@ -55,8 +55,8 @@ func (r *InferenceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *InferenceReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&llmaz.Inference{}).
+		For(&inferencev1alpha1.Playground{}).
 		Complete(r)
 }

@@ -1,0 +1,22 @@
+apiVersion: llmaz.io/v1alpha1
+kind: Model
+metadata:
+  labels:
+    app.kubernetes.io/name: model
+    app.kubernetes.io/instance: model-sample
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: llmaz
+  name: llama2-7B
+spec:
+  familyName: "llama2"
+  dataSource:
+    url: https://<url>
+  inferenceFlavors:
+  - name: A100
+    requests:
+      nvidia.com/gpu: 1
+    nodeSelector:
+      cloud-provider.com/accelerator: nvidia-a100
+    params:
+      instance-type: p4d.24xlarge

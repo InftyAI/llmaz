@@ -2,19 +2,37 @@
 # This file is used to track the info used to scaffold your project
 # and allow the plugins properly work.
 # More info: https://book.kubebuilder.io/reference/project-config.html
-domain: inftyai.io
+domain: llmaz.io
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: llmaz
-repo: inftyai.io/llmaz
+repo: inftyai.com/llmaz
 resources:
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: inftyai.io
-  group: llmaz
-  kind: Inference
-  path: inftyai.io/llmaz/api/v1alpha1
+  domain: llmaz.io
+  group: inference
+  kind: Service
+  path: inftyai.com/llmaz/api/inference/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: llmaz.io
+  group: inference
+  kind: Playground
+  path: inftyai.com/llmaz/api/inference/v1alpha1
+  version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: llmaz.io
+  kind: Model
+  path: inftyai.com/llmaz/api/v1alpha1
   version: v1alpha1
 version: "3"
