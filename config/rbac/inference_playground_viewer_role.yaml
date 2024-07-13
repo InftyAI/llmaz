@@ -1,27 +1,27 @@
-# permissions for end users to view inferences.
+# permissions for end users to view playgrounds.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: inference-viewer-role
+    app.kubernetes.io/instance: playground-viewer-role
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: llmaz-operator
-    app.kubernetes.io/part-of: llmaz-operator
+    app.kubernetes.io/created-by: llmaz
+    app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
-  name: inference-viewer-role
+  name: playground-viewer-role
 rules:
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences
+  - playgrounds
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences/status
+  - playgrounds/status
   verbs:
   - get

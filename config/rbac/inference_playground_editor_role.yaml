@@ -1,20 +1,20 @@
-# permissions for end users to edit inferences.
+# permissions for end users to edit playgrounds.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: inference-editor-role
+    app.kubernetes.io/instance: playground-editor-role
     app.kubernetes.io/component: rbac
-    app.kubernetes.io/created-by: llmaz-operator
-    app.kubernetes.io/part-of: llmaz-operator
+    app.kubernetes.io/created-by: llmaz
+    app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
-  name: inference-editor-role
+  name: playground-editor-role
 rules:
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences
+  - playgrounds
   verbs:
   - create
   - delete
@@ -24,8 +24,8 @@ rules:
   - update
   - watch
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences/status
+  - playgrounds/status
   verbs:
   - get

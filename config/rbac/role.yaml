@@ -5,9 +5,9 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences
+  - playgrounds
   verbs:
   - create
   - delete
@@ -17,15 +17,67 @@ rules:
   - update
   - watch
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences/finalizers
+  - playgrounds/finalizers
   verbs:
   - update
 - apiGroups:
-  - llmaz.inftyai.io
+  - inference.llmaz.io
   resources:
-  - inferences/status
+  - playgrounds/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - services/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - services/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - llmaz.io
+  resources:
+  - models
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - llmaz.io
+  resources:
+  - models/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - llmaz.io
+  resources:
+  - models/status
   verbs:
   - get
   - patch

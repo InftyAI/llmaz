@@ -1,24 +1,31 @@
+# permissions for end users to edit models.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: proxy-role
-    app.kubernetes.io/component: kube-rbac-proxy
+    app.kubernetes.io/instance: model-editor-role
+    app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
-  name: proxy-role
+  name: model-editor-role
 rules:
 - apiGroups:
-  - authentication.k8s.io
+  - llmaz.io
   resources:
-  - tokenreviews
+  - models
   verbs:
   - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
-  - authorization.k8s.io
+  - llmaz.io
   resources:
-  - subjectaccessreviews
+  - models/status
   verbs:
-  - create
+  - get

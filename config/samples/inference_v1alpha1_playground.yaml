@@ -1,0 +1,14 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  labels:
+    app.kubernetes.io/name: playground
+    app.kubernetes.io/instance: playground-sample
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: llmaz
+  name: playground-sample
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: "llama2-7B"
