@@ -32,12 +32,13 @@ type PlaygroundSpec struct {
 	// ModelClaim and multiModelsClaims are exclusive configured.
 	// Note: properties (nodeSelectors, resources, e.g.) of the model flavors
 	// will be applied to the workload if not exist.
-	ModelClaim api.ModelClaim `json:"modelClaim"`
+	// +optional
+	ModelClaim *api.ModelClaim `json:"modelClaim,omitempty"`
 	// MultiModelsClaims represents multiple modelClaim, which is useful when different
 	// sub-workload has different accelerator requirements, like the state-of-the-art
 	// technology called splitwise, the workload template is shared by both.
 	// ModelClaim and multiModelsClaims are exclusive configured.
-	// +kubebuilder:validation:MinItems=1
+	// +optional
 	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
 	// BackendConfig represents the inference backend configuration
 	// under the hood, e.g. vLLM, which is the default backend.

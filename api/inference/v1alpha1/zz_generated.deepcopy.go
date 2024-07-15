@@ -161,7 +161,11 @@ func (in *PlaygroundSpec) DeepCopyInto(out *PlaygroundSpec) {
 		*out = new(int32)
 		**out = **in
 	}
-	in.ModelClaim.DeepCopyInto(&out.ModelClaim)
+	if in.ModelClaim != nil {
+		in, out := &in.ModelClaim, &out.ModelClaim
+		*out = new(apiv1alpha1.ModelClaim)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.MultiModelsClaims != nil {
 		in, out := &in.MultiModelsClaims, &out.MultiModelsClaims
 		*out = make([]apiv1alpha1.MultiModelsClaim, len(*in))

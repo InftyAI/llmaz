@@ -131,11 +131,11 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 	<-certsReady
 	setupLog.Info("certs ready")
 
-	if err := (&inferencecontroller.ServiceReconciler{
+	if err := (&controller.ModelReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Service")
+		setupLog.Error(err, "unable to create controller", "controller", "Model")
 		os.Exit(1)
 	}
 	if err := (&inferencecontroller.PlaygroundReconciler{
@@ -145,16 +145,21 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 		setupLog.Error(err, "unable to create controller", "controller", "Playground")
 		os.Exit(1)
 	}
-	if err := (&controller.ModelReconciler{
+	if err := (&inferencecontroller.ServiceReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Model")
+		setupLog.Error(err, "unable to create controller", "controller", "Service")
 		os.Exit(1)
 	}
+
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err := webhook.SetupModelWebhook(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Model")
+			os.Exit(1)
+		}
+		if err := webhook.SetupPlaygroundWebhook(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Playground")
 			os.Exit(1)
 		}
 	}

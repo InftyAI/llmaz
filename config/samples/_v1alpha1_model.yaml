@@ -7,9 +7,9 @@ metadata:
     app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: llmaz
-  name: llama2-7b
+  name: llama3-8b
 spec:
-  familyName: "llama2"
+  familyName: "llama3"
   dataSource:
     url: https://<url>
   inferenceFlavors:

@@ -52,10 +52,10 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
 			model: func() *api.Model {
-				return wrapper.MakeModel("llama2-7b").DataSourceWithModel("llama2", "Huggingface").FamilyName("llama2").Obj()
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModel("meta-llama/meta-llama-3-8b", "Huggingface").FamilyName("llama3").Obj()
 			},
 			wantModel: func() *api.Model {
-				return wrapper.MakeModel("llama2-7b").FamilyName("llama2").DataSourceWithModel("llama2", "Huggingface").Label(api.ModelFamilyNameLabelKey, "llama2").Obj()
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModel("meta-llama/meta-llama-3-8b", "Huggingface").FamilyName("llama3").Label(api.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 	)
@@ -64,6 +64,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		model  func() *api.Model
 		failed bool
 	}
+	// TODO: add more testCases to cover update.
 	ginkgo.DescribeTable("test validating",
 		func(tc *testValidatingCase) {
 			if tc.failed {
@@ -74,13 +75,13 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("normal model creation", &testValidatingCase{
 			model: func() *api.Model {
-				return wrapper.MakeModel("llama2-7b").FamilyName("llama2").DataSourceWithModel("llama2", "Huggingface").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModel("meta-llama/meta-llama-3-8b", "Huggingface").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("no data source configured", &testValidatingCase{
 			model: func() *api.Model {
-				return wrapper.MakeModel("llama2-7b").FamilyName("llama2").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").Obj()
 			},
 			failed: true,
 		}),

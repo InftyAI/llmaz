@@ -25,7 +25,7 @@ type BackendConfig struct {
 	// +kubebuilder:validation:Enum={vllm}
 	// +kubebuilder:default=vllm
 	// +optional
-	Name *BackendName `json:"name"`
+	Name *BackendName `json:"name,omitempty"`
 	// Version represents the backend version if you want a different one
 	// from the default version.
 	// +optional

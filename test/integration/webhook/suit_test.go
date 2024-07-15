@@ -43,6 +43,7 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	api "inftyai.com/llmaz/api/v1alpha1"
 	apiwebhook "inftyai.com/llmaz/internal/webhook"
 )
@@ -95,6 +96,9 @@ var _ = BeforeSuite(func() {
 	err = api.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
+	err = inferenceapi.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
 	err = admissionv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -122,6 +126,9 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	err = apiwebhook.SetupModelWebhook(mgr)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = apiwebhook.SetupPlaygroundWebhook(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook

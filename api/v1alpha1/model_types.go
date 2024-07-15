@@ -89,9 +89,9 @@ type ModelName string
 // ModelClaim represents the references to one model.
 // It's a simple config for most of the cases compared to multiModelsClaim.
 type ModelClaim struct {
-	// ModelNames represents a list of models, there maybe multiple models here
+	// ModelName represents a list of models, there maybe multiple models here
 	// to support state-of-the-art technologies like speculative decoding.
-	ModelNames ModelName `json:"modelNames,omitempty"`
+	ModelName ModelName `json:"modelName,omitempty"`
 	// InferenceFlavors represents a list of flavors with fungibility supported
 	// to serve the model.
 	// - If not set and multiple models claimed, apply with the 0-index model by default.
@@ -123,7 +123,7 @@ type MultiModelsClaim struct {
 	// This is mostly designed for state-of-the-art technology called splitwise, the prefill
 	// and decode phase will be separated and requires different accelerators.
 	// The sum of the rates should be divisible by replicas.
-	Rate *int `json:"rate,omitempty"`
+	Rate *int32 `json:"rate,omitempty"`
 }
 
 // ModelSpec defines the desired state of Model

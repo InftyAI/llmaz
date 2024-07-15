@@ -7,11 +7,11 @@ metadata:
     app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: llmaz
-  name: service-sample
+  name: service-llama3-8b
 spec:
   multiModelsClaims:
   - modelNames:
-    - "llama2-7b"
+    - "llama3-8b"
   workloadTemplate:
     replicas: 1
     leaderWorkerTemplate:

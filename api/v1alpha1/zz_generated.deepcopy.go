@@ -226,7 +226,7 @@ func (in *MultiModelsClaim) DeepCopyInto(out *MultiModelsClaim) {
 	}
 	if in.Rate != nil {
 		in, out := &in.Rate, &out.Rate
-		*out = new(int)
+		*out = new(int32)
 		**out = **in
 	}
 }
