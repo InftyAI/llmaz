@@ -100,6 +100,7 @@ spec:
                         This is mostly designed for state-of-the-art technology called splitwise, the prefill
                         and decode phase will be separated and requires different accelerators.
                         The sum of the rates should be divisible by replicas.
+                      format: int32
                       type: integer
                   type: object
                 minItems: 1

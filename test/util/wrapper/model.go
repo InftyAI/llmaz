@@ -17,10 +17,11 @@ limitations under the License.
 package wrapper
 
 import (
-	api "inftyai.com/llmaz/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	api "inftyai.com/llmaz/api/v1alpha1"
 )
 
 type ModelWrapper struct {
@@ -81,7 +82,7 @@ func (w *FlavorWrapper) SetName(name string) *api.Flavor {
 	return &w.Flavor
 }
 
-func (w *FlavorWrapper) Resource(r, v string) *api.Flavor {
+func (w *FlavorWrapper) SetRequest(r, v string) *api.Flavor {
 	w.Requests[v1.ResourceName(r)] = resource.MustParse(v)
 	return &w.Flavor
 }
