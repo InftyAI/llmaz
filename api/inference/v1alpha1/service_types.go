@@ -34,7 +34,7 @@ type ServiceSpec struct {
 	// Note: properties (nodeSelectors, resources, e.g.) of the model flavors
 	// will be applied to the workload if not exist.
 	// +kubebuilder:validation:MinItems=1
-	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims"`
+	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
 	// WorkloadTemplate defines the underlying workload layout and configuration.
 	// Note: the LWS spec might be twisted to support different technologies
 	// like splitwise and accelerator fungibility and several LWSs will be created.

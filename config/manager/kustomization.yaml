@@ -1,2 +1,8 @@
 resources:
 - manager.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+images:
+- name: controller
+  newName: docker.io/inftyai/llmaz-test
+  newTag: 0714-03

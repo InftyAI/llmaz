@@ -11,7 +11,7 @@ metadata:
 spec:
   multiModelsClaims:
   - modelNames:
-    - "llama2-7B"
+    - "llama2-7b"
   workloadTemplate:
     replicas: 1
     leaderWorkerTemplate:

@@ -21,21 +21,35 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	ModelFamilyNameLabelKey = "llmaz.io/model-family-name"
+)
+
 // DataSource represents where to load the model.
 // Only one data source will be used.
 type DataSource struct {
-	// URL represents the URL link than contains the data sources.
+	// ModelID refers to the model identifier on model hub,
+	// such as meta-llama/Meta-Llama-3-8B.
+	ModelID *string `json:"modelID,omitempty"`
+	// ModelHub refers to the model registry, such as huggingface.
+	// +kubebuilder:default=Huggingface
+	// +kubebuilder:validation:Enum={Huggingface,ModelScope}
 	// +optional
-	URL *string `json:"url,omitempty"`
-	// The mounted volume that contains the data.
-	// +optional
-	Volume *v1.VolumeSource `json:"volumeSource,omitempty"`
-	// Image represents the the image address that contains the source data.
-	// +optional
-	Image *string `json:"image,omitempty"`
-	// ImagePullSecrets represents a list of secret names in the same namespace used for pulling the image.
-	// +optional
-	ImagePullSecrets []string `json:"imagePullSecrets,omitempty"`
+	ModelHub *string `json:"modelHub,omitempty"`
+
+	// TODO: support all these sources.
+	// // URL represents the URL link than contains the data sources.
+	// // +optional
+	// URL *string `json:"url,omitempty"`
+	// // The mounted volume that contains the data.
+	// // +optional
+	// Volume *v1.VolumeSource `json:"volumeSource,omitempty"`
+	// // Image represents the the image address that contains the source data.
+	// // +optional
+	// Image *string `json:"image,omitempty"`
+	// // ImagePullSecrets represents a list of secret names in the same namespace used for pulling the image.
+	// // +optional
+	// ImagePullSecrets []string `json:"imagePullSecrets,omitempty"`
 }
 
 type FlavorName string
@@ -134,6 +148,7 @@ type ModelStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:scope=Cluster
 
 // Model is the Schema for the models API
 type Model struct {

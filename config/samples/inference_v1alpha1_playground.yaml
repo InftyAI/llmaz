@@ -11,4 +11,4 @@ metadata:
 spec:
   replicas: 1
   modelClaim:
-    modelName: "llama2-7B"
+    modelName: "llama2-7b"

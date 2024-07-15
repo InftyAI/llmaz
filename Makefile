@@ -1,8 +1,6 @@
 
-# Image URL to use all building/pushing image targets
-IMG ?= controller:latest
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.28.0
+ENVTEST_K8S_VERSION = 1.28.3
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -42,11 +40,39 @@ all: build
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+ARTIFACTS ?= $(PROJECT_DIR)/bin
+GINKGO_VERSION ?= $(shell go list -m -f '{{.Version}}' github.com/onsi/ginkgo/v2)
+GO_VERSION := $(shell awk '/^go /{print $$2}' go.mod|head -n1)
+
+GINKGO = $(shell pwd)/bin/ginkgo
+.PHONY: ginkgo
+ginkgo: ## Download ginkgo locally if necessary.
+	test -s $(LOCALBIN)/ginkgo || \
+	GOBIN=$(LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo@$(GINKGO_VERSION)
+
+INTEGRATION_TARGET ?= ./test/integration/...
+
+BASE_IMAGE ?= gcr.io/distroless/static:nonroot
+DOCKER_BUILDX_CMD ?= docker buildx
+IMAGE_BUILD_CMD ?= $(DOCKER_BUILDX_CMD) build
+IMAGE_BUILD_EXTRA_OPTS ?=
+IMAGE_REGISTRY ?= docker.io/inftyai
+IMAGE_NAME ?= llmaz
+IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_NAME)
+GIT_TAG ?= $(shell git describe --tags --dirty --always)
+IMG ?= $(IMAGE_REPO):$(GIT_TAG)
+BUILDER_IMAGE ?= golang:$(GO_VERSION)
+
 ##@ Development
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) \
+		rbac:roleName=manager-role output:rbac:artifacts:config=config/rbac \
+		crd:generateEmbeddedObjectMeta=true output:crd:artifacts:config=config/crd/bases \
+		webhook output:webhook:artifacts:config=config/webhook \
+		paths="./..."
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -63,6 +89,11 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
+
+.PHONY: test-integration
+test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
+	$(GINKGO) --junit-report=junit.xml --output-dir=$(ARTIFACTS) -v $(INTEGRATION_TARGET)
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
 GOLANGCI_LINT_VERSION ?= v1.54.2
@@ -90,17 +121,6 @@ build: manifests generate fmt vet ## Build manager binary.
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./cmd/main.go
 
-# If you wish to build the manager image targeting other platforms you can use the --platform flag.
-# (i.e. docker build --platform linux/arm64). However, you must enable docker buildKit for it.
-# More info: https://docs.docker.com/develop/develop-images/build_enhancements/
-.PHONY: docker-build
-docker-build: ## Build docker image with the manager.
-	$(CONTAINER_TOOL) build -t ${IMG} .
-
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
-	$(CONTAINER_TOOL) push ${IMG}
-
 # PLATFORMS defines the target platforms for the manager image be built to provide support to multiple
 # architectures. (i.e. make docker-buildx IMG=myregistry/mypoperator:0.0.1). To use this option you need to:
 # - be able to use docker buildx. More info: https://docs.docker.com/build/buildx/
@@ -117,6 +137,19 @@ docker-buildx: ## Build and push docker image for the manager for cross-platform
 	- $(CONTAINER_TOOL) buildx build --push --platform=$(PLATFORMS) --tag ${IMG} -f Dockerfile.cross .
 	- $(CONTAINER_TOOL) buildx rm project-v3-builder
 	rm Dockerfile.cross
+
+.PHONY: image-build
+image-build:
+	$(IMAGE_BUILD_CMD) -t $(IMG) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
+		--build-arg BUILDER_IMAGE=$(BUILDER_IMAGE) \
+		--build-arg CGO_ENABLED=$(CGO_ENABLED) \
+		$(PUSH) \
+		$(IMAGE_BUILD_EXTRA_OPTS) ./
+
+.PHONY: image-push
+image-push: PUSH=--push
+image-push: image-build
 
 ##@ Deployment
 
@@ -135,7 +168,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
+	$(KUSTOMIZE) build config/default | $(KUBECTL) apply --server-side --force-conflicts -f -
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.

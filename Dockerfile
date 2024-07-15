@@ -1,5 +1,8 @@
+ARG BASE_IMAGE
+ARG BUILDER_IMAGE
+
 # Build the manager binary
-FROM golang:1.20 as builder
+FROM ${BUILDER_IMAGE} as builder
 ARG TARGETOS
 ARG TARGETARCH
 
@@ -14,7 +17,7 @@ RUN go mod download
 # Copy the go source
 COPY cmd/main.go cmd/main.go
 COPY api/ api/
-COPY internal/controller/ internal/controller/
+COPY internal/ internal/
 
 # Build
 # the GOARCH has not a default value to allow the binary be built according to the host where the command
@@ -25,7 +28,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} go build -a -o ma
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM ${BASE_IMAGE}
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532

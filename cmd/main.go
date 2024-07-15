@@ -34,8 +34,10 @@ import (
 
 	inferencev1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
 	llmaziov1alpha1 "inftyai.com/llmaz/api/v1alpha1"
+	"inftyai.com/llmaz/internal/cert"
 	"inftyai.com/llmaz/internal/controller"
 	inferencecontroller "inftyai.com/llmaz/internal/controller/inference"
+	"inftyai.com/llmaz/internal/webhook"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -92,27 +94,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&inferencecontroller.ServiceReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Service")
+	certsReady := make(chan struct{})
+
+	if err = cert.CertsManager(mgr, certsReady); err != nil {
+		setupLog.Error(err, "unable to setup cert rotation")
 		os.Exit(1)
 	}
-	if err = (&inferencecontroller.PlaygroundReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Playground")
-		os.Exit(1)
-	}
-	if err = (&controller.ModelReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Model")
-		os.Exit(1)
-	}
+
+	// Cert won't be ready until manager starts, so start a goroutine here which
+	// will block until the cert is ready before setting up the controllers.
+	// Controllers who register after manager starts will start directly.
+	go setupControllers(mgr, certsReady)
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
@@ -128,5 +121,41 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+}
+
+func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
+	// The controllers won't work until the webhooks are operating,
+	// and the webhook won't work until the certs are all in places.
+	setupLog.Info("waiting for the cert generation to complete")
+	<-certsReady
+	setupLog.Info("certs ready")
+
+	if err := (&inferencecontroller.ServiceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Service")
+		os.Exit(1)
+	}
+	if err := (&inferencecontroller.PlaygroundReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Playground")
+		os.Exit(1)
+	}
+	if err := (&controller.ModelReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Model")
+		os.Exit(1)
+	}
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err := webhook.SetupModelWebhook(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Model")
+			os.Exit(1)
+		}
 	}
 }

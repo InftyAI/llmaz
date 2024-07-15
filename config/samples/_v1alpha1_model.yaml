@@ -7,13 +7,13 @@ metadata:
     app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: llmaz
-  name: llama2-7B
+  name: llama2-7b
 spec:
   familyName: "llama2"
   dataSource:
     url: https://<url>
   inferenceFlavors:
-  - name: A100
+  - name: a100
     requests:
       nvidia.com/gpu: 1
     nodeSelector:

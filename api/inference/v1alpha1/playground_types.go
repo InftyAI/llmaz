@@ -38,7 +38,7 @@ type PlaygroundSpec struct {
 	// technology called splitwise, the workload template is shared by both.
 	// ModelClaim and multiModelsClaims are exclusive configured.
 	// +kubebuilder:validation:MinItems=1
-	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims"`
+	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
 	// BackendConfig represents the inference backend configuration
 	// under the hood, e.g. vLLM, which is the default backend.
 	// +optional
