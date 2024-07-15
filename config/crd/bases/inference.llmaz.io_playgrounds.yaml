@@ -300,7 +300,6 @@ spec:
                 type: integer
             required:
             - modelClaim
-            - multiModelsClaims
             type: object
           status:
             description: PlaygroundStatus defines the observed state of Playground

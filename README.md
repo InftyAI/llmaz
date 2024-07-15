@@ -7,13 +7,13 @@
 [GoReport Widget]: https://goreportcard.com/badge/github.com/inftyai/llmaz
 [GoReport Status]: https://goreportcard.com/report/github.com/inftyai/llmaz
 
-llmaz, pronounced as `/lima:z/`, aims to provide a production-ready inference platform for various LLMs on Kubernetes. It tightly integrates with state-of-the-art inference backends, such as [vLLM](https://github.com/vllm-project/vllm).
+llmaz, pronounced as `/lima:z/`, aims to provide a production-ready inference platform for large language models on Kubernetes. It tightly integrates with state-of-the-art inference backends, such as [vLLM](https://github.com/vllm-project/vllm).
 
 ## Concept
 
 ![image](./docs/assets/overview.png)
 
-## Feature Overview
+## Features Overview
 
 - **Easy to use**: People can deploy a production-ready LLM service with minimal configurations.
 - **High performance**: llmaz integrates with vLLM by default for high performance inference. Other backend supports are on the way.

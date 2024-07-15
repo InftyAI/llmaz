@@ -10,9 +10,9 @@ resources:
 patches:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
-#- path: patches/webhook_in_inference_services.yaml
-#- path: patches/webhook_in_inference_playgrounds.yaml
-#- path: patches/webhook_in__models.yaml
+# - path: patches/webhook_in_inference_services.yaml
+# - path: patches/webhook_in_inference_playgrounds.yaml
+- path: patches/webhook_in__models.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
@@ -25,5 +25,5 @@ patches:
 # [WEBHOOK] To enable webhook, uncomment the following section
 # the following config is for teaching kustomize how to do kustomization for CRDs.
 
-#configurations:
-#- kustomizeconfig.yaml
+configurations:
+- kustomizeconfig.yaml
