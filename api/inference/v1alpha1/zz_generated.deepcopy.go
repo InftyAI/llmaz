@@ -21,9 +21,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	apiv1alpha1 "inftyai.com/llmaz/api/v1alpha1"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -47,7 +47,7 @@ func (in *BackendConfig) DeepCopyInto(out *BackendConfig) {
 	}
 	if in.Envs != nil {
 		in, out := &in.Envs, &out.Envs
-		*out = make([]corev1.EnvVar, len(*in))
+		*out = make([]v1.EnvVar, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -163,12 +163,12 @@ func (in *PlaygroundSpec) DeepCopyInto(out *PlaygroundSpec) {
 	}
 	if in.ModelClaim != nil {
 		in, out := &in.ModelClaim, &out.ModelClaim
-		*out = new(apiv1alpha1.ModelClaim)
+		*out = new(corev1alpha1.ModelClaim)
 		(*in).DeepCopyInto(*out)
 	}
 	if in.MultiModelsClaims != nil {
 		in, out := &in.MultiModelsClaims, &out.MultiModelsClaims
-		*out = make([]apiv1alpha1.MultiModelsClaim, len(*in))
+		*out = make([]corev1alpha1.MultiModelsClaim, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -200,7 +200,7 @@ func (in *PlaygroundStatus) DeepCopyInto(out *PlaygroundStatus) {
 	*out = *in
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make([]v1.Condition, len(*in))
+		*out = make([]metav1.Condition, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -222,14 +222,14 @@ func (in *ResourceRequirements) DeepCopyInto(out *ResourceRequirements) {
 	*out = *in
 	if in.Limits != nil {
 		in, out := &in.Limits, &out.Limits
-		*out = make(corev1.ResourceList, len(*in))
+		*out = make(v1.ResourceList, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val.DeepCopy()
 		}
 	}
 	if in.Requests != nil {
 		in, out := &in.Requests, &out.Requests
-		*out = make(corev1.ResourceList, len(*in))
+		*out = make(v1.ResourceList, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val.DeepCopy()
 		}
@@ -310,7 +310,7 @@ func (in *ServiceSpec) DeepCopyInto(out *ServiceSpec) {
 	*out = *in
 	if in.MultiModelsClaims != nil {
 		in, out := &in.MultiModelsClaims, &out.MultiModelsClaims
-		*out = make([]apiv1alpha1.MultiModelsClaim, len(*in))
+		*out = make([]corev1alpha1.MultiModelsClaim, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
@@ -338,7 +338,7 @@ func (in *ServiceStatus) DeepCopyInto(out *ServiceStatus) {
 	*out = *in
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
-		*out = make([]v1.Condition, len(*in))
+		*out = make([]metav1.Condition, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}

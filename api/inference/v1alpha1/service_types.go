@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	api "inftyai.com/llmaz/api/v1alpha1"
+	api "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
 // ServiceSpec defines the desired state of Service.
@@ -45,14 +45,25 @@ type ServiceSpec struct {
 	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
 
+const (
+	// ServiceAvailable means the inferenceService is available and all the
+	// workloads are running as expected.
+	ServiceAvailable = "Available"
+	// ServiceProgressing means the inferenceService is progressing now, such as
+	// in creation, rolling update or scaling up and down.
+	ServiceProgressing = "Progressing"
+)
+
 // ServiceStatus defines the observed state of Service
 type ServiceStatus struct {
 	// Conditions represents the Inference condition.
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
+//+genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName={isvc}
 
 // Service is the Schema for the services API
 type Service struct {

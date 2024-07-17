@@ -1,5 +1,8 @@
+# We use 1.30.0 here because there's a bug about invalid defaults of creationTimestamp.
+# See https://github.com/kubernetes/kubernetes/pull/120757 for more details.
+# FIXME: But seems not related, will revisit this later.
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.28.3
+ENVTEST_K8S_VERSION = 1.30.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -43,6 +46,8 @@ PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 ARTIFACTS ?= $(PROJECT_DIR)/bin
 GINKGO_VERSION ?= $(shell go list -m -f '{{.Version}}' github.com/onsi/ginkgo/v2)
 GO_VERSION := $(shell awk '/^go /{print $$2}' go.mod|head -n1)
+E2E_KIND_VERSION ?= kindest/node:v1.30.0
+USE_EXISTING_CLUSTER ?= false
 
 GINKGO = $(shell pwd)/bin/ginkgo
 .PHONY: ginkgo
@@ -56,12 +61,13 @@ BASE_IMAGE ?= gcr.io/distroless/static:nonroot
 DOCKER_BUILDX_CMD ?= docker buildx
 IMAGE_BUILD_CMD ?= $(DOCKER_BUILDX_CMD) build
 IMAGE_BUILD_EXTRA_OPTS ?=
-IMAGE_REGISTRY ?= docker.io/inftyai
+IMAGE_REGISTRY ?= inftyai
 IMAGE_NAME ?= llmaz
 IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_NAME)
 GIT_TAG ?= $(shell git describe --tags --dirty --always)
 IMG ?= $(IMAGE_REPO):$(GIT_TAG)
 BUILDER_IMAGE ?= golang:$(GO_VERSION)
+KIND_CLUSTER_NAME ?= kind
 
 ##@ Development
 
@@ -74,8 +80,27 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 		paths="./..."
 
 .PHONY: generate
-generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
+generate: controller-gen code-generator ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+
+# This is a fixed bug in v1.31, will remove this command in the future.
+# Now, we have to modify the files ourself each time regenerate the client-go codes.
+# Generally replace "inftyai.com/llmaz/api/core/v1alpha1" with "inftyai.com/llmaz/api/v1alpha1"
+# See https://github.com/kubernetes/kubernetes/pull/125162
+.PHONY: generate-client-go
+generate-client-go: code-generator
+	./hack/update-codegen.sh go $(PROJECT_DIR)/bin
+
+# Use same code-generator version as k8s.io/api
+CODEGEN_VERSION := $(shell go list -m -f '{{.Version}}' k8s.io/api)
+CODEGEN = $(shell pwd)/bin/code-generator
+CODEGEN_ROOT = $(shell go env GOMODCACHE)/k8s.io/code-generator@$(CODEGEN_VERSION)
+.PHONY: code-generator
+code-generator:
+	@GOBIN=$(PROJECT_DIR)/bin GO111MODULE=on go install k8s.io/code-generator/cmd/client-gen@$(CODEGEN_VERSION)
+	cp -f $(CODEGEN_ROOT)/generate-groups.sh $(PROJECT_DIR)/bin/
+	cp -f $(CODEGEN_ROOT)/generate-internal-groups.sh $(PROJECT_DIR)/bin/
+	cp -f $(CODEGEN_ROOT)/kube_codegen.sh $(PROJECT_DIR)/bin/
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
@@ -93,6 +118,11 @@ test: manifests generate fmt vet envtest ## Run tests.
 test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
 	$(GINKGO) --junit-report=junit.xml --output-dir=$(ARTIFACTS) -v $(INTEGRATION_TARGET)
+
+.PHONY: test-e2e
+# FIXME: we should install lws CRD.
+test-e2e: kustomize manifests fmt vet envtest ginkgo kind-image-build
+	E2E_KIND_VERSION=$(E2E_KIND_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) KUSTOMIZE=$(KUSTOMIZE) GINKGO=$(GINKGO) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) ./hack/e2e-test.sh
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
 GOLANGCI_LINT_VERSION ?= v1.54.2
@@ -150,6 +180,16 @@ image-build:
 image-push: PUSH=--push
 image-push: image-build
 
+KIND = $(shell pwd)/bin/kind
+.PHONY: kind
+kind:
+	@GOBIN=$(PROJECT_DIR)/bin GO111MODULE=on go install sigs.k8s.io/kind@v0.23.0
+
+.PHONY: kind-image-build
+kind-image-build: PLATFORMS=linux/amd64
+kind-image-build: kind image-build
+	kind load docker-image $(IMG)
+
 ##@ Deployment
 
 ifndef ignore-not-found
@@ -166,6 +206,12 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 .PHONY: deploy
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default | $(KUBECTL) apply --server-side --force-conflicts -f -
+
+# This is only used in local development with kind.
+.PHONY: quick-deploy
+quick-deploy: manifests kustomize kind-image-build ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | $(KUBECTL) apply --server-side --force-conflicts -f -
 

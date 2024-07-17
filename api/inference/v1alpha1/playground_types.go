@@ -17,8 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	api "inftyai.com/llmaz/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	api "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
 // PlaygroundSpec defines the desired state of Playground
@@ -50,12 +51,21 @@ type PlaygroundSpec struct {
 	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
 
+const (
+	// PlaygroundProgressing means the Playground is progressing now, such as waiting for the
+	// inference service creation, rolling update or scaling up and down.
+	PlaygroundProgressing = "Progressing"
+	// PlaygroundAvailable indicates the corresponding inference service is available now.
+	PlaygroundAvailable string = "Available"
+)
+
 // PlaygroundStatus defines the observed state of Playground
 type PlaygroundStatus struct {
 	// Conditions represents the Inference condition.
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
+//+genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 

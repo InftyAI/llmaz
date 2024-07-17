@@ -17,7 +17,8 @@ RUN go mod download
 # Copy the go source
 COPY cmd/main.go cmd/main.go
 COPY api/ api/
-COPY internal/ internal/
+COPY pkg/ pkg/
+COPY client-go/ client-go/
 
 # Build
 # the GOARCH has not a default value to allow the binary be built according to the host where the command

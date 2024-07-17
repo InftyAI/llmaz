@@ -22,7 +22,7 @@ import (
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	api "inftyai.com/llmaz/api/v1alpha1"
+	core "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/test/util/wrapper"
 )
 
@@ -30,7 +30,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 
 	// Delete all the Models for each case.
 	ginkgo.AfterEach(func() {
-		var models api.ModelList
+		var models core.ModelList
 		gomega.Expect(k8sClient.List(ctx, &models)).To(gomega.Succeed())
 
 		for _, model := range models.Items {
@@ -39,29 +39,29 @@ var _ = ginkgo.Describe("model default and validation", func() {
 	})
 
 	type testDefaultingCase struct {
-		model     func() *api.Model
-		wantModel func() *api.Model
+		model     func() *core.Model
+		wantModel func() *core.Model
 	}
 	ginkgo.DescribeTable("Defaulting test",
 		func(tc *testDefaultingCase) {
 			model := tc.model()
 			gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 			gomega.Expect(model).To(gomega.BeComparableTo(tc.wantModel(),
-				cmpopts.IgnoreTypes(api.ModelStatus{}),
+				cmpopts.IgnoreTypes(core.ModelStatus{}),
 				cmpopts.IgnoreFields(metav1.ObjectMeta{}, "UID", "ResourceVersion", "Generation", "CreationTimestamp", "ManagedFields")))
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
-			model: func() *api.Model {
-				return wrapper.MakeModel("llama3-8b").DataSourceWithModel("meta-llama/meta-llama-3-8b", "Huggingface").FamilyName("llama3").Obj()
+			model: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/meta-llama-3-8b").FamilyName("llama3").Obj()
 			},
-			wantModel: func() *api.Model {
-				return wrapper.MakeModel("llama3-8b").DataSourceWithModel("meta-llama/meta-llama-3-8b", "Huggingface").FamilyName("llama3").Label(api.ModelFamilyNameLabelKey, "llama3").Obj()
+			wantModel: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/meta-llama-3-8b").DataSourceWithModelHub("Huggingface").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 	)
 
 	type testValidatingCase struct {
-		model  func() *api.Model
+		model  func() *core.Model
 		failed bool
 	}
 	// TODO: add more testCases to cover update.
@@ -74,13 +74,13 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			}
 		},
 		ginkgo.Entry("normal model creation", &testValidatingCase{
-			model: func() *api.Model {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModel("meta-llama/meta-llama-3-8b", "Huggingface").Obj()
+			model: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelID("meta-llama/meta-llama-3-8b").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("no data source configured", &testValidatingCase{
-			model: func() *api.Model {
+			model: func() *core.Model {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").Obj()
 			},
 			failed: true,
