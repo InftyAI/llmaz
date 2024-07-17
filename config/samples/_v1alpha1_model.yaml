@@ -11,7 +11,7 @@ metadata:
 spec:
   familyName: "llama3"
   dataSource:
-    url: https://<url>
+    modelID: "meta-llama/meta-llama-3-8b"
   inferenceFlavors:
   - name: a100
     requests:

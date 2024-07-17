@@ -43,9 +43,9 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	core "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	api "inftyai.com/llmaz/api/v1alpha1"
-	apiwebhook "inftyai.com/llmaz/internal/webhook"
+	apiwebhook "inftyai.com/llmaz/pkg/webhook"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -80,7 +80,7 @@ var _ = BeforeSuite(func() {
 		// Note that you must have the required binaries setup under the bin directory to perform
 		// the tests directly. When we run make test it will be setup and used automatically.
 		BinaryAssetsDirectory: filepath.Join("..", "..", "..", "bin", "k8s",
-			fmt.Sprintf("1.28.3-%s-%s", runtime.GOOS, runtime.GOARCH)),
+			fmt.Sprintf("1.30.0-%s-%s", runtime.GOOS, runtime.GOARCH)),
 
 		WebhookInstallOptions: envtest.WebhookInstallOptions{
 			Paths: []string{filepath.Join("..", "..", "..", "config", "webhook")},
@@ -93,15 +93,12 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	err = api.AddToScheme(scheme.Scheme)
+	err = core.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
-
 	err = inferenceapi.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
-
 	err = admissionv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
-
 	err = corev1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
@@ -127,7 +124,6 @@ var _ = BeforeSuite(func() {
 
 	err = apiwebhook.SetupModelWebhook(mgr)
 	Expect(err).NotTo(HaveOccurred())
-
 	err = apiwebhook.SetupPlaygroundWebhook(mgr)
 	Expect(err).NotTo(HaveOccurred())
 

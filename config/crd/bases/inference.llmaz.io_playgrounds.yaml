@@ -220,9 +220,10 @@ spec:
                     format: int32
                     type: integer
                   minReplicas:
+                    default: 1
                     description: |-
                       MinReplicas indicates the minimum number of inference workloads based on the traffic.
-                      Default to nil means we can scale down the instances to 0.
+                      Default to nil means we can scale down the instances to 1.
                     format: int32
                     type: integer
                 type: object

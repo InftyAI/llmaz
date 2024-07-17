@@ -1,4 +1,4 @@
-name: init
+name: workflow-as-kube-init
 
 on:
   workflow_dispatch:
