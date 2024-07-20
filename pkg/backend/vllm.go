@@ -23,21 +23,6 @@ import (
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 )
 
-// python -m vllm.entrypoints.openai.api_server --model NousResearch/Meta-Llama-3-8B-Instruct --dtype auto --api-key token-abc123
-//
-//	docker run --runtime nvidia --gpus all \
-//	    -v ~/.cache/huggingface:/root/.cache/huggingface \
-//	    --env "HUGGING_FACE_HUB_TOKEN=<secret>" \
-//	    -p 8000:8000 \
-//	    --ipc=host \
-//	    vllm/vllm-openai:latest \
-//	    --model mistralai/Mistral-7B-v0.1
-
-// from transformers import AutoModel
-
-// access_token = "hf_..."
-
-// model = AutoModel.from_pretrained("private/model", token=access_token)
 var _ Backend = (*VLLM)(nil)
 
 type VLLM struct{}

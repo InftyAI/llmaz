@@ -41,6 +41,7 @@ type ServiceSpec struct {
 	WorkloadTemplate lws.LeaderWorkerSetSpec `json:"workloadTemplate"`
 	// ElasticConfig defines the configuration for elastic usage,
 	// e.g. the max/min replicas. Default to 0 ~ Inf+.
+	// This requires to install the HPA first or will not work.
 	// +optional
 	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }

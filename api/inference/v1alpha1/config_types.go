@@ -21,8 +21,8 @@ import corev1 "k8s.io/api/core/v1"
 type BackendName string
 
 const (
-	DefaultBackend BackendName = "vllm"
 	VLLM           BackendName = "vllm"
+	DefaultBackend BackendName = VLLM
 )
 
 type BackendConfig struct {
@@ -65,6 +65,7 @@ type ResourceRequirements struct {
 type ElasticConfig struct {
 	// MinReplicas indicates the minimum number of inference workloads based on the traffic.
 	// Default to nil means we can scale down the instances to 1.
+	// If minReplicas set to 0, it requires to install serverless component at first.
 	// +kubebuilder:default=1
 	// +optional
 	MinReplicas *int32 `json:"minReplicas,omitempty"`

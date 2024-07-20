@@ -1,8 +1,5 @@
-# We use 1.30.0 here because there's a bug about invalid defaults of creationTimestamp.
-# See https://github.com/kubernetes/kubernetes/pull/120757 for more details.
-# FIXME: But seems not related, will revisit this later.
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.30.0
+ENVTEST_K8S_VERSION = 1.28.3
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -82,13 +79,6 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 .PHONY: generate
 generate: controller-gen code-generator ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
-
-# This is a fixed bug in v1.31, will remove this command in the future.
-# Now, we have to modify the files ourself each time regenerate the client-go codes.
-# Generally replace "inftyai.com/llmaz/api/core/v1alpha1" with "inftyai.com/llmaz/api/v1alpha1"
-# See https://github.com/kubernetes/kubernetes/pull/125162
-.PHONY: generate-client-go
-generate-client-go: code-generator
 	./hack/update-codegen.sh go $(PROJECT_DIR)/bin
 
 # Use same code-generator version as k8s.io/api

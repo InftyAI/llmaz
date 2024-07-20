@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "llmaz"
+version = "0.1.0"
+description = "☸️ Effortlessly operating LLMs on Kubernetes"
+authors = ["Your Name <you@example.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+huggingface-hub = "^0.23.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
