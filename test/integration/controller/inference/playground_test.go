@@ -17,15 +17,20 @@ limitations under the License.
 package inference
 
 import (
+	"context"
+
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	api "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/test/util"
-	"inftyai.com/llmaz/test/util/wrapper"
+	"inftyai.com/llmaz/test/util/validation"
 )
 
 var _ = ginkgo.Describe("playground controller test", func() {
@@ -33,11 +38,16 @@ var _ = ginkgo.Describe("playground controller test", func() {
 	var ns *corev1.Namespace
 	var model *api.Model
 
+	type update struct {
+		playgroundUpdateFn func(*inferenceapi.Playground)
+		checkPlayground    func(context.Context, client.Client, *inferenceapi.Playground)
+	}
+
 	ginkgo.BeforeEach(func() {
 		// Create test namespace before each test.
 		ns = &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
-				GenerateName: "test-ns-",
+				GenerateName: "ns-playground-",
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
@@ -50,23 +60,63 @@ var _ = ginkgo.Describe("playground controller test", func() {
 	})
 
 	type testValidatingCase struct {
-		playground func() *inferenceapi.Playground
-		failed     bool
+		makePlayground func() *inferenceapi.Playground
+		updates        []*update
 	}
 	// TODO: Add more testCases to cover updating.
-	ginkgo.DescribeTable("test validating",
+	ginkgo.DescribeTable("test playground creation and update",
 		func(tc *testValidatingCase) {
-			if tc.failed {
-				gomega.Expect(k8sClient.Create(ctx, tc.playground())).To(gomega.HaveOccurred())
-			} else {
-				gomega.Expect(k8sClient.Create(ctx, tc.playground())).To(gomega.Succeed())
+			playground := tc.makePlayground()
+			for _, update := range tc.updates {
+				if update.playgroundUpdateFn != nil {
+					update.playgroundUpdateFn(playground)
+				}
+				newPlayground := &inferenceapi.Playground{}
+				gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, newPlayground)).To(gomega.Succeed())
+				if update.checkPlayground != nil {
+					update.checkPlayground(ctx, k8sClient, newPlayground)
+				}
 			}
 		},
-		ginkgo.Entry("normal playground creation", &testValidatingCase{
-			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("test-playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").Obj()
+		ginkgo.Entry("normal playground create and update", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return util.MockASamplePlayground(ns.Name)
 			},
-			failed: false,
+			updates: []*update{
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						gomega.Eventually(func() error {
+							updatePlayground := &inferenceapi.Playground{}
+							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, updatePlayground); err != nil {
+								return err
+							}
+							updatePlayground.Spec.Replicas = ptr.To[int32](3)
+							if err := k8sClient.Update(ctx, updatePlayground); err != nil {
+								return err
+							}
+							return nil
+						}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
+
+						// To make sure playground updated successfully.
+						newPlayground := inferenceapi.Playground{}
+						gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &newPlayground)).To(gomega.Succeed())
+						gomega.Expect(*newPlayground.Spec.Replicas).To(gomega.Equal(int32(3)))
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
 		}),
 	)
 })

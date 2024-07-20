@@ -32,3 +32,10 @@ func MockASampleModel() *api.Model {
 func MockASamplePlayground(ns string) *inferenceapi.Playground {
 	return wrapper.MakePlayground("playground-llama3-8b", ns).ModelClaim(sampleModelName).Obj()
 }
+
+func MockASampleService(ns string) *inferenceapi.Service {
+	return wrapper.MakeService("service-llama3-8b", ns).
+		ModelsClaim([]string{"llama3-8b"}, []string{}, 1).
+		WorkerTemplate().
+		Obj()
+}

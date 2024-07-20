@@ -26,6 +26,11 @@ const (
 	ModelNameLabelKey       = "llmaz.io/model-name"
 )
 
+// Add roles for operating leaderWorkerSet.
+//
+// +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets/status,verbs=get;update;patch
+
 // DataSource represents where to load the model.
 // Only one data source will be used.
 type DataSource struct {
@@ -93,12 +98,9 @@ type ModelClaim struct {
 	// ModelName represents a list of models, there maybe multiple models here
 	// to support state-of-the-art technologies like speculative decoding.
 	ModelName ModelName `json:"modelName,omitempty"`
-	// InferenceFlavors represents a list of flavors with fungibility supported
-	// to serve the model.
-	// - If not set and multiple models claimed, apply with the 0-index model by default.
-	// - If set, the flavor names will refer to the 0-index model.
-	// TODO: This is just for simplicity, if needed, will refactor this part in the future like
-	// supporting modelComposition.
+	// InferenceFlavors represents a list of flavors with fungibility supports
+	// to serve the model. The flavor names should be a subset of the model
+	// configured flavors. If not set, will use the model configured flavors.
 	// +optional
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
 }
@@ -112,10 +114,8 @@ type MultiModelsClaim struct {
 	ModelNames []ModelName `json:"modelNames,omitempty"`
 	// InferenceFlavors represents a list of flavors with fungibility supported
 	// to serve the model.
-	// - If not set and multiple models claimed, apply with the 0-index model by default.
-	// - If set, the flavor names will refer to the 0-index model.
-	// TODO: This is just for simplicity, if needed, will refactor this part in the future like
-	// supporting modelComposition.
+	// - If not set, always apply with the 0-index model by default.
+	// - If set, will lookup the flavor names following the model orders.
 	// +optional
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
 	// Rate works only when multiple claims declared, it represents the replicas rates of

@@ -92,20 +92,18 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if err := util.Patch(ctx, r.Client, serviceApplyConfiguration); err != nil {
-		log.Error(err, "failed to create inferenceService")
+		log.Error(err, "failed to create or patch inferenceService")
 		return ctrl.Result{}, err
 	}
 
 	// Handle status.
-
-	var service *inferenceapi.Service
+	service := &inferenceapi.Service{}
 	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err != nil {
-		log.Error(err, "failed to get inferenceService")
 		return ctrl.Result{}, err
 	}
+
 	setPlaygroundCondition(playground, service)
-	if err := r.Status().Update(ctx, playground); err != nil {
-		log.Error(err, "failed to update Playground status")
+	if err := r.Client.Status().Update(ctx, playground); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -125,16 +123,6 @@ func buildServiceApplyConfiguration(model *core.Model, playground *inferenceapi.
 
 	// Build spec.
 	spec := inferenceclientgo.ServiceSpec()
-	if playground.Spec.ElasticConfig != nil {
-		config := inferenceclientgo.ElasticConfig()
-		if max := playground.Spec.ElasticConfig.MaxReplicas; max != nil {
-			config.WithMaxReplicas(*max)
-		}
-		if min := playground.Spec.ElasticConfig.MinReplicas; min != nil {
-			config.WithMinReplicas(*min)
-		}
-		spec.WithElasticConfig(config)
-	}
 
 	if playground.Spec.ModelClaim != nil {
 		claim := coreclientgo.MultiModelsClaim().
@@ -157,7 +145,13 @@ func buildServiceApplyConfiguration(model *core.Model, playground *inferenceapi.
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
 func buildWorkloadTemplate(model *core.Model, playground *inferenceapi.Playground) lws.LeaderWorkerSetSpec {
 	// FIXME: this should be leaderWorkerSetTemplateSpec, we should support in the lws upstream.
-	workload := lws.LeaderWorkerSetSpec{}
+	workload := lws.LeaderWorkerSetSpec{
+		StartupPolicy: lws.LeaderCreatedStartupPolicy,
+		RolloutStrategy: lws.RolloutStrategy{
+			Type: lws.RollingUpdateStrategyType,
+		},
+	}
+
 	workload.Replicas = playground.Spec.Replicas
 
 	backendName := inferenceapi.DefaultBackend
@@ -269,7 +263,6 @@ func setPlaygroundCondition(playground *inferenceapi.Playground, service *infere
 
 // setControllerReferenceForService set playground as the owner reference for inferenceService.
 func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientgo.ServiceApplyConfiguration, scheme *runtime.Scheme) error {
-	// Validate the owner.
 	ro, ok := owner.(runtime.Object)
 	if !ok {
 		return fmt.Errorf("%T is not a runtime.Object, cannot call SetOwnerReference", owner)

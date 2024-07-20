@@ -36,8 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	// lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
+	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
 	api "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
@@ -69,7 +68,10 @@ var _ = BeforeSuite(func() {
 
 	// Webhook not installed.
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "..", "..", "..", "config", "crd", "bases")},
+		CRDDirectoryPaths: []string{
+			filepath.Join("..", "..", "..", "..", "config", "crd", "bases"),
+			filepath.Join("..", "..", "..", "..", "config", "crd", "lws"),
+		},
 		ErrorIfCRDPathMissing: true,
 
 		// The BinaryAssetsDirectory is only required if you want to run the tests directly
@@ -78,7 +80,7 @@ var _ = BeforeSuite(func() {
 		// Note that you must have the required binaries setup under the bin directory to perform
 		// the tests directly. When we run make test it will be setup and used automatically.
 		BinaryAssetsDirectory: filepath.Join("..", "..", "..", "bin", "k8s",
-			fmt.Sprintf("1.30.0-%s-%s", runtime.GOOS, runtime.GOARCH)),
+			fmt.Sprintf("1.28.3-%s-%s", runtime.GOOS, runtime.GOARCH)),
 	}
 
 	var err error
@@ -93,8 +95,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	err = corev1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
-	// err = lws.AddToScheme(scheme.Scheme)
-	// Expect(err).NotTo(HaveOccurred())
+	err = lws.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
 

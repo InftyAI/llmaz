@@ -208,25 +208,6 @@ spec:
                       from the default version.
                     type: string
                 type: object
-              elasticConfig:
-                description: |-
-                  ElasticConfig defines the configuration for elastic usage,
-                  e.g. the max/min replicas. Default to 0 ~ Inf+.
-                properties:
-                  maxReplicas:
-                    description: |-
-                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
-                      Default to nil means there's no limit for the instance number.
-                    format: int32
-                    type: integer
-                  minReplicas:
-                    default: 1
-                    description: |-
-                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
-                      Default to nil means we can scale down the instances to 1.
-                    format: int32
-                    type: integer
-                type: object
               modelClaim:
                 description: |-
                   ModelClaim represents one modelClaim, it's a simple configuration
@@ -237,12 +218,9 @@ spec:
                 properties:
                   inferenceFlavors:
                     description: |-
-                      InferenceFlavors represents a list of flavors with fungibility supported
-                      to serve the model.
-                      - If not set and multiple models claimed, apply with the 0-index model by default.
-                      - If set, the flavor names will refer to the 0-index model.
-                      TODO: This is just for simplicity, if needed, will refactor this part in the future like
-                      supporting modelComposition.
+                      InferenceFlavors represents a list of flavors with fungibility supports
+                      to serve the model. The flavor names should be a subset of the model
+                      configured flavors. If not set, will use the model configured flavors.
                     items:
                       type: string
                     type: array
@@ -267,10 +245,8 @@ spec:
                       description: |-
                         InferenceFlavors represents a list of flavors with fungibility supported
                         to serve the model.
-                        - If not set and multiple models claimed, apply with the 0-index model by default.
-                        - If set, the flavor names will refer to the 0-index model.
-                        TODO: This is just for simplicity, if needed, will refactor this part in the future like
-                        supporting modelComposition.
+                        - If not set, always apply with the 0-index model by default.
+                        - If set, will lookup the flavor names following the model orders.
                       items:
                         type: string
                       type: array

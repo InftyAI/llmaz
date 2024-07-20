@@ -45,10 +45,6 @@ type PlaygroundSpec struct {
 	// under the hood, e.g. vLLM, which is the default backend.
 	// +optional
 	BackendConfig *BackendConfig `json:"backendConfig,omitempty"`
-	// ElasticConfig defines the configuration for elastic usage,
-	// e.g. the max/min replicas. Default to 0 ~ Inf+.
-	// +optional
-	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
 
 const (

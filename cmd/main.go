@@ -31,8 +31,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	llmaziov1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
+	corev1 "inftyai.com/llmaz/api/core/v1alpha1"
 	inferencev1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/pkg/cert"
 	"inftyai.com/llmaz/pkg/controller"
@@ -50,7 +51,9 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(inferencev1alpha1.AddToScheme(scheme))
-	utilruntime.Must(llmaziov1alpha1.AddToScheme(scheme))
+	utilruntime.Must(corev1.AddToScheme(scheme))
+	// Add support for lws.
+	utilruntime.Must(lws.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
