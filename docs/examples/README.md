@@ -6,4 +6,4 @@ We provide a bunch of examples to serve large language models, whether via infer
 
 ### Deploy models via Huggingface
 
-Deploy a small [model](./huggingface/model.yaml) hosted in Huggingface, see [example](./huggingface/playground.yaml). Because model is of a small size, the loading time is acceptable.
+Deploy a small [model](./huggingface/model.yaml) hosted in Huggingface, see the [example](./huggingface/playground.yaml) here. Because the model is of a small size, the loading time is acceptable.

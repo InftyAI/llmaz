@@ -16,10 +16,10 @@
 ## Feature Overview
 
 - **User Friendly**: People can quick deploy a LLM service with minimal configurations.
-- **High Performance**: llmaz integrates with vLLM by default for high performance inference. Other backends support are on the way.
-- **Scaling Efficiency**: llmaz works smoothly with autoscaling components like [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic cases.
-- **Accelerator Fungibility**: llmaz supports serving the same LLMs with various accelerators to optimize cost and performance.
-- **SOTA Inference**: llmaz support the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) and [Splitwise](https://arxiv.org/abs/2311.18677).
+- **High Performance**: llmaz integrates with vLLM by default for high performance inference. Other backends support is on the way.
+- **Scaling Efficiency**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
+- **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
+- **SOTA Inference**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) and [Splitwise](https://arxiv.org/abs/2311.18677) to run in Kubernetes.
 
 ## Quick Start
 
@@ -69,7 +69,7 @@ spec:
 kubectl port-forward pod/opt-125m-0 8080:8080
 ```
 
-#### See registered models
+#### Get registered models
 
 ```cmd
 curl http://localhost:8080/v1/models
