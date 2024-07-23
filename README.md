@@ -7,7 +7,7 @@
 [GoReport Widget]: https://goreportcard.com/badge/github.com/inftyai/llmaz
 [GoReport Status]: https://goreportcard.com/report/github.com/inftyai/llmaz
 
-llmaz, pronounced as `/lima:z/`, aims to provide a production-ready inference platform for large language models on Kubernetes. It tightly integrates with state-of-the-art inference backends, such as [vLLM](https://github.com/vllm-project/vllm).
+**llmaz** (pronounced `/lima:z/`), aims to provide a **Production-Ready** inference platform for large language models on **Kubernetes**. It closely integrates with state-of-the-art inference backends like [vLLM](https://github.com/vllm-project/vllm) to bring the cutting-edge researches to cloud.
 
 ## Concept
 
@@ -15,17 +15,23 @@ llmaz, pronounced as `/lima:z/`, aims to provide a production-ready inference pl
 
 ## Feature Overview
 
-- **Easy to use**: People can deploy a production-ready LLM service with minimal configurations.
-- **High performance**: llmaz integrates with vLLM by default for high performance inference. Other backend supports are on the way.
-- **Autoscaling efficiency**: llmaz works smoothly with autoscaling components like [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) and [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
-- **Accelerator fungibility**: llmaz supports serving LLMs with different accelerators for the sake of cost and performance.
-- **SOTA inference technologies**: llmaz support the latest SOTA technologies like [speculative decoding](https://arxiv.org/abs/2211.17192) and [Splitwise](https://arxiv.org/abs/2311.18677).
+- **User Friendly**: People can quick deploy a LLM service with minimal configurations.
+- **High Performance**: llmaz integrates with vLLM by default for high performance inference. Other backends support are on the way.
+- **Scaling Efficiency**: llmaz works smoothly with autoscaling components like [cluster-autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic cases.
+- **Accelerator Fungibility**: llmaz supports serving the same LLMs with various accelerators to optimize cost and performance.
+- **SOTA Inference**: llmaz support the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) and [Splitwise](https://arxiv.org/abs/2311.18677).
 
 ## Quick Start
 
-Once `Model`s (e.g. opt-125m) published, you can quick deploy a `Playground` for serving.
+### Installation
 
-### Model
+Read the [Installation](./docs/installation.md) for guidance.
+
+### Deploy
+
+Once `Model`s (e.g. facebook/opt-125m) are published, you can quick deploy a `Playground` to serve the model.
+
+#### Model
 
 ```yaml
 apiVersion: llmaz.io/v1alpha1
@@ -37,12 +43,12 @@ spec:
   dataSource:
     modelID: facebook/opt-125m
   inferenceFlavors:
-  - name: t4
+  - name: t4 # GPU type
     requests:
       nvidia.com/gpu: 1
 ```
 
-### Inference Playground
+#### Inference Playground
 
 ```yaml
 apiVersion: inference.llmaz.io/v1alpha1
@@ -55,16 +61,41 @@ spec:
     modelName: opt-125m
 ```
 
-Refer to more **[Examples](/docs/examples/README.md)** for references.
+### Test
+
+#### Expose the service
+
+```cmd
+kubectl port-forward pod/opt-125m-0 8080:8080
+```
+
+#### See registered models
+
+```cmd
+curl http://localhost:8080/v1/models
+```
+
+#### Request a query
+
+```cmd
+curl http://localhost:8080/v1/completions \
+-H "Content-Type: application/json" \
+-d '{
+    "model": "facebook/opt-125m",
+    "prompt": "San Francisco is a",
+    "max_tokens": 10,
+    "temperature": 0
+}'
+```
+
+Refer to **[examples](/docs/examples/README.md)** to learn more.
 
 ## Roadmap
 
-- Metrics support
-- Autoscaling support
-- Gateway support
-- Serverless support
-- CLI tool
-- Model training, fine tuning in the long-term.
+- Gateway support for traffic routing
+- Serverless support for cloud-agnostic users
+- CLI tool support
+- Model training, fine tuning in the long-term
 
 ## Contributions
 
