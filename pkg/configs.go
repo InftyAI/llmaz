@@ -1,4 +1,4 @@
-"""
+/*
 Copyright 2024.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,18 +12,17 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-"""
+*/
 
-import sys
+package pkg
 
-from pkg.loader.model_hub.model_hub import HubFactory
+const (
+	LOADER_IMAGE = "inftyai/model-loader:v0.0.1"
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        raise Exception("args number not right")
-
-    hub_name = sys.argv[1]
-    model_name = sys.argv[2]
-
-    hub = HubFactory(hub_name=hub_name, model_name=model_name)
-    hub.load_model()
+	HOST_MODEL_PATH             = "/cache/models/"
+	CONTAINER_MODEL_PATH        = "/workspace/models/"
+	DEFAULT_BACKEND_PORT        = 8080
+	MODEL_CACHE_VOLUME_NAME     = "model-cache"
+	MODEL_RUNNER_CONTAINER_NAME = "model-runner"
+	MODEL_LOADER_CONTAINER_NAME = "model-loader"
+)

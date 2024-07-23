@@ -1,0 +1,12 @@
+apiVersion: llmaz.io/v1alpha1
+kind: Model
+metadata:
+  name: opt-125m
+spec:
+  familyName: opt
+  dataSource:
+    modelID: facebook/opt-125m
+  inferenceFlavors:
+  - name: t4 # usually refer to the model type
+    requests:
+      nvidia.com/gpu: 1

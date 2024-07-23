@@ -14,25 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from abc import ABC, abstractmethod
-
-from pkg.loader.modelhub.huggingface import HUGGING_FACE, Huggingface
-
-
-MODEL_LOCAL_DIR = "/workspace/models/"
-MODEL_CACHE_LOCAL_DIR = "/workspace/cache/models/"
-
-
-class ModelHub(ABC):
-    @classmethod
-    @abstractmethod
-    def name(cls) -> str:
-        pass
-
-    @classmethod
-    @abstractmethod
-    def load_model(cls, model_name: str) -> bool:
-        pass
+from loader.model_hub.model_hub import ModelHub
+from loader.model_hub.huggingface import HUGGING_FACE, Huggingface
 
 
 # TODO: support modelScope.
@@ -42,8 +25,9 @@ SUPPORT_MODEL_HUBS = {
 
 
 class HubFactory:
-    def __init__(self, hub_name: str, model_name: str) -> ModelHub:
-        if model_name not in SUPPORT_MODEL_HUBS.keys():
+    @classmethod
+    def new(cls, hub_name: str) -> ModelHub:
+        if hub_name not in SUPPORT_MODEL_HUBS.keys():
             raise ValueError(f"Unknown model hub: {hub_name}")
 
         return SUPPORT_MODEL_HUBS[hub_name]

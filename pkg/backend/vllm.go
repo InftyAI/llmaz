@@ -49,6 +49,10 @@ func (v *VLLM) DefaultResources() inferenceapi.ResourceRequirements {
 			corev1.ResourceCPU:    resource.MustParse("4"),
 			corev1.ResourceMemory: resource.MustParse("8Gi"),
 		},
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("4"),
+			corev1.ResourceMemory: resource.MustParse("8Gi"),
+		},
 	}
 }
 

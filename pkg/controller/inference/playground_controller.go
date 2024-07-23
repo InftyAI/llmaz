@@ -19,6 +19,9 @@ package inference
 import (
 	"context"
 	"fmt"
+	"reflect"
+	"strconv"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -28,15 +31,20 @@ import (
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	core "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	coreclientgo "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	inferenceclientgo "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
+	"inftyai.com/llmaz/pkg"
 	"inftyai.com/llmaz/pkg/backend"
 	"inftyai.com/llmaz/pkg/util"
 )
@@ -65,7 +73,7 @@ func NewPlaygroundReconciler(client client.Client, scheme *runtime.Scheme, recor
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
+	_ = log.FromContext(ctx)
 
 	playground := &inferenceapi.Playground{}
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, playground); err != nil {
@@ -76,10 +84,9 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	if playground.Spec.ModelClaim != nil {
 		modelName := playground.Spec.ModelClaim.ModelName
-		model := &core.Model{}
+		model := &coreapi.Model{}
 
 		if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
-			log.Error(err, "model doesn't exist")
 			return ctrl.Result{}, err
 		}
 		serviceApplyConfiguration = buildServiceApplyConfiguration(model, playground)
@@ -92,7 +99,6 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	if err := util.Patch(ctx, r.Client, serviceApplyConfiguration); err != nil {
-		log.Error(err, "failed to create or patch inferenceService")
 		return ctrl.Result{}, err
 	}
 
@@ -114,10 +120,18 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&inferenceapi.Playground{}).
+		Watches(&inferenceapi.Service{}, &handler.EnqueueRequestForObject{},
+			builder.WithPredicates(predicate.Funcs{
+				UpdateFunc: func(e event.UpdateEvent) bool {
+					oldBar := e.ObjectOld.(*inferenceapi.Service)
+					newBar := e.ObjectNew.(*inferenceapi.Service)
+					return !reflect.DeepEqual(oldBar.Status, newBar.Status)
+				},
+			})).
 		Complete(r)
 }
 
-func buildServiceApplyConfiguration(model *core.Model, playground *inferenceapi.Playground) *inferenceclientgo.ServiceApplyConfiguration {
+func buildServiceApplyConfiguration(model *coreapi.Model, playground *inferenceapi.Playground) *inferenceclientgo.ServiceApplyConfiguration {
 	// Build metadata
 	serviceApplyConfiguration := inferenceclientgo.Service(playground.Name, playground.Namespace)
 
@@ -143,9 +157,10 @@ func buildServiceApplyConfiguration(model *core.Model, playground *inferenceapi.
 // to cover both single-host and multi-host cases. There're some shortages for lws like can not force rolling
 // update when one replica failed, we'll fix this in the kubernetes upstream.
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
-func buildWorkloadTemplate(model *core.Model, playground *inferenceapi.Playground) lws.LeaderWorkerSetSpec {
-	// FIXME: this should be leaderWorkerSetTemplateSpec, we should support in the lws upstream.
+func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playground) lws.LeaderWorkerSetSpec {
+	// TODO: this should be leaderWorkerSetTemplateSpec, we should support in the lws upstream.
 	workload := lws.LeaderWorkerSetSpec{
+		// Use the default policy defined in lws.
 		StartupPolicy: lws.LeaderCreatedStartupPolicy,
 		RolloutStrategy: lws.RolloutStrategy{
 			Type: lws.RollingUpdateStrategyType,
@@ -165,11 +180,15 @@ func buildWorkloadTemplate(model *core.Model, playground *inferenceapi.Playgroun
 		version = *playground.Spec.BackendConfig.Version
 	}
 
+	// TODO:: add unit tests
+	modelID, trimmedModelName := modelIdentifiers(model)
 	// TODO: should we also support secret here?
 	args := []string{
-		"--model", backend.DEFAULT_MODEL_PATH + model.Name,
-		"--port", backend.DEFAULT_PORT,
+		"--model", pkg.CONTAINER_MODEL_PATH + trimmedModelName,
+		"--served-model-name", modelID,
+		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
 	}
+
 	var envs []corev1.EnvVar
 	if playground.Spec.BackendConfig != nil {
 		args = append(args, playground.Spec.BackendConfig.Args...)
@@ -181,34 +200,56 @@ func buildWorkloadTemplate(model *core.Model, playground *inferenceapi.Playgroun
 		Requests: bkd.DefaultResources().Requests,
 	}
 	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Resources != nil {
-		// FIXME: we should merge the resources rather than simply replace.
+		// We'll not update playground here, so modify the values of playground is ok.
+		limits := util.MergeResources(playground.Spec.BackendConfig.Resources.Limits, resources.Limits)
+		requests := util.MergeResources(playground.Spec.BackendConfig.Resources.Requests, resources.Requests)
+
 		resources = corev1.ResourceRequirements{
-			Limits:   playground.Spec.BackendConfig.Resources.Limits,
-			Requests: playground.Spec.BackendConfig.Resources.Requests,
+			Limits:   limits,
+			Requests: requests,
 		}
 	}
 
+	hostType := corev1.HostPathDirectoryOrCreate
 	// TODO: handle multi-host scenarios, e.g. nvidia.com/gpu: 32, means we'll split into 4 hosts.
 	// Do we need another configuration for playground for multi-host use case? I guess no currently.
 	workload.LeaderWorkerTemplate.WorkerTemplate = corev1.PodTemplateSpec{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: map[string]string{
-				core.ModelNameLabelKey:       string(model.Name),
-				core.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),
-			},
-		},
 		Spec: corev1.PodSpec{
-			// FIXME: add initContainer to handler data source
 			// TODO: should we support image pull secret here?
 			// TODO: support readiness/liveness
 			Containers: []corev1.Container{
 				{
-					Name:      string(bkd.Name()),
+					Name:      pkg.MODEL_RUNNER_CONTAINER_NAME,
 					Image:     bkd.Image(version),
 					Resources: resources,
 					Command:   bkd.DefaultCommands(),
 					Args:      args,
 					Env:       envs,
+					Ports: []corev1.ContainerPort{
+						{
+							Name:          "http",
+							Protocol:      corev1.ProtocolTCP,
+							ContainerPort: pkg.DEFAULT_BACKEND_PORT,
+						},
+					},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      pkg.MODEL_CACHE_VOLUME_NAME,
+							MountPath: pkg.CONTAINER_MODEL_PATH,
+							ReadOnly:  true,
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: pkg.MODEL_CACHE_VOLUME_NAME,
+					VolumeSource: corev1.VolumeSource{
+						HostPath: &corev1.HostPathVolumeSource{
+							Path: pkg.HOST_MODEL_PATH,
+							Type: &hostType,
+						},
+					},
 				},
 			},
 		},
@@ -237,7 +278,7 @@ func setPlaygroundCondition(playground *inferenceapi.Playground, service *infere
 			Reason:  "PlaygroundReady",
 			Message: "Playground is ready",
 		}
-		apimeta.SetStatusCondition(&service.Status.Conditions, condition)
+		apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
 	} else {
 		// Still in starting up, no need to populate the condition.
 		if apimeta.FindStatusCondition(playground.Status.Conditions, inferenceapi.PlaygroundAvailable) == nil {
@@ -250,7 +291,7 @@ func setPlaygroundCondition(playground *inferenceapi.Playground, service *infere
 			Reason:  "PlaygroundInProgress",
 			Message: "Playground is progressing",
 		}
-		apimeta.SetStatusCondition(&service.Status.Conditions, condition)
+		apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
 
 		// Set the available to false
 		new_condition := metav1.Condition{
@@ -279,4 +320,17 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 		WithBlockOwnerDeletion(true).
 		WithController(true))
 	return nil
+}
+
+// One example is:
+// - modelID: facebook/opt-125m
+// - modelName: facebook--opt-125m
+func modelIdentifiers(model *coreapi.Model) (modelID string, trimmedModelName string) {
+	if model.Spec.DataSource.ModelID != nil {
+		// This model name should be aligned with model loader.
+		modelNames := strings.ReplaceAll(*model.Spec.DataSource.ModelID, "/", "--")
+		return *model.Spec.DataSource.ModelID, strings.ToLower(modelNames)
+	}
+	// TODO: handle other data source.
+	return "", ""
 }

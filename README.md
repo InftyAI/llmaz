@@ -13,7 +13,7 @@ llmaz, pronounced as `/lima:z/`, aims to provide a production-ready inference pl
 
 ![image](./docs/assets/overview.png)
 
-## Features Overview
+## Feature Overview
 
 - **Easy to use**: People can deploy a production-ready LLM service with minimal configurations.
 - **High performance**: llmaz integrates with vLLM by default for high performance inference. Other backend supports are on the way.
@@ -23,7 +23,39 @@ llmaz, pronounced as `/lima:z/`, aims to provide a production-ready inference pl
 
 ## Quick Start
 
-Refer to the [samples](/config/samples/) for quick deployment.
+Once `Model`s (e.g. opt-125m) published, you can quick deploy a `Playground` for serving.
+
+### Model
+
+```yaml
+apiVersion: llmaz.io/v1alpha1
+kind: Model
+metadata:
+  name: opt-125m
+spec:
+  familyName: opt
+  dataSource:
+    modelID: facebook/opt-125m
+  inferenceFlavors:
+  - name: t4
+    requests:
+      nvidia.com/gpu: 1
+```
+
+### Inference Playground
+
+```yaml
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: opt-125m
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: opt-125m
+```
+
+Refer to more **[Examples](/docs/examples/README.md)** for references.
 
 ## Roadmap
 

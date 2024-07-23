@@ -52,6 +52,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName), Namespace: playground.Namespace}, &model); err != nil {
 				return errors.New("failed to get model")
 			}
+
 			if playground.Spec.ModelClaim.ModelName != service.Spec.MultiModelsClaims[0].ModelNames[0] {
 				return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.MultiModelsClaims[0].ModelNames[0])
 			}
@@ -60,20 +61,12 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			}
 		}
 
-		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey] != string(model.Spec.FamilyName) {
-			return fmt.Errorf("expected familyName %s, got %s", string(model.Spec.FamilyName), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey])
-		}
-		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelNameLabelKey] != string(model.Name) {
-			return fmt.Errorf("expected familyName %s, got %s", string(model.Name), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelNameLabelKey])
-		}
+		// TODO: MultiModelsClaim
 
 		if playground.Spec.BackendConfig != nil {
 			backendName := inferenceapi.DefaultBackend
 			if playground.Spec.BackendConfig.Name != nil {
 				backendName = *playground.Spec.BackendConfig.Name
-			}
-			if backendName != (inferenceapi.BackendName)(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name) {
-				return fmt.Errorf("expected container name %s, got %s", *playground.Spec.BackendConfig.Name, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
 			}
 			if playground.Spec.BackendConfig.Version != nil && backend.SwitchBackend(backendName).Image(*playground.Spec.BackendConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 				return fmt.Errorf("expected container image %s, got %s", backend.SwitchBackend(backendName).Image(*playground.Spec.BackendConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
@@ -90,9 +83,6 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 					}
 				}
 			}
-			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, playground.Spec.BackendConfig.Args); diff != "" {
-				return fmt.Errorf("unexpected args")
-			}
 			for _, arg := range playground.Spec.BackendConfig.Args {
 				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
 					return fmt.Errorf("didn't contain arg: %s", arg)
@@ -102,7 +92,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 				return fmt.Errorf("unexpected envs")
 			}
 		}
-		// TODO: validate backend config
+		// TODO: validate multiModelsClaims config
 
 		return nil
 

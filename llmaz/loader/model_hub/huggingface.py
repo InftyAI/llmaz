@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from huggingface_hub import hf_hub_download
-from pkg.loader.model_hub.model_hub import ModelHub, \
-    MODEL_CACHE_LOCAL_DIR, MODEL_LOCAL_DIR
+from huggingface_hub import hf_hub_download, list_repo_files
+
+from loader.model_hub.model_hub import ModelHub, MODEL_LOCAL_DIR
 
 
 HUGGING_FACE = "Huggingface"
@@ -28,12 +28,12 @@ class Huggingface(ModelHub):
         return HUGGING_FACE
 
     @classmethod
-    def load_model(cls, model_name: str) -> bool:
-        # TODO: try-catch error
-        try:
-            hf_hub_download(repo_id=model_name,
-                            local_dir=MODEL_LOCAL_DIR,
-                            cache_dir=MODEL_CACHE_LOCAL_DIR)
-            return True
-        except Exception:
-            return False
+    def load_model(cls, model_id: str) -> None:
+        # TODO: Should we verify the download is finished?
+        for file in list_repo_files(repo_id=model_id):
+            path = hf_hub_download(
+                repo_id=model_id,
+                filename=file,
+                local_dir=MODEL_LOCAL_DIR + model_id.replace("/", "--"),
+            )
+            print(f"file path is {path}")
