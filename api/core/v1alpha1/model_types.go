@@ -24,6 +24,8 @@ import (
 const (
 	ModelFamilyNameLabelKey = "llmaz.io/model-family-name"
 	ModelNameLabelKey       = "llmaz.io/model-name"
+	ModelHubLabelKey        = "llmaz.io/model-hub-name"
+	ModelIDLabelKey         = "llmaz.io/model-id"
 )
 
 // Add roles for operating leaderWorkerSet.
@@ -76,6 +78,7 @@ type Flavor struct {
 	// If using service, you can define the cpu/mem at the container resources.
 	// Note: if you define the same accelerator requests at playground/service as well,
 	// the requests here will be covered.
+	// +optional
 	Requests v1.ResourceList `json:"requests,omitempty"`
 	// NodeSelector defines the labels to filter specified nodes, like
 	// cloud-provider.com/accelerator: nvidia-a100.

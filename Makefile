@@ -66,6 +66,10 @@ IMG ?= $(IMAGE_REPO):$(GIT_TAG)
 BUILDER_IMAGE ?= golang:$(GO_VERSION)
 KIND_CLUSTER_NAME ?= kind
 
+LOADER_IMAGE_TAG ?= $(GIT_TAG)
+LOADER_IMAGE_REPO = inftyai/model-loader
+LOADER_IMG ?= $(LOADER_IMAGE_REPO):$(LOADER_IMAGE_TAG)
+
 ##@ Development
 
 .PHONY: manifests
@@ -100,9 +104,15 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+GOTESTSUM = $(shell pwd)/bin/gotestsum
+.PHONY: gotestsum
+gotestsum: ## Download gotestsum locally if necessary.
+	test -s $(LOCALBIN)/gotestsum || \
+	GOBIN=$(LOCALBIN) go install gotest.tools/gotestsum@v1.8.2
+
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
+test: manifests fmt vet envtest gotestsum ## Run tests.
+	$(GOTESTSUM) --junitfile $(ARTIFACTS)/junit.xml -- ./api/... ./pkg/... -coverprofile  $(ARTIFACTS)/cover.out
 
 .PHONY: test-integration
 test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
@@ -122,8 +132,12 @@ golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell dirname $(GOLANGCI_LINT)) $(GOLANGCI_LINT_VERSION) ;\
 	}
 
+.PHONY: pythonci-lint
+pythonci-lint:
+	poetry run black .
+
 .PHONY: lint
-lint: golangci-lint ## Run golangci-lint linter & yamllint
+lint: golangci-lint pythonci-lint
 	$(GOLANGCI_LINT) run
 
 .PHONY: lint-fix
@@ -169,6 +183,14 @@ image-build:
 .PHONY: image-push
 image-push: PUSH=--push
 image-push: image-build
+
+.PHONY: loader-image-build
+loader-image-build:
+	$(IMAGE_BUILD_CMD) -t $(LOADER_IMG) \
+		-f Dockerfile.loader \
+		$(PUSH) .
+loader-image-push: PUSH=--push
+loader-image-push: loader-image-build
 
 KIND = $(shell pwd)/bin/kind
 .PHONY: kind

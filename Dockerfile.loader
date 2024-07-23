@@ -1,4 +1,4 @@
-FROM python:3.9-alpine
+FROM python:3.10-alpine
 
 WORKDIR /workspace
 
@@ -16,7 +16,7 @@ RUN poetry config virtualenvs.create false
 COPY pyproject.toml poetry.lock .
 RUN poetry install --no-dev
 
-COPY pkg/loader/ loader/
+COPY llmaz/ llmaz/
+WORKDIR /workspace/llmaz
 
-# Two args will be accepted here.
-CMD ["python", "loader/loader.py"]
+CMD ["poetry", "run", "python", "main.py"]

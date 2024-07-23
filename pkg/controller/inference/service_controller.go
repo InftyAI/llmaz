@@ -19,21 +19,30 @@ package inference
 import (
 	"context"
 	"fmt"
+	"reflect"
 
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 	applyconfigurationv1 "sigs.k8s.io/lws/client-go/applyconfiguration/leaderworkerset/v1"
 
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	"inftyai.com/llmaz/pkg"
 	"inftyai.com/llmaz/pkg/util"
 )
 
@@ -67,8 +76,14 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, service); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+	model := &coreapi.Model{}
+	// TODO: multiModelsClaim
+	modelName := service.Spec.MultiModelsClaims[0].ModelNames[0]
+	if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+		return ctrl.Result{}, err
+	}
 
-	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service)
+	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, model)
 	if err := setControllerReferenceForLWS(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -97,14 +112,23 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&inferenceapi.Service{}).
+		Watches(&lws.LeaderWorkerSet{}, &handler.EnqueueRequestForObject{},
+			builder.WithPredicates(predicate.Funcs{
+				UpdateFunc: func(e event.UpdateEvent) bool {
+					oldBar := e.ObjectOld.(*lws.LeaderWorkerSet)
+					newBar := e.ObjectNew.(*lws.LeaderWorkerSet)
+					return !reflect.DeepEqual(oldBar.Status, newBar.Status)
+				},
+			})).
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *coreapi.Model) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
 	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate)
+	injectModelRequirements(leaderWorkerTemplate, model)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
@@ -112,6 +136,78 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service) *applyconfig
 
 	workload.WithSpec(spec)
 	return workload
+}
+
+func injectModelRequirements(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+	template.WorkerTemplate.Labels = modelLabels(model)
+	template.WorkerTemplate.Annotations = modelAnnotations(model)
+	injectModelLoader(template)
+	injectModelFlavor(template, model)
+}
+
+func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration) {
+	template.WorkerTemplate.Spec.InitContainers = []corev1.Container{
+		{
+			Name:  pkg.MODEL_LOADER_CONTAINER_NAME,
+			Image: pkg.LOADER_IMAGE,
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      pkg.MODEL_CACHE_VOLUME_NAME,
+					MountPath: pkg.CONTAINER_MODEL_PATH,
+				},
+			},
+		},
+	}
+
+	if template.WorkerTemplate.Annotations != nil && template.WorkerTemplate.Annotations[coreapi.ModelHubLabelKey] != "" {
+		template.WorkerTemplate.Spec.InitContainers[0].Env = append(
+			template.WorkerTemplate.Spec.InitContainers[0].Env,
+			corev1.EnvVar{Name: "MODEL_ID", Value: template.WorkerTemplate.Annotations[coreapi.ModelIDLabelKey]},
+			corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: template.WorkerTemplate.Annotations[coreapi.ModelHubLabelKey]},
+		)
+	}
+}
+
+func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+	if len(model.Spec.InferenceFlavors) == 0 {
+		return
+	}
+
+	// Let's handle the 0-index flavor for the model first.
+	// TODO: fungibility support.
+	requests := model.Spec.InferenceFlavors[0].Requests
+	for k, v := range requests {
+		if template.WorkerTemplate.Spec.Containers[0].Resources.Requests == nil {
+			template.WorkerTemplate.Spec.Containers[0].Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
+		}
+		template.WorkerTemplate.Spec.Containers[0].Resources.Requests[k] = v
+
+		if template.WorkerTemplate.Spec.Containers[0].Resources.Limits == nil {
+			template.WorkerTemplate.Spec.Containers[0].Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
+		}
+		template.WorkerTemplate.Spec.Containers[0].Resources.Limits[k] = v
+	}
+
+	nodeSelector := model.Spec.InferenceFlavors[0].NodeSelector
+	if len(nodeSelector) > 0 {
+		template.WorkerTemplate.Spec.Affinity = &corev1.Affinity{
+			NodeAffinity: &corev1.NodeAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{},
+			},
+		}
+
+		term := corev1.NodeSelectorTerm{}
+		for k, v := range nodeSelector {
+			term.MatchExpressions = append(term.MatchExpressions,
+				corev1.NodeSelectorRequirement{
+					Key:      k,
+					Values:   []string{v},
+					Operator: corev1.NodeSelectorOpIn,
+				})
+		}
+		template.WorkerTemplate.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms = []corev1.NodeSelectorTerm{term}
+	}
+
 }
 
 func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWorkerSet) {
@@ -164,5 +260,22 @@ func setControllerReferenceForLWS(owner metav1.Object, lws *applyconfigurationv1
 		WithUID(owner.GetUID()).
 		WithBlockOwnerDeletion(true).
 		WithController(true))
+	return nil
+}
+
+func modelLabels(model *coreapi.Model) map[string]string {
+	return map[string]string{
+		coreapi.ModelNameLabelKey:       string(model.Name),
+		coreapi.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),
+	}
+}
+
+func modelAnnotations(model *coreapi.Model) map[string]string {
+	if model.Spec.DataSource.ModelID != nil {
+		return map[string]string{
+			coreapi.ModelIDLabelKey:  string(*model.Spec.DataSource.ModelID),
+			coreapi.ModelHubLabelKey: string(*model.Spec.DataSource.ModelHub),
+		}
+	}
 	return nil
 }

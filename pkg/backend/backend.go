@@ -20,11 +20,6 @@ import (
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 )
 
-const (
-	DEFAULT_MODEL_PATH = "/workspace/models/"
-	DEFAULT_PORT       = "8080"
-)
-
 // Backend represents the inference engine, such as vllm.
 type Backend interface {
 	// Name returns the inference backend name in this project.
