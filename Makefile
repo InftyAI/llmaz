@@ -267,3 +267,13 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
+
+##@Release
+
+.PHONY: artifacts
+artifacts: kustomize
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	if [ -d artifacts ]; then rm -rf artifacts; fi
+	mkdir -p artifacts
+	$(KUSTOMIZE) build config/default -o artifacts/manifests.yaml
+	@$(call clean-manifests)
