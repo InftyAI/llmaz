@@ -7,7 +7,7 @@
 [GoReport Widget]: https://goreportcard.com/badge/github.com/inftyai/llmaz
 [GoReport Status]: https://goreportcard.com/report/github.com/inftyai/llmaz
 
-**llmaz** (pronounced `/lima:z/`), aims to provide a **Production-Ready** inference platform for large language models on **Kubernetes**. It closely integrates with state-of-the-art inference backends like [vLLM](https://github.com/vllm-project/vllm) to bring the cutting-edge researches to cloud.
+**llmaz** (pronounced `/lima:z/`), aims to provide a **Production-Ready** inference platform for large language models on Kubernetes. It closely integrates with state-of-the-art inference backends like [vLLM](https://github.com/vllm-project/vllm) to bring the cutting-edge researches to cloud.
 
 ## Concept
 
@@ -17,9 +17,10 @@
 
 - **User Friendly**: People can quick deploy a LLM service with minimal configurations.
 - **High Performance**: llmaz integrates with vLLM by default for high performance inference. Other backends support is on the way.
-- **Scaling Efficiency**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
-- **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
-- **SOTA Inference**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) and [Splitwise](https://arxiv.org/abs/2311.18677) to run in Kubernetes.
+- **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
+- **Accelerator Fungibility (WIP)**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
+- **SOTA Inference (WIP)**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677) to run on Kubernetes.
+- **Multi-host Support**: llmaz supports both single-host and multi-hosts scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 1.
 
 ## Quick Start
 

@@ -36,8 +36,10 @@ type ServiceSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
 	// WorkloadTemplate defines the underlying workload layout and configuration.
-	// Note: the LWS spec might be twisted to support different technologies
-	// like splitwise and accelerator fungibility and several LWSs will be created.
+	// Note: the LWS spec might be twisted with various LWS instances to support
+	// accelerator fungibility or other cutting-edge researches.
+	// LWS supports both single-host and multi-host scenarios, for single host
+	// cases, only need to care about replicas, rolloutStrategy and workerTemplate.
 	WorkloadTemplate lws.LeaderWorkerSetSpec `json:"workloadTemplate"`
 	// ElasticConfig defines the configuration for elastic usage,
 	// e.g. the max/min replicas. Default to 0 ~ Inf+.
