@@ -26,3 +26,5 @@ Dockerfile.cross
 *~
 .DS_Store
 artifacts
+cache
+temp
