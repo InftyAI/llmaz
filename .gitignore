@@ -1,4 +1,3 @@
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -28,3 +27,6 @@ Dockerfile.cross
 artifacts
 cache
 temp
+
+# Added by cargo
+/target

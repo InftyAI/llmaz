@@ -1,22 +1,26 @@
-FROM python:3.10-alpine
+FROM rust:1.80-alpine3.19 as builder
+ARG TARGETARCH
+
+# Set the working directory inside the container
+WORKDIR /workspace/app
+
+RUN apk add --no-cache musl-dev pkgconfig openssl-dev build-base
+
+# Copy the local source code to the working directory
+COPY Cargo.toml Cargo.lock .
+COPY ./src ./src
+
+# Build the application
+RUN rustup target add ${TARGETARCH}
+RUN cargo build --release --target ${TARGETARCH}
+
+
+FROM alpine:3.19 as release
+ARG TARGETARCH
 
 WORKDIR /workspace
+COPY --from=builder /workspace/app/target/${TARGETARCH}/release/llmaz .
+USER 65532:65532
 
-RUN apk add --no-cache \
-    build-base \
-    libffi-dev \
-    openssl-dev \
-    py3-pip \
-    bash \
-    git
-
-RUN pip install --no-cache-dir poetry
-
-RUN poetry config virtualenvs.create false
-COPY pyproject.toml poetry.lock .
-RUN poetry install --no-dev
-
-COPY llmaz/ llmaz/
-WORKDIR /workspace/llmaz
-
-CMD ["poetry", "run", "python", "main.py"]
+# Run the executable
+ENTRYPOINT ["/workspace/llmaz"]

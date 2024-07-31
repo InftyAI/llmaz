@@ -131,6 +131,8 @@ type MultiModelsClaim struct {
 }
 
 // ModelSpec defines the desired state of Model
+// TODO: support different versions for the same model, right now, people can
+// create multiple models.
 type ModelSpec struct {
 	// FamilyName represents the model type, like llama2, which will be auto injected
 	// to the labels with the key of `llmaz.io/model-family-name`.

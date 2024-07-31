@@ -180,11 +180,12 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 		version = *playground.Spec.BackendConfig.Version
 	}
 
-	// TODO:: add unit tests
 	modelID, trimmedModelName := modelIdentifiers(model)
+	// See llmaz/src/model_hub.rs#download_model.
+	model_path := pkg.CONTAINER_MODEL_PATH + trimmedModelName + "/indices/main"
 	// TODO: should we also support secret here?
 	args := []string{
-		"--model", pkg.CONTAINER_MODEL_PATH + trimmedModelName,
+		"--model", model_path,
 		"--served-model-name", modelID,
 		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
 	}
@@ -227,8 +228,9 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 					Env:       envs,
 					Ports: []corev1.ContainerPort{
 						{
-							Name:          "http",
-							Protocol:      corev1.ProtocolTCP,
+							Name:     "http",
+							Protocol: corev1.ProtocolTCP,
+							// TODO: should we make it configurable for different backend?
 							ContainerPort: pkg.DEFAULT_BACKEND_PORT,
 						},
 					},
@@ -328,8 +330,8 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 func modelIdentifiers(model *coreapi.Model) (modelID string, trimmedModelName string) {
 	if model.Spec.DataSource.ModelID != nil {
 		// This model name should be aligned with model loader.
-		modelNames := strings.ReplaceAll(*model.Spec.DataSource.ModelID, "/", "--")
-		return *model.Spec.DataSource.ModelID, strings.ToLower(modelNames)
+		modelNames := "models--" + strings.ReplaceAll(*model.Spec.DataSource.ModelID, "/", "--")
+		return *model.Spec.DataSource.ModelID, modelNames
 	}
 	// TODO: handle other data source.
 	return "", ""

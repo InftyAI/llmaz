@@ -1,0 +1,13 @@
+[package]
+name = "llmaz"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+env_logger = "0.11.5"
+hf-hub = { version = "0.3.2", features = ["tokio"] }
+log = "0.4.22"
+thiserror = "1.0.63"
+threadpool = "1.8.1"
