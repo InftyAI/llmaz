@@ -18,7 +18,9 @@ import os
 import logging
 from datetime import datetime
 
+
 from loader.model_hub.hub_factory import HubFactory
+from loader.model_hub.huggingface import HUGGING_FACE
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,16 +34,16 @@ def get_env_variable(var_name):
     if it does not exist.
     """
     try:
-        return os.environ[var_name]
+        return os.getenv(var_name, HUGGING_FACE)
     except KeyError:
         raise EnvironmentError(f"Environment variable '{var_name}' not found.")
 
 
 if __name__ == "__main__":
-    start_time = datetime.now()
     hub_name = get_env_variable("MODEL_HUB_NAME")
     model_id = get_env_variable("MODEL_ID")
     hub = HubFactory.new(hub_name)
-    hub.load_model(model_id)
 
+    start_time = datetime.now()
+    hub.load_model(model_id)
     logger.info(f"loading models takes {datetime.now() - start_time}s")

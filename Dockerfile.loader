@@ -7,8 +7,7 @@ RUN apk add --no-cache \
     libffi-dev \
     openssl-dev \
     py3-pip \
-    bash \
-    git
+    bash
 
 RUN pip install --no-cache-dir poetry
 

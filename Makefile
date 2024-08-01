@@ -188,9 +188,14 @@ image-push: image-build
 loader-image-build:
 	$(IMAGE_BUILD_CMD) -t $(LOADER_IMG) \
 		-f Dockerfile.loader \
-		$(PUSH) .
+		$(PUSH) \
+		$(LOAD) \
+		$(IMAGE_BUILD_EXTRA_OPTS) ./
 loader-image-push: PUSH=--push
 loader-image-push: loader-image-build
+
+loader-image-load: LOAD=--load
+loader-image-load: loader-image-build
 
 KIND = $(shell pwd)/bin/kind
 .PHONY: kind

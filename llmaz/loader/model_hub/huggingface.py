@@ -14,12 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import concurrent.futures
+from json import load
+import os
+from fileinput import filename
+from threading import local
+
 from huggingface_hub import hf_hub_download, list_repo_files
 
 from loader.model_hub.model_hub import ModelHub, MODEL_LOCAL_DIR
 
 
 HUGGING_FACE = "Huggingface"
+MAX_WORKERS = 4
 
 
 class Huggingface(ModelHub):
@@ -29,11 +36,25 @@ class Huggingface(ModelHub):
 
     @classmethod
     def load_model(cls, model_id: str) -> None:
-        # TODO: Should we verify the download is finished?
-        for file in list_repo_files(repo_id=model_id):
-            path = hf_hub_download(
-                repo_id=model_id,
-                filename=file,
-                local_dir=MODEL_LOCAL_DIR + model_id.replace("/", "--"),
-            )
-            print(f"file path is {path}")
+        print(f"Start to download model {model_id}")
+        # # TODO: Should we verify the download is finished?
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            futures = []
+            for file in list_repo_files(repo_id=model_id):
+                # TODO: support version management, right now we didn't distinguish with them.
+                local_dir = os.path.join(
+                    MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+                )
+                futures.append(
+                    executor.submit(
+                        hf_hub_download,
+                        repo_id=model_id,
+                        filename=file,
+                        local_dir=local_dir,
+                    ).add_done_callback(handle_completion)
+                )
+
+
+def handle_completion(future):
+    filename = future.result()
+    print(f"Download completed for {filename}")

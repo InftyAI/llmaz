@@ -17,7 +17,7 @@ limitations under the License.
 package pkg
 
 const (
-	LOADER_IMAGE = "inftyai/model-loader:v0.0.1"
+	LOADER_IMAGE = "inftyai/model-loader:v0.0.2"
 
 	HOST_MODEL_PATH             = "/cache/models/"
 	CONTAINER_MODEL_PATH        = "/workspace/models/"
