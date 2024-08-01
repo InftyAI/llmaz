@@ -328,8 +328,8 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 func modelIdentifiers(model *coreapi.Model) (modelID string, trimmedModelName string) {
 	if model.Spec.DataSource.ModelID != nil {
 		// This model name should be aligned with model loader.
-		modelNames := strings.ReplaceAll(*model.Spec.DataSource.ModelID, "/", "--")
-		return *model.Spec.DataSource.ModelID, strings.ToLower(modelNames)
+		modelNames := "models--" + strings.ReplaceAll(*model.Spec.DataSource.ModelID, "/", "--")
+		return *model.Spec.DataSource.ModelID, modelNames
 	}
 	// TODO: handle other data source.
 	return "", ""
