@@ -32,16 +32,16 @@ func TestModelIdentifiers(t *testing.T) {
 		wantModelName string
 	}{
 		{
-			name:          "meta-llama/meta-llama-3-8b",
+			name:          "meta-llama/Meta-Llama-3-8B",
 			model:         util.MockASampleModel(),
-			wantModelID:   "meta-llama/meta-llama-3-8b",
-			wantModelName: "meta-llama--meta-llama-3-8b",
+			wantModelID:   "meta-llama/Meta-Llama-3-8B",
+			wantModelName: "models--meta-llama--Meta-Llama-3-8B",
 		},
 		{
-			name:          "meta-llama/meta-llama-3-8b/test",
-			model:         wrapper.MakeModel("test").FamilyName("llama3").DataSourceWithModelID("meta-llama/meta-llama-3-8b/test").Obj(),
-			wantModelID:   "meta-llama/meta-llama-3-8b/test",
-			wantModelName: "meta-llama--meta-llama-3-8b--test",
+			name:          "meta-llama/Meta-Llama-3-8B/test",
+			model:         wrapper.MakeModel("test").FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B/test").Obj(),
+			wantModelID:   "meta-llama/Meta-Llama-3-8B/test",
+			wantModelName: "models--meta-llama--Meta-Llama-3-8B--test",
 		},
 	}
 

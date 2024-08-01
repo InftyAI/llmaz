@@ -28,6 +28,18 @@ const (
 	ModelIDLabelKey         = "llmaz.io/model-id"
 )
 
+// ModelHub represents the model registry for model downloads.
+type ModelHub struct {
+	// Name refers to the model registry, such as huggingface.
+	// +kubebuilder:default=Huggingface
+	// +kubebuilder:validation:Enum={Huggingface,ModelScope}
+	// +optional
+	Name *string `json:"modelHub,omitempty"`
+	// ModelID refers to the model identifier on model hub,
+	// such as meta-llama/Meta-Llama-3-8B.
+	ModelID string `json:"modelID,omitempty"`
+}
+
 // Add roles for operating leaderWorkerSet.
 //
 // +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
@@ -36,15 +48,8 @@ const (
 // DataSource represents where to load the model.
 // Only one data source will be used.
 type DataSource struct {
-	// ModelID refers to the model identifier on model hub,
-	// such as meta-llama/Meta-Llama-3-8B.
-	ModelID *string `json:"modelID,omitempty"`
-	// ModelHub refers to the model registry, such as huggingface.
-	// +kubebuilder:default=Huggingface
-	// +kubebuilder:validation:Enum={Huggingface,ModelScope}
-	// +optional
-	ModelHub *string `json:"modelHub,omitempty"`
-
+	// ModelHub represents the model registry for model downloads.
+	ModelHub *ModelHub `json:"modelHub,omitempty"`
 	// TODO: support all these sources.
 	// // URL represents the URL link than contains the data sources.
 	// // +optional

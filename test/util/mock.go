@@ -26,7 +26,7 @@ const (
 )
 
 func MockASampleModel() *api.Model {
-	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").DataSourceWithModelID("meta-llama/meta-llama-3-8b").Obj()
+	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
 }
 
 func MockASamplePlayground(ns string) *inferenceapi.Playground {

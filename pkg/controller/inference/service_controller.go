@@ -271,10 +271,10 @@ func modelLabels(model *coreapi.Model) map[string]string {
 }
 
 func modelAnnotations(model *coreapi.Model) map[string]string {
-	if model.Spec.DataSource.ModelID != nil {
+	if model.Spec.DataSource.ModelHub != nil {
 		return map[string]string{
-			coreapi.ModelIDLabelKey:  string(*model.Spec.DataSource.ModelID),
-			coreapi.ModelHubLabelKey: string(*model.Spec.DataSource.ModelHub),
+			coreapi.ModelIDLabelKey:  string(model.Spec.DataSource.ModelHub.ModelID),
+			coreapi.ModelHubLabelKey: string(*model.Spec.DataSource.ModelHub.Name),
 		}
 	}
 	return nil
