@@ -49,14 +49,20 @@ func (w *ModelWrapper) FamilyName(name string) *ModelWrapper {
 
 func (w *ModelWrapper) DataSourceWithModelID(modelID string) *ModelWrapper {
 	if modelID != "" {
-		w.Spec.DataSource.ModelID = &modelID
+		if w.Spec.DataSource.ModelHub == nil {
+			w.Spec.DataSource.ModelHub = &core.ModelHub{}
+		}
+		w.Spec.DataSource.ModelHub.ModelID = modelID
 	}
 	return w
 }
 
 func (w *ModelWrapper) DataSourceWithModelHub(modelHub string) *ModelWrapper {
 	if modelHub != "" {
-		w.Spec.DataSource.ModelHub = &modelHub
+		if w.Spec.DataSource.ModelHub == nil {
+			w.Spec.DataSource.ModelHub = &core.ModelHub{}
+		}
+		w.Spec.DataSource.ModelHub.Name = &modelHub
 	}
 	return w
 }

@@ -50,14 +50,14 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &inferencev1alpha1.ServiceStatusApplyConfiguration{}
 
 		// Group=llmaz.io, Version=v1alpha1
-	case corev1alpha1.SchemeGroupVersion.WithKind("DataSource"):
-		return &applyconfigurationcorev1alpha1.DataSourceApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("Flavor"):
 		return &applyconfigurationcorev1alpha1.FlavorApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("Model"):
 		return &applyconfigurationcorev1alpha1.ModelApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelClaim"):
 		return &applyconfigurationcorev1alpha1.ModelClaimApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("ModelHub"):
+		return &applyconfigurationcorev1alpha1.ModelHubApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSpec"):
 		return &applyconfigurationcorev1alpha1.ModelSpecApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelStatus"):
