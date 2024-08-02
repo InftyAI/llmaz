@@ -17,14 +17,14 @@ limitations under the License.
 
 package v1alpha1
 
-// DataSourceApplyConfiguration represents an declarative configuration of the DataSource type for use
+// DataSourceApplyConfiguration represents a declarative configuration of the DataSource type for use
 // with apply.
 type DataSourceApplyConfiguration struct {
 	ModelHub *ModelHubApplyConfiguration `json:"modelHub,omitempty"`
 	URI      *string                     `json:"uri,omitempty"`
 }
 
-// DataSourceApplyConfiguration constructs an declarative configuration of the DataSource type for use with
+// DataSourceApplyConfiguration constructs a declarative configuration of the DataSource type for use with
 // apply.
 func DataSource() *DataSourceApplyConfiguration {
 	return &DataSourceApplyConfiguration{}

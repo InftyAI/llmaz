@@ -21,7 +21,7 @@ import (
 	v1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
-// MultiModelsClaimApplyConfiguration represents an declarative configuration of the MultiModelsClaim type for use
+// MultiModelsClaimApplyConfiguration represents a declarative configuration of the MultiModelsClaim type for use
 // with apply.
 type MultiModelsClaimApplyConfiguration struct {
 	ModelNames       []v1alpha1.ModelName  `json:"modelNames,omitempty"`
@@ -29,7 +29,7 @@ type MultiModelsClaimApplyConfiguration struct {
 	Rate             *int32                `json:"rate,omitempty"`
 }
 
-// MultiModelsClaimApplyConfiguration constructs an declarative configuration of the MultiModelsClaim type for use with
+// MultiModelsClaimApplyConfiguration constructs a declarative configuration of the MultiModelsClaim type for use with
 // apply.
 func MultiModelsClaim() *MultiModelsClaimApplyConfiguration {
 	return &MultiModelsClaimApplyConfiguration{}

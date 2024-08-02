@@ -19,8 +19,8 @@ package v1alpha1
 
 import (
 	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -37,25 +37,17 @@ type PlaygroundLister interface {
 
 // playgroundLister implements the PlaygroundLister interface.
 type playgroundLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.Playground]
 }
 
 // NewPlaygroundLister returns a new PlaygroundLister.
 func NewPlaygroundLister(indexer cache.Indexer) PlaygroundLister {
-	return &playgroundLister{indexer: indexer}
-}
-
-// List lists all Playgrounds in the indexer.
-func (s *playgroundLister) List(selector labels.Selector) (ret []*v1alpha1.Playground, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.Playground))
-	})
-	return ret, err
+	return &playgroundLister{listers.New[*v1alpha1.Playground](indexer, v1alpha1.Resource("playground"))}
 }
 
 // Playgrounds returns an object that can list and get Playgrounds.
 func (s *playgroundLister) Playgrounds(namespace string) PlaygroundNamespaceLister {
-	return playgroundNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return playgroundNamespaceLister{listers.NewNamespaced[*v1alpha1.Playground](s.ResourceIndexer, namespace)}
 }
 
 // PlaygroundNamespaceLister helps list and get Playgrounds.
@@ -73,26 +65,5 @@ type PlaygroundNamespaceLister interface {
 // playgroundNamespaceLister implements the PlaygroundNamespaceLister
 // interface.
 type playgroundNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all Playgrounds in the indexer for a given namespace.
-func (s playgroundNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.Playground, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.Playground))
-	})
-	return ret, err
-}
-
-// Get retrieves the Playground from the indexer for a given namespace and name.
-func (s playgroundNamespaceLister) Get(name string) (*v1alpha1.Playground, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("playground"), name)
-	}
-	return obj.(*v1alpha1.Playground), nil
+	listers.ResourceIndexer[*v1alpha1.Playground]
 }

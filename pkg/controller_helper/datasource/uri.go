@@ -19,6 +19,7 @@ package datasource
 import (
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/pkg"
+	"inftyai.com/llmaz/pkg/util"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -53,15 +54,15 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 	}
 
 	// We'll validate the format in the webhook, go generally no error should happen here.
-	// _, url, _ := util.ParseURI(*p.model.Spec.DataSource.URI)
+	_, url, _ := util.ParseURI(*p.model.Spec.DataSource.URI)
 
 	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-		Name:         pkg.MODEL_VOLUME_NAME,
+		Name: pkg.MODEL_VOLUME_NAME,
 		VolumeSource: corev1.VolumeSource{
-			// Image: &corev1.ImageVolumeSource{
-			// 	Reference:  url,
-			// 	PullPolicy: corev1.PullIfNotPresent,
-			// },
+			Image: &corev1.ImageVolumeSource{
+				Reference:  url,
+				PullPolicy: corev1.PullIfNotPresent,
+			},
 		},
 	})
 }

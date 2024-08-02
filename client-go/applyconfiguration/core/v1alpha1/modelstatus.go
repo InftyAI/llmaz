@@ -18,16 +18,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ModelStatusApplyConfiguration represents an declarative configuration of the ModelStatus type for use
+// ModelStatusApplyConfiguration represents a declarative configuration of the ModelStatus type for use
 // with apply.
 type ModelStatusApplyConfiguration struct {
-	Conditions []v1.Condition `json:"conditions,omitempty"`
+	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// ModelStatusApplyConfiguration constructs an declarative configuration of the ModelStatus type for use with
+// ModelStatusApplyConfiguration constructs a declarative configuration of the ModelStatus type for use with
 // apply.
 func ModelStatus() *ModelStatusApplyConfiguration {
 	return &ModelStatusApplyConfiguration{}
@@ -36,9 +36,12 @@ func ModelStatus() *ModelStatusApplyConfiguration {
 // WithConditions adds the given value to the Conditions field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Conditions field.
-func (b *ModelStatusApplyConfiguration) WithConditions(values ...v1.Condition) *ModelStatusApplyConfiguration {
+func (b *ModelStatusApplyConfiguration) WithConditions(values ...*v1.ConditionApplyConfiguration) *ModelStatusApplyConfiguration {
 	for i := range values {
-		b.Conditions = append(b.Conditions, values[i])
+		if values[i] == nil {
+			panic("nil value passed to WithConditions")
+		}
+		b.Conditions = append(b.Conditions, *values[i])
 	}
 	return b
 }

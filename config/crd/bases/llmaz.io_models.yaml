@@ -106,12 +106,7 @@ spec:
                         instance-type: p4d.24xlarge for AWS.
                       type: object
                     requests:
-                      additionalProperties:
-                        anyOf:
-                        - type: integer
-                        - type: string
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                        x-kubernetes-int-or-string: true
+                      $ref: '#/definitions/k8s.io~1api~1core~1v1~0ResourceList'
                       description: |-
                         Requests defines the required accelerators to serve the model, like nvidia.com/gpu: 8.
                         When GPU number is greater than 8, like 32, then multi-host inference is enabled and
@@ -122,7 +117,6 @@ spec:
                         If using service, you can define the cpu/mem at the container resources.
                         Note: if you define the same accelerator requests at playground/service as well,
                         the requests here will be covered.
-                      type: object
                   required:
                   - name
                   type: object

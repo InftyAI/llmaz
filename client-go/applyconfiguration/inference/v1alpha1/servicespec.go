@@ -22,7 +22,7 @@ import (
 	v1 "sigs.k8s.io/lws/api/leaderworkerset/v1"
 )
 
-// ServiceSpecApplyConfiguration represents an declarative configuration of the ServiceSpec type for use
+// ServiceSpecApplyConfiguration represents a declarative configuration of the ServiceSpec type for use
 // with apply.
 type ServiceSpecApplyConfiguration struct {
 	MultiModelsClaims []v1alpha1.MultiModelsClaimApplyConfiguration `json:"multiModelsClaims,omitempty"`
@@ -30,7 +30,7 @@ type ServiceSpecApplyConfiguration struct {
 	ElasticConfig     *ElasticConfigApplyConfiguration              `json:"elasticConfig,omitempty"`
 }
 
-// ServiceSpecApplyConfiguration constructs an declarative configuration of the ServiceSpec type for use with
+// ServiceSpecApplyConfiguration constructs a declarative configuration of the ServiceSpec type for use with
 // apply.
 func ServiceSpec() *ServiceSpecApplyConfiguration {
 	return &ServiceSpecApplyConfiguration{}

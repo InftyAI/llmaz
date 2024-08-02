@@ -22,7 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// FlavorApplyConfiguration represents an declarative configuration of the Flavor type for use
+// FlavorApplyConfiguration represents a declarative configuration of the Flavor type for use
 // with apply.
 type FlavorApplyConfiguration struct {
 	Name         *v1alpha1.FlavorName `json:"name,omitempty"`
@@ -31,7 +31,7 @@ type FlavorApplyConfiguration struct {
 	Params       map[string]string    `json:"params,omitempty"`
 }
 
-// FlavorApplyConfiguration constructs an declarative configuration of the Flavor type for use with
+// FlavorApplyConfiguration constructs a declarative configuration of the Flavor type for use with
 // apply.
 func Flavor() *FlavorApplyConfiguration {
 	return &FlavorApplyConfiguration{}

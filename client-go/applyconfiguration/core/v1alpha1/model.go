@@ -23,7 +23,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ModelApplyConfiguration represents an declarative configuration of the Model type for use
+// ModelApplyConfiguration represents a declarative configuration of the Model type for use
 // with apply.
 type ModelApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
@@ -32,7 +32,7 @@ type ModelApplyConfiguration struct {
 	Status                           *ModelStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// Model constructs an declarative configuration of the Model type for use with
+// Model constructs a declarative configuration of the Model type for use with
 // apply.
 func Model(name, namespace string) *ModelApplyConfiguration {
 	b := &ModelApplyConfiguration{}
@@ -215,4 +215,10 @@ func (b *ModelApplyConfiguration) WithSpec(value *ModelSpecApplyConfiguration) *
 func (b *ModelApplyConfiguration) WithStatus(value *ModelStatusApplyConfiguration) *ModelApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *ModelApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.Name
 }
