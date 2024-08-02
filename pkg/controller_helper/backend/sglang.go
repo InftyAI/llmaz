@@ -28,27 +28,27 @@ import (
 	datasource "inftyai.com/llmaz/pkg/controller_helper/datasource"
 )
 
-var _ Backend = (*VLLM)(nil)
+var _ Backend = (*SGLANG)(nil)
 
-type VLLM struct{}
+type SGLANG struct{}
 
 const (
-	vllm_image_registry = "vllm/vllm-openai"
+	sglang_image_registry = "lmsysorg/sglang"
 )
 
-func (v *VLLM) Name() inferenceapi.BackendName {
-	return inferenceapi.VLLM
+func (s *SGLANG) Name() inferenceapi.BackendName {
+	return inferenceapi.SGLANG
 }
 
-func (v *VLLM) Image(version string) string {
-	return vllm_image_registry + ":" + version
+func (s *SGLANG) Image(version string) string {
+	return sglang_image_registry + ":" + version
 }
 
-func (v *VLLM) DefaultVersion() string {
-	return "v0.5.1"
+func (s *SGLANG) DefaultVersion() string {
+	return "v0.2.9-cu121"
 }
 
-func (v *VLLM) DefaultResources() inferenceapi.ResourceRequirements {
+func (s *SGLANG) DefaultResources() inferenceapi.ResourceRequirements {
 	return inferenceapi.ResourceRequirements{
 		Limits: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("4"),
@@ -61,14 +61,14 @@ func (v *VLLM) DefaultResources() inferenceapi.ResourceRequirements {
 	}
 }
 
-func (v *VLLM) DefaultCommands() []string {
-	return []string{"python3", "-m", "vllm.entrypoints.openai.api_server"}
+func (s *SGLANG) DefaultCommands() []string {
+	return []string{"python3", "-m", "sglang.launch_server"}
 }
 
-func (v *VLLM) DefaultArgs(model *coreapi.Model) []string {
+func (s *SGLANG) DefaultArgs(model *coreapi.Model) []string {
 	dataSource := datasource.NewDataSourceProvider(model)
 	return []string{
-		"--model", dataSource.ModelPath(),
+		"--model-path", dataSource.ModelPath(),
 		"--served-model-name", dataSource.ModelName(),
 		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
 	}

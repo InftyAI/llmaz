@@ -42,6 +42,8 @@ func SwitchBackend(name inferenceapi.BackendName) Backend {
 	switch name {
 	case inferenceapi.VLLM:
 		return &VLLM{}
+	case inferenceapi.SGLANG:
+		return &SGLANG{}
 	default:
 		// We should not reach here because apiserver already did validation.
 		return nil
