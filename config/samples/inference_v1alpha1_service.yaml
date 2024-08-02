@@ -16,14 +16,4 @@ spec:
     replicas: 1
     leaderWorkerTemplate:
       workerTemplate:
-        spec:
-          containers:
-          - name: nginx
-            image: nginx:1.14.2
-            resources:
-              limits:
-                cpu: "100m"
-              requests:
-                cpu: "50m"
-            ports:
-            - containerPort: 8080
+      # ... usually playground is all your need.

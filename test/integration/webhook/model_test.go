@@ -52,10 +52,10 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
 			model: func() *core.Model {
-				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/meta-llama-3-8b").FamilyName("llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").FamilyName("llama3").Obj()
 			},
 			wantModel: func() *core.Model {
-				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/meta-llama-3-8b").DataSourceWithModelHub("Huggingface").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").DataSourceWithModelHub("Huggingface").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 	)
@@ -75,7 +75,13 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("normal model creation", &testValidatingCase{
 			model: func() *core.Model {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelID("meta-llama/meta-llama-3-8b").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("model creation with URI configured", &testValidatingCase{
+			model: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithURI("image://meta-llama-3-8B").Obj()
 			},
 			failed: false,
 		}),

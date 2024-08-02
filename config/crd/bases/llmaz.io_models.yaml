@@ -61,6 +61,12 @@ spec:
                           such as meta-llama/Meta-Llama-3-8B.
                         type: string
                     type: object
+                  uri:
+                    description: |-
+                      URI represents a various kinds of model sources following the protocol of <type>://<address>,
+                      e.g. oci://<model address>. A wide range of source types are supported, such as s3, gcs
+                      docker images, oci artifacts and more.
+                    type: string
                 type: object
               familyName:
                 description: |-

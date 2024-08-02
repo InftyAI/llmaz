@@ -42,7 +42,7 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
+	"inftyai.com/llmaz/pkg/controller_helper/datasource"
 	"inftyai.com/llmaz/pkg/util"
 )
 
@@ -128,7 +128,9 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
 	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate)
-	injectModelRequirements(leaderWorkerTemplate, model)
+
+	// The core logic injected via the playground.
+	injectModelProperties(leaderWorkerTemplate, model)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
@@ -138,34 +140,16 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 	return workload
 }
 
-func injectModelRequirements(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
-	template.WorkerTemplate.Labels = modelLabels(model)
-	template.WorkerTemplate.Annotations = modelAnnotations(model)
-	injectModelLoader(template)
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(model))
+
+	injectModelLoader(template, model)
 	injectModelFlavor(template, model)
 }
 
-func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration) {
-	template.WorkerTemplate.Spec.InitContainers = []corev1.Container{
-		{
-			Name:  pkg.MODEL_LOADER_CONTAINER_NAME,
-			Image: pkg.LOADER_IMAGE,
-			VolumeMounts: []corev1.VolumeMount{
-				{
-					Name:      pkg.MODEL_CACHE_VOLUME_NAME,
-					MountPath: pkg.CONTAINER_MODEL_PATH,
-				},
-			},
-		},
-	}
-
-	if template.WorkerTemplate.Annotations != nil && template.WorkerTemplate.Annotations[coreapi.ModelHubLabelKey] != "" {
-		template.WorkerTemplate.Spec.InitContainers[0].Env = append(
-			template.WorkerTemplate.Spec.InitContainers[0].Env,
-			corev1.EnvVar{Name: "MODEL_ID", Value: template.WorkerTemplate.Annotations[coreapi.ModelIDLabelKey]},
-			corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: template.WorkerTemplate.Annotations[coreapi.ModelHubLabelKey]},
-		)
-	}
+func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+	dataSource := datasource.NewDataSourceProvider(model)
+	dataSource.InjectModelLoader(template.WorkerTemplate)
 }
 
 func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
@@ -208,6 +192,13 @@ func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 		template.WorkerTemplate.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms = []corev1.NodeSelectorTerm{term}
 	}
 
+}
+
+func modelLabels(model *coreapi.Model) map[string]string {
+	return map[string]string{
+		coreapi.ModelNameLabelKey:       string(model.Name),
+		coreapi.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),
+	}
 }
 
 func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWorkerSet) {
@@ -260,22 +251,5 @@ func setControllerReferenceForLWS(owner metav1.Object, lws *applyconfigurationv1
 		WithUID(owner.GetUID()).
 		WithBlockOwnerDeletion(true).
 		WithController(true))
-	return nil
-}
-
-func modelLabels(model *coreapi.Model) map[string]string {
-	return map[string]string{
-		coreapi.ModelNameLabelKey:       string(model.Name),
-		coreapi.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),
-	}
-}
-
-func modelAnnotations(model *coreapi.Model) map[string]string {
-	if model.Spec.DataSource.ModelHub != nil {
-		return map[string]string{
-			coreapi.ModelIDLabelKey:  string(model.Spec.DataSource.ModelHub.ModelID),
-			coreapi.ModelHubLabelKey: string(*model.Spec.DataSource.ModelHub.Name),
-		}
-	}
 	return nil
 }

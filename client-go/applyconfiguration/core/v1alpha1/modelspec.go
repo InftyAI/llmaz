@@ -24,9 +24,9 @@ import (
 // ModelSpecApplyConfiguration represents an declarative configuration of the ModelSpec type for use
 // with apply.
 type ModelSpecApplyConfiguration struct {
-	FamilyName       *v1alpha1.ModelName        `json:"familyName,omitempty"`
-	DataSource       *v1alpha1.DataSource       `json:"dataSource,omitempty"`
-	InferenceFlavors []FlavorApplyConfiguration `json:"inferenceFlavors,omitempty"`
+	FamilyName       *v1alpha1.ModelName           `json:"familyName,omitempty"`
+	DataSource       *DataSourceApplyConfiguration `json:"dataSource,omitempty"`
+	InferenceFlavors []FlavorApplyConfiguration    `json:"inferenceFlavors,omitempty"`
 }
 
 // ModelSpecApplyConfiguration constructs an declarative configuration of the ModelSpec type for use with
@@ -46,8 +46,8 @@ func (b *ModelSpecApplyConfiguration) WithFamilyName(value v1alpha1.ModelName) *
 // WithDataSource sets the DataSource field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DataSource field is set to the value of the last call.
-func (b *ModelSpecApplyConfiguration) WithDataSource(value v1alpha1.DataSource) *ModelSpecApplyConfiguration {
-	b.DataSource = &value
+func (b *ModelSpecApplyConfiguration) WithDataSource(value *DataSourceApplyConfiguration) *ModelSpecApplyConfiguration {
+	b.DataSource = value
 	return b
 }
 
