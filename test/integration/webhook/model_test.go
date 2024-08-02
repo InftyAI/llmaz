@@ -58,6 +58,14 @@ var _ = ginkgo.Describe("model default and validation", func() {
 				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").DataSourceWithModelHub("Huggingface").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
+		ginkgo.Entry("apply modelscope model hub name", &testDefaultingCase{
+			model: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelHub("ModelScope").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
+			},
+			wantModel: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").DataSourceWithModelHub("ModelScope").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
+			},
+		}),
 	)
 
 	type testValidatingCase struct {
@@ -73,9 +81,15 @@ var _ = ginkgo.Describe("model default and validation", func() {
 				gomega.Expect(k8sClient.Create(ctx, tc.model())).To(gomega.Succeed())
 			}
 		},
-		ginkgo.Entry("normal model creation", &testValidatingCase{
+		ginkgo.Entry("default normal huggingface model creation", &testValidatingCase{
 			model: func() *core.Model {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("normal modelscope model creation", &testValidatingCase{
+			model: func() *core.Model {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelHub("ModelScope").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
 			},
 			failed: false,
 		}),

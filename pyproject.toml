@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 huggingface-hub = "^0.23.5"
+modelscope = "^1.17.0"
 
 
 [tool.poetry.group.dev.dependencies]

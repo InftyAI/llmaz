@@ -1,0 +1,13 @@
+apiVersion: llmaz.io/v1alpha1
+kind: Model
+metadata:
+  name: llama3-8b
+spec:
+  familyName: llama3
+  dataSource:
+    name: ModelScope
+    modelID: LLM-Research/Meta-Llama-3-8B
+  inferenceFlavors:
+  - name: t4 # usually refer to the model type
+    requests:
+      nvidia.com/gpu: 1

@@ -16,11 +16,12 @@ limitations under the License.
 
 from loader.model_hub.model_hub import ModelHub
 from loader.model_hub.huggingface import HUGGING_FACE, Huggingface
+from loader.model_hub.model_scope import MODEL_SCOPE, ModelScope
 
 
-# TODO: support modelScope.
 SUPPORT_MODEL_HUBS = {
     HUGGING_FACE: Huggingface,
+    MODEL_SCOPE: ModelScope,
 }
 
 
