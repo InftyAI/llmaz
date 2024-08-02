@@ -14,45 +14,44 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package inference
+package datasource
 
 import (
 	"testing"
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/test/util"
-	"inftyai.com/llmaz/test/util/wrapper"
 )
 
-func TestModelIdentifiers(t *testing.T) {
+func Test_DataSourceProvider(t *testing.T) {
 	testCases := []struct {
 		name          string
 		model         *coreapi.Model
-		wantModelID   string
 		wantModelName string
+		wantModelPath string
 	}{
 		{
-			name:          "meta-llama/Meta-Llama-3-8B",
+			name:          "model with model hub configured",
 			model:         util.MockASampleModel(),
-			wantModelID:   "meta-llama/Meta-Llama-3-8B",
-			wantModelName: "models--meta-llama--Meta-Llama-3-8B",
+			wantModelName: "llama3-8b",
+			wantModelPath: "/workspace/models/models--meta-llama--Meta-Llama-3-8B",
 		},
-		{
-			name:          "meta-llama/Meta-Llama-3-8B/test",
-			model:         wrapper.MakeModel("test").FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B/test").Obj(),
-			wantModelID:   "meta-llama/Meta-Llama-3-8B/test",
-			wantModelName: "models--meta-llama--Meta-Llama-3-8B--test",
-		},
+		// {
+		// 	name:          "model with URI configured",
+		// 	model:         wrapper.MakeModel("test-7b").FamilyName("test").DataSourceWithURI("s3://a/b/c").Obj(),
+		// 	wantModelName: "test-7b",
+		// 	wantModelPath: "/workspace/models/",
+		// },
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			gotModelID, gotModelName := modelIdentifiers(tc.model)
-			if gotModelID != tc.wantModelID {
-				t.Fatalf("unexpected modelID, want %s, got %s", tc.wantModelID, gotModelID)
+			provider := NewDataSourceProvider(tc.model)
+			if tc.wantModelName != provider.ModelName() {
+				t.Fatalf("unexpected model name, want %s, got %s", tc.wantModelName, provider.ModelName())
 			}
-			if gotModelName != tc.wantModelName {
-				t.Fatalf("unexpected modelName, want %s, got %s", tc.wantModelName, gotModelName)
+			if tc.wantModelPath != provider.ModelPath() {
+				t.Fatalf("unexpected model path, want %s, got %s", tc.wantModelPath, provider.ModelPath())
 			}
 		})
 	}

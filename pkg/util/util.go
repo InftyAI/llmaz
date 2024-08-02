@@ -17,6 +17,9 @@ limitations under the License.
 package util
 
 import (
+	"errors"
+	"strings"
+
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -33,4 +36,24 @@ func MergeResources(toMerge corev1.ResourceList, toBeMerged corev1.ResourceList)
 		}
 	}
 	return toMerge
+}
+
+// MergeKVs will merge kvs in toBeMerged to toMerge.
+// If kvs exist in toMerge, they will be replaced.
+func MergeKVs(toMerge map[string]string, toBeMerged map[string]string) map[string]string {
+	for k, v := range toBeMerged {
+		if toMerge == nil {
+			toMerge = map[string]string{}
+		}
+		toMerge[k] = v
+	}
+	return toMerge
+}
+
+func ParseURI(uri string) (format string, url string, err error) {
+	parsers := strings.Split(uri, "://")
+	if len(parsers) != 2 {
+		return "", "", errors.New("uri format error")
+	}
+	return parsers[0], parsers[1], nil
 }

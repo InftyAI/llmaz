@@ -14,15 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package pkg
+package datasource
 
-const (
-	LOADER_IMAGE = "inftyai/model-loader:v0.0.2"
+import (
+	corev1 "k8s.io/api/core/v1"
 
-	HOST_MODEL_PATH             = "/cache/models/"
-	CONTAINER_MODEL_PATH        = "/workspace/models/"
-	DEFAULT_BACKEND_PORT        = 8080
-	MODEL_VOLUME_NAME           = "model-volume"
-	MODEL_RUNNER_CONTAINER_NAME = "model-runner"
-	MODEL_LOADER_CONTAINER_NAME = "model-loader"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 )
+
+type DataSourceProvider interface {
+	ModelName() string
+	ModelPath() string
+	InjectModelLoader(*corev1.PodTemplateSpec)
+}
+
+func NewDataSourceProvider(model *coreapi.Model) DataSourceProvider {
+	if model.Spec.DataSource.ModelHub != nil {
+		return &ModelHubProvider{model: model}
+	}
+	// Should not reach here, it will be validated at webhook in prior.
+	return nil
+}

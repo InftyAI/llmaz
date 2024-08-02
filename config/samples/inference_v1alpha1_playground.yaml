@@ -7,8 +7,8 @@ metadata:
     app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: llmaz
-  name: playground-llama3-8b
+  name: opt-125m
 spec:
   replicas: 1
   modelClaim:
-    modelName: "llama3-8b"
+    modelName: "opt-125m"

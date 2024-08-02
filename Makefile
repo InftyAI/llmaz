@@ -178,6 +178,7 @@ image-build:
 		--build-arg BUILDER_IMAGE=$(BUILDER_IMAGE) \
 		--build-arg CGO_ENABLED=$(CGO_ENABLED) \
 		$(PUSH) \
+		$(LOAD) \
 		$(IMAGE_BUILD_EXTRA_OPTS) ./
 
 .PHONY: image-push
@@ -204,6 +205,7 @@ kind:
 
 .PHONY: kind-image-build
 kind-image-build: PLATFORMS=linux/amd64
+kind-image-build: LOAD=--load
 kind-image-build: kind image-build
 	kind load docker-image $(IMG)
 

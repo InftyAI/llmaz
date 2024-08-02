@@ -48,17 +48,17 @@ spec:
                     description: ModelHub represents the model registry for model
                       downloads.
                     properties:
-                      modelHub:
+                      modelID:
+                        description: |-
+                          ModelID refers to the model identifier on model hub,
+                          such as meta-llama/Meta-Llama-3-8B.
+                        type: string
+                      name:
                         default: Huggingface
                         description: Name refers to the model registry, such as huggingface.
                         enum:
                         - Huggingface
                         - ModelScope
-                        type: string
-                      modelID:
-                        description: |-
-                          ModelID refers to the model identifier on model hub,
-                          such as meta-llama/Meta-Llama-3-8B.
                         type: string
                     type: object
                 type: object
