@@ -82,7 +82,7 @@ curl http://localhost:8080/v1/models
 curl http://localhost:8080/v1/completions \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "opt-125m",
+    "model": "facebook/opt-125m",
     "prompt": "San Francisco is a",
     "max_tokens": 10,
     "temperature": 0
