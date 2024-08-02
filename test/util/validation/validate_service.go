@@ -62,14 +62,6 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			return fmt.Errorf("unexpected model family name %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey], model.Spec.FamilyName)
 		}
 
-		if model.Spec.DataSource.ModelHub != nil {
-			if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Annotations[coreapi.ModelIDLabelKey] != model.Spec.DataSource.ModelHub.ModelID {
-				return fmt.Errorf("unexpected modelID %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Annotations[coreapi.ModelIDLabelKey], model.Spec.DataSource.ModelHub.ModelID)
-			}
-			if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Annotations[coreapi.ModelHubLabelKey] != *model.Spec.DataSource.ModelHub.Name {
-				return fmt.Errorf("unexpected modelHub name %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Annotations[coreapi.ModelHubLabelKey], *model.Spec.DataSource.ModelHub.Name)
-			}
-		}
 		if len(model.Spec.InferenceFlavors) != 0 {
 			// TODO: Use the 0-index flavor for validation right now.
 			flavor := model.Spec.InferenceFlavors[0]

@@ -20,7 +20,7 @@ package v1alpha1
 // ModelHubApplyConfiguration represents an declarative configuration of the ModelHub type for use
 // with apply.
 type ModelHubApplyConfiguration struct {
-	Name    *string `json:"modelHub,omitempty"`
+	Name    *string `json:"name,omitempty"`
 	ModelID *string `json:"modelID,omitempty"`
 }
 

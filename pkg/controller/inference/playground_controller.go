@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strconv"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -45,7 +44,7 @@ import (
 	coreclientgo "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	inferenceclientgo "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
 	"inftyai.com/llmaz/pkg"
-	"inftyai.com/llmaz/pkg/backend"
+	"inftyai.com/llmaz/pkg/controller_helper/backend"
 	"inftyai.com/llmaz/pkg/util"
 )
 
@@ -169,6 +168,14 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 
 	workload.Replicas = playground.Spec.Replicas
 
+	// TODO: handle multi-host scenarios, e.g. nvidia.com/gpu: 32, means we'll split into 4 hosts.
+	// Do we need another configuration for playground for multi-host use case? I guess no currently.
+	workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(model, playground)
+
+	return workload
+}
+
+func buildWorkerTemplate(model *coreapi.Model, playground *inferenceapi.Playground) corev1.PodTemplateSpec {
 	backendName := inferenceapi.DefaultBackend
 	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {
 		backendName = *playground.Spec.BackendConfig.Name
@@ -180,14 +187,7 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 		version = *playground.Spec.BackendConfig.Version
 	}
 
-	// TODO:: add unit tests
-	modelID, trimmedModelName := modelIdentifiers(model)
-	// TODO: should we also support secret here?
-	args := []string{
-		"--model", pkg.CONTAINER_MODEL_PATH + trimmedModelName,
-		"--served-model-name", modelID,
-		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
-	}
+	args := bkd.DefaultArgs(model)
 
 	var envs []corev1.EnvVar
 	if playground.Spec.BackendConfig != nil {
@@ -200,7 +200,6 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 		Requests: bkd.DefaultResources().Requests,
 	}
 	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Resources != nil {
-		// We'll not update playground here, so modify the values of playground is ok.
 		limits := util.MergeResources(playground.Spec.BackendConfig.Resources.Limits, resources.Limits)
 		requests := util.MergeResources(playground.Spec.BackendConfig.Resources.Requests, resources.Requests)
 
@@ -210,10 +209,7 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 		}
 	}
 
-	hostType := corev1.HostPathDirectoryOrCreate
-	// TODO: handle multi-host scenarios, e.g. nvidia.com/gpu: 32, means we'll split into 4 hosts.
-	// Do we need another configuration for playground for multi-host use case? I guess no currently.
-	workload.LeaderWorkerTemplate.WorkerTemplate = corev1.PodTemplateSpec{
+	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
 			// TODO: should we support image pull secret here?
 			// TODO: support readiness/liveness
@@ -232,30 +228,12 @@ func buildWorkloadTemplate(model *coreapi.Model, playground *inferenceapi.Playgr
 							ContainerPort: pkg.DEFAULT_BACKEND_PORT,
 						},
 					},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      pkg.MODEL_CACHE_VOLUME_NAME,
-							MountPath: pkg.CONTAINER_MODEL_PATH,
-							ReadOnly:  true,
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: pkg.MODEL_CACHE_VOLUME_NAME,
-					VolumeSource: corev1.VolumeSource{
-						HostPath: &corev1.HostPathVolumeSource{
-							Path: pkg.HOST_MODEL_PATH,
-							Type: &hostType,
-						},
-					},
 				},
 			},
 		},
 	}
 
-	return workload
+	return template
 }
 
 func setPlaygroundCondition(playground *inferenceapi.Playground, service *inferenceapi.Service) {

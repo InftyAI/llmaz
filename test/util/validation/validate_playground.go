@@ -31,7 +31,7 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg/backend"
+	"inftyai.com/llmaz/pkg/controller_helper/backend"
 	"inftyai.com/llmaz/test/util"
 )
 
