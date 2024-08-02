@@ -22,7 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// BackendConfigApplyConfiguration represents an declarative configuration of the BackendConfig type for use
+// BackendConfigApplyConfiguration represents a declarative configuration of the BackendConfig type for use
 // with apply.
 type BackendConfigApplyConfiguration struct {
 	Name      *v1alpha1.BackendName                   `json:"name,omitempty"`
@@ -32,7 +32,7 @@ type BackendConfigApplyConfiguration struct {
 	Resources *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 }
 
-// BackendConfigApplyConfiguration constructs an declarative configuration of the BackendConfig type for use with
+// BackendConfigApplyConfiguration constructs a declarative configuration of the BackendConfig type for use with
 // apply.
 func BackendConfig() *BackendConfigApplyConfiguration {
 	return &BackendConfigApplyConfiguration{}

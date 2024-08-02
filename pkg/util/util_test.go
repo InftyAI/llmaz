@@ -70,3 +70,46 @@ func TestMergeResources(t *testing.T) {
 		})
 	}
 }
+
+func TestMergeKVs(t *testing.T) {
+	testCases := []struct {
+		name       string
+		toMerge    map[string]string
+		toBeMerged map[string]string
+		want       map[string]string
+	}{
+		{
+			name:       "toBeMerged and toMerge has same key",
+			toMerge:    map[string]string{"foo": "bar"},
+			toBeMerged: map[string]string{"foo": "buz"},
+			want:       map[string]string{"foo": "buz"},
+		},
+		{
+			name:       "toMerge has exclusive keys",
+			toMerge:    map[string]string{"foo": "bar"},
+			toBeMerged: map[string]string{"fuz": "buz"},
+			want:       map[string]string{"foo": "bar", "fuz": "buz"},
+		},
+		{
+			name:       "toMerge is nil",
+			toMerge:    nil,
+			toBeMerged: map[string]string{"fuz": "buz"},
+			want:       map[string]string{"fuz": "buz"},
+		},
+		{
+			name:       "toBeMerge is nil",
+			toMerge:    map[string]string{"fuz": "buz"},
+			toBeMerged: nil,
+			want:       map[string]string{"fuz": "buz"},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := MergeKVs(tc.toMerge, tc.toBeMerged)
+			if diff := cmp.Diff(got, tc.want); diff != "" {
+				t.Fatalf("unexpected kvs: %s", diff)
+			}
+		})
+	}
+}

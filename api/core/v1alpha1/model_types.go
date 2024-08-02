@@ -24,8 +24,6 @@ import (
 const (
 	ModelFamilyNameLabelKey = "llmaz.io/model-family-name"
 	ModelNameLabelKey       = "llmaz.io/model-name"
-	ModelHubLabelKey        = "llmaz.io/model-hub-name"
-	ModelIDLabelKey         = "llmaz.io/model-id"
 )
 
 // ModelHub represents the model registry for model downloads.
@@ -50,19 +48,13 @@ type ModelHub struct {
 type DataSource struct {
 	// ModelHub represents the model registry for model downloads.
 	ModelHub *ModelHub `json:"modelHub,omitempty"`
-	// TODO: support all these sources.
-	// // URL represents the URL link than contains the data sources.
-	// // +optional
-	// URL *string `json:"url,omitempty"`
-	// // The mounted volume that contains the data.
-	// // +optional
-	// Volume *v1.VolumeSource `json:"volumeSource,omitempty"`
-	// // Image represents the the image address that contains the source data.
-	// // +optional
-	// Image *string `json:"image,omitempty"`
-	// // ImagePullSecrets represents a list of secret names in the same namespace used for pulling the image.
-	// // +optional
-	// ImagePullSecrets []string `json:"imagePullSecrets,omitempty"`
+	// URI represents a various kinds of model sources following the protocol of <type>://<address>,
+	// e.g. oci://<model address>. A wide range of source types are supported, such as s3, gcs
+	// docker images, oci artifacts and more.
+	// +optional
+	URI *string `json:"uri,omitempty"`
+	// TODO: This is required when downloading models with token or pulling images with secrets.
+	// Secret *string
 }
 
 type FlavorName string

@@ -19,9 +19,6 @@ package v1alpha1
 
 import (
 	"context"
-	json "encoding/json"
-	"fmt"
-	"time"
 
 	v1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
 	corev1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
@@ -29,7 +26,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	rest "k8s.io/client-go/rest"
+	gentype "k8s.io/client-go/gentype"
 )
 
 // ModelsGetter has a method to return a ModelInterface.
@@ -42,6 +39,7 @@ type ModelsGetter interface {
 type ModelInterface interface {
 	Create(ctx context.Context, model *v1alpha1.Model, opts v1.CreateOptions) (*v1alpha1.Model, error)
 	Update(ctx context.Context, model *v1alpha1.Model, opts v1.UpdateOptions) (*v1alpha1.Model, error)
+	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 	UpdateStatus(ctx context.Context, model *v1alpha1.Model, opts v1.UpdateOptions) (*v1alpha1.Model, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
@@ -50,206 +48,25 @@ type ModelInterface interface {
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Model, err error)
 	Apply(ctx context.Context, model *corev1alpha1.ModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Model, err error)
+	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
 	ApplyStatus(ctx context.Context, model *corev1alpha1.ModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Model, err error)
 	ModelExpansion
 }
 
 // models implements ModelInterface
 type models struct {
-	client rest.Interface
-	ns     string
+	*gentype.ClientWithListAndApply[*v1alpha1.Model, *v1alpha1.ModelList, *corev1alpha1.ModelApplyConfiguration]
 }
 
 // newModels returns a Models
 func newModels(c *LlmazV1alpha1Client, namespace string) *models {
 	return &models{
-		client: c.RESTClient(),
-		ns:     namespace,
+		gentype.NewClientWithListAndApply[*v1alpha1.Model, *v1alpha1.ModelList, *corev1alpha1.ModelApplyConfiguration](
+			"models",
+			c.RESTClient(),
+			scheme.ParameterCodec,
+			namespace,
+			func() *v1alpha1.Model { return &v1alpha1.Model{} },
+			func() *v1alpha1.ModelList { return &v1alpha1.ModelList{} }),
 	}
-}
-
-// Get takes name of the model, and returns the corresponding model object, and an error if there is any.
-func (c *models) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Model, err error) {
-	result = &v1alpha1.Model{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("models").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Models that match those selectors.
-func (c *models) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ModelList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	result = &v1alpha1.ModelList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("models").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested models.
-func (c *models) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("models").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Watch(ctx)
-}
-
-// Create takes the representation of a model and creates it.  Returns the server's representation of the model, and an error, if there is any.
-func (c *models) Create(ctx context.Context, model *v1alpha1.Model, opts v1.CreateOptions) (result *v1alpha1.Model, err error) {
-	result = &v1alpha1.Model{}
-	err = c.client.Post().
-		Namespace(c.ns).
-		Resource("models").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(model).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Update takes the representation of a model and updates it. Returns the server's representation of the model, and an error, if there is any.
-func (c *models) Update(ctx context.Context, model *v1alpha1.Model, opts v1.UpdateOptions) (result *v1alpha1.Model, err error) {
-	result = &v1alpha1.Model{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("models").
-		Name(model.Name).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(model).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *models) UpdateStatus(ctx context.Context, model *v1alpha1.Model, opts v1.UpdateOptions) (result *v1alpha1.Model, err error) {
-	result = &v1alpha1.Model{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("models").
-		Name(model.Name).
-		SubResource("status").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(model).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Delete takes name of the model and deletes it. Returns an error if one occurs.
-func (c *models) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("models").
-		Name(name).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *models) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	var timeout time.Duration
-	if listOpts.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
-	}
-	return c.client.Delete().
-		Namespace(c.ns).
-		Resource("models").
-		VersionedParams(&listOpts, scheme.ParameterCodec).
-		Timeout(timeout).
-		Body(&opts).
-		Do(ctx).
-		Error()
-}
-
-// Patch applies the patch and returns the patched model.
-func (c *models) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Model, err error) {
-	result = &v1alpha1.Model{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("models").
-		Name(name).
-		SubResource(subresources...).
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// Apply takes the given apply declarative configuration, applies it and returns the applied model.
-func (c *models) Apply(ctx context.Context, model *corev1alpha1.ModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Model, err error) {
-	if model == nil {
-		return nil, fmt.Errorf("model provided to Apply must not be nil")
-	}
-	patchOpts := opts.ToPatchOptions()
-	data, err := json.Marshal(model)
-	if err != nil {
-		return nil, err
-	}
-	name := model.Name
-	if name == nil {
-		return nil, fmt.Errorf("model.Name must be provided to Apply")
-	}
-	result = &v1alpha1.Model{}
-	err = c.client.Patch(types.ApplyPatchType).
-		Namespace(c.ns).
-		Resource("models").
-		Name(*name).
-		VersionedParams(&patchOpts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *models) ApplyStatus(ctx context.Context, model *corev1alpha1.ModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Model, err error) {
-	if model == nil {
-		return nil, fmt.Errorf("model provided to Apply must not be nil")
-	}
-	patchOpts := opts.ToPatchOptions()
-	data, err := json.Marshal(model)
-	if err != nil {
-		return nil, err
-	}
-
-	name := model.Name
-	if name == nil {
-		return nil, fmt.Errorf("model.Name must be provided to Apply")
-	}
-
-	result = &v1alpha1.Model{}
-	err = c.client.Patch(types.ApplyPatchType).
-		Namespace(c.ns).
-		Resource("models").
-		Name(*name).
-		SubResource("status").
-		VersionedParams(&patchOpts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
 }

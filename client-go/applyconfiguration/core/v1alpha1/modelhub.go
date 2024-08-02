@@ -17,14 +17,14 @@ limitations under the License.
 
 package v1alpha1
 
-// ModelHubApplyConfiguration represents an declarative configuration of the ModelHub type for use
+// ModelHubApplyConfiguration represents a declarative configuration of the ModelHub type for use
 // with apply.
 type ModelHubApplyConfiguration struct {
 	Name    *string `json:"modelHub,omitempty"`
 	ModelID *string `json:"modelID,omitempty"`
 }
 
-// ModelHubApplyConfiguration constructs an declarative configuration of the ModelHub type for use with
+// ModelHubApplyConfiguration constructs a declarative configuration of the ModelHub type for use with
 // apply.
 func ModelHub() *ModelHubApplyConfiguration {
 	return &ModelHubApplyConfiguration{}

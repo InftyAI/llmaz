@@ -22,7 +22,10 @@ import (
 	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
 	applyconfigurationcorev1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	inferencev1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
+	internal "inftyai.com/llmaz/client-go/applyconfiguration/internal"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	testing "k8s.io/client-go/testing"
 )
 
 // ForKind returns an apply configuration type for the given GroupVersionKind, or nil if no
@@ -50,6 +53,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &inferencev1alpha1.ServiceStatusApplyConfiguration{}
 
 		// Group=llmaz.io, Version=v1alpha1
+	case corev1alpha1.SchemeGroupVersion.WithKind("DataSource"):
+		return &applyconfigurationcorev1alpha1.DataSourceApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("Flavor"):
 		return &applyconfigurationcorev1alpha1.FlavorApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("Model"):
@@ -67,4 +72,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 
 	}
 	return nil
+}
+
+func NewTypeConverter(scheme *runtime.Scheme) *testing.TypeConverter {
+	return &testing.TypeConverter{Scheme: scheme, TypeResolver: internal.Parser()}
 }

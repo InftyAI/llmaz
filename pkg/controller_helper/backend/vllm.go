@@ -17,10 +17,15 @@ limitations under the License.
 package backend
 
 import (
+	"strconv"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	"inftyai.com/llmaz/pkg"
+	datasource "inftyai.com/llmaz/pkg/controller_helper/datasource"
 )
 
 var _ Backend = (*VLLM)(nil)
@@ -58,4 +63,13 @@ func (v *VLLM) DefaultResources() inferenceapi.ResourceRequirements {
 
 func (v *VLLM) DefaultCommands() []string {
 	return []string{"python3", "-m", "vllm.entrypoints.openai.api_server"}
+}
+
+func (v *VLLM) DefaultArgs(model *coreapi.Model) []string {
+	dataSource := datasource.NewDataSourceProvider(model)
+	return []string{
+		"--model", dataSource.ModelPath(),
+		"--served-model-name", dataSource.ModelName(),
+		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
+	}
 }

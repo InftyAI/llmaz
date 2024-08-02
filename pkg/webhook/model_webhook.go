@@ -79,7 +79,7 @@ func (w *ModelWebhook) generateValidate(obj runtime.Object) (admission.Warnings,
 	dataSourcePath := field.NewPath("spec", "dataSource")
 
 	var allErrs field.ErrorList
-	if model.Spec.DataSource.ModelHub == nil {
+	if model.Spec.DataSource.ModelHub == nil && model.Spec.DataSource.URI == nil {
 		allErrs = append(allErrs, field.Forbidden(dataSourcePath, "data source can't be all null"))
 	}
 	return nil, allErrs

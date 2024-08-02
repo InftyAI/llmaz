@@ -23,7 +23,7 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// PlaygroundApplyConfiguration represents an declarative configuration of the Playground type for use
+// PlaygroundApplyConfiguration represents a declarative configuration of the Playground type for use
 // with apply.
 type PlaygroundApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
@@ -32,7 +32,7 @@ type PlaygroundApplyConfiguration struct {
 	Status                           *PlaygroundStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// Playground constructs an declarative configuration of the Playground type for use with
+// Playground constructs a declarative configuration of the Playground type for use with
 // apply.
 func Playground(name, namespace string) *PlaygroundApplyConfiguration {
 	b := &PlaygroundApplyConfiguration{}
@@ -215,4 +215,10 @@ func (b *PlaygroundApplyConfiguration) WithSpec(value *PlaygroundSpecApplyConfig
 func (b *PlaygroundApplyConfiguration) WithStatus(value *PlaygroundStatusApplyConfiguration) *PlaygroundApplyConfiguration {
 	b.Status = value
 	return b
+}
+
+// GetName retrieves the value of the Name field in the declarative configuration.
+func (b *PlaygroundApplyConfiguration) GetName() *string {
+	b.ensureObjectMetaApplyConfigurationExists()
+	return b.Name
 }

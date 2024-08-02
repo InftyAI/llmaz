@@ -11,7 +11,9 @@ metadata:
 spec:
   familyName: "llama3"
   dataSource:
-    modelID: "meta-llama/meta-llama-3-8b"
+    modelHub:
+      # name: Huggingface
+      modelID: "meta-llama/Meta-Llama-3-8B"
   inferenceFlavors:
   - name: a100
     requests:

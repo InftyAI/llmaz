@@ -67,6 +67,13 @@ func (w *ModelWrapper) DataSourceWithModelHub(modelHub string) *ModelWrapper {
 	return w
 }
 
+func (w *ModelWrapper) DataSourceWithURI(uri string) *ModelWrapper {
+	if uri != "" {
+		w.Spec.DataSource.URI = &uri
+	}
+	return w
+}
+
 func (w *ModelWrapper) InferenceFlavors() *ModelWrapper {
 	return w
 }

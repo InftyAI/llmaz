@@ -19,15 +19,12 @@ source "${CODEGEN_PKG}/kube_codegen.sh"
 ln -s .. inftyai.com
 trap "rm inftyai.com" EXIT
 
-kube::codegen::gen_helpers \
-    --input-pkg-root inftyai.com/llmaz/api \
-    --output-base "${REPO_ROOT}" \
+kube::codegen::gen_helpers inftyai.com/llmaz/api \
     --boilerplate "${REPO_ROOT}/hack/boilerplate.go.txt"
 
-kube::codegen::gen_client \
+kube::codegen::gen_client inftyai.com/llmaz/api \
     --with-watch \
     --with-applyconfig \
-    --input-pkg-root inftyai.com/llmaz/api \
-    --output-base "$REPO_ROOT" \
-    --output-pkg-root inftyai.com/llmaz/client-go \
+    --output-dir "$REPO_ROOT"/client-go \
+    --output-pkg inftyai.com/llmaz/client-go \
     --boilerplate "${REPO_ROOT}/hack/boilerplate.go.txt"

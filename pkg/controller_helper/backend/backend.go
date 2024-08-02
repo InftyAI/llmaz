@@ -17,6 +17,7 @@ limitations under the License.
 package backend
 
 import (
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 )
 
@@ -26,12 +27,15 @@ type Backend interface {
 	Name() inferenceapi.BackendName
 	// Image returns the container image for the inference backend.
 	Image(version string) string
+
 	// DefaultVersion returns the default version for the inference backend.
 	DefaultVersion() string
 	// DefaultResources returns the default resources set for the container.
 	DefaultResources() inferenceapi.ResourceRequirements
 	// DefaultCommands returns the default command to start the inference backend.
 	DefaultCommands() []string
+	// DefaultArgs returns the default bootstrap arguments to start the backend.
+	DefaultArgs(*coreapi.Model) []string
 }
 
 func SwitchBackend(name inferenceapi.BackendName) Backend {
