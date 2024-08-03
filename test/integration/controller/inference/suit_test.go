@@ -110,11 +110,11 @@ var _ = BeforeSuite(func() {
 	Expect(err).ToNot(HaveOccurred())
 
 	modelController := controller.NewModelReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("model"))
-	modelController.SetupWithManager(mgr)
+	Expect(modelController.SetupWithManager(mgr)).NotTo(HaveOccurred())
 	playgroundController := inferencecontroller.NewPlaygroundReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("playground"))
-	playgroundController.SetupWithManager(mgr)
+	Expect(playgroundController.SetupWithManager(mgr)).NotTo(HaveOccurred())
 	serviceController := inferencecontroller.NewServiceReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("service"))
-	serviceController.SetupWithManager(mgr)
+	Expect(serviceController.SetupWithManager(mgr)).NotTo(HaveOccurred())
 
 	go func() {
 		defer GinkgoRecover()

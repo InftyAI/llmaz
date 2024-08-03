@@ -46,11 +46,11 @@ func (w *ServiceWrapper) Obj() *inferenceapi.Service {
 }
 
 func (w *ServiceWrapper) ModelsClaim(modelNames []string, flavorNames []string, rate int32) *ServiceWrapper {
-	var names []v1alpha1.ModelName
+	names := []v1alpha1.ModelName{}
 	for i := range modelNames {
 		names = append(names, v1alpha1.ModelName(modelNames[i]))
 	}
-	var flavors []v1alpha1.FlavorName
+	flavors := []v1alpha1.FlavorName{}
 	for i := range flavorNames {
 		flavors = append(flavors, v1alpha1.FlavorName(flavorNames[i]))
 	}

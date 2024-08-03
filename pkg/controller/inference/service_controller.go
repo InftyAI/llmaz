@@ -196,7 +196,7 @@ func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 
 func modelLabels(model *coreapi.Model) map[string]string {
 	return map[string]string{
-		coreapi.ModelNameLabelKey:       string(model.Name),
+		coreapi.ModelNameLabelKey:       model.Name,
 		coreapi.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),
 	}
 }

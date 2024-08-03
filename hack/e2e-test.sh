@@ -39,8 +39,12 @@ function deploy {
     cd $CWD/config/manager && $KUSTOMIZE edit set image controller=$IMAGE_TAG
     $KUSTOMIZE build $CWD/test/e2e/config | $KUBECTL apply --server-side -f -
 }
+function deploy_lws {
+    $KUBECTL apply --server-side -f https://github.com/kubernetes-sigs/lws/releases/download/$ENVTEST_LWS_VERSION/manifests.yaml
+}
 trap cleanup EXIT
 startup
 kind_load
+deploy_lws
 deploy
 $GINKGO -v $CWD/test/e2e/...

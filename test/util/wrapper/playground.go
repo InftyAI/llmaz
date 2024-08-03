@@ -47,7 +47,7 @@ func (w *PlaygroundWrapper) Replicas(replicas int32) *PlaygroundWrapper {
 }
 
 func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) *PlaygroundWrapper {
-	var names []core.FlavorName
+	names := []core.FlavorName{}
 	for _, name := range flavorNames {
 		names = append(names, core.FlavorName(name))
 	}

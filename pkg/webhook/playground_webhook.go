@@ -54,14 +54,14 @@ var _ webhook.CustomValidator = &PlaygroundWebhook{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (w *PlaygroundWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	warnings, allErrs := w.generateValidate(obj)
-	return warnings, allErrs.ToAggregate()
+	allErrs := w.generateValidate(obj)
+	return nil, allErrs.ToAggregate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (w *PlaygroundWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	warnings, allErrs := w.generateValidate(newObj)
-	return warnings, allErrs.ToAggregate()
+	allErrs := w.generateValidate(newObj)
+	return nil, allErrs.ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -69,7 +69,7 @@ func (w *PlaygroundWebhook) ValidateDelete(ctx context.Context, obj runtime.Obje
 	return nil, nil
 }
 
-func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) (admission.Warnings, field.ErrorList) {
+func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList {
 	playground := obj.(*inferenceapi.Playground)
 	specPath := field.NewPath("spec")
 
@@ -77,5 +77,5 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) (admission.Warn
 	if playground.Spec.ModelClaim == nil && len(playground.Spec.MultiModelsClaims) == 0 {
 		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and multiModelsClaims couldn't be both empty"))
 	}
-	return nil, allErrs
+	return allErrs
 }
