@@ -59,14 +59,14 @@ var _ webhook.CustomValidator = &ModelWebhook{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (w *ModelWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	warnings, allErrs := w.generateValidate(obj)
-	return warnings, allErrs.ToAggregate()
+	allErrs := w.generateValidate(obj)
+	return nil, allErrs.ToAggregate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (w *ModelWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	warnings, allErrs := w.generateValidate(newObj)
-	return warnings, allErrs.ToAggregate()
+	allErrs := w.generateValidate(newObj)
+	return nil, allErrs.ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -74,7 +74,7 @@ func (w *ModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (
 	return nil, nil
 }
 
-func (w *ModelWebhook) generateValidate(obj runtime.Object) (admission.Warnings, field.ErrorList) {
+func (w *ModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
 	model := obj.(*core.Model)
 	dataSourcePath := field.NewPath("spec", "dataSource")
 
@@ -82,5 +82,5 @@ func (w *ModelWebhook) generateValidate(obj runtime.Object) (admission.Warnings,
 	if model.Spec.DataSource.ModelHub == nil {
 		allErrs = append(allErrs, field.Forbidden(dataSourcePath, "data source can't be all null"))
 	}
-	return nil, allErrs
+	return allErrs
 }

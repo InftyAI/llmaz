@@ -1,6 +1,11 @@
 run:
   deadline: 5m
   allow-parallel-runners: true
+  dirs:
+    - api
+    - cmd
+    - pkg
+    - test
 
 issues:
   # don't skip warning about doc comments
@@ -17,7 +22,8 @@ issues:
         - dupl
         - lll
 linters:
-  disable-all: true
+  disable:
+    - lll
   enable:
     - dupl
     - errcheck
@@ -29,7 +35,6 @@ linters:
     - gosimple
     - govet
     - ineffassign
-    - lll
     - misspell
     - nakedret
     - prealloc

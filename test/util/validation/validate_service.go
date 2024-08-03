@@ -88,9 +88,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 					})
 				}
 				if diff := cmp.Diff(terms, []corev1.NodeSelectorTerm{
-					corev1.NodeSelectorTerm{
-						MatchExpressions: requirements,
-					},
+					{MatchExpressions: requirements},
 				}); diff != "" {
 					return errors.New("unexpected nodeSelectors")
 				}

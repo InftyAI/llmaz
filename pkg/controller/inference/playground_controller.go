@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -298,17 +297,4 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 		WithBlockOwnerDeletion(true).
 		WithController(true))
 	return nil
-}
-
-// One example is:
-// - modelID: facebook/opt-125m
-// - modelName: facebook--opt-125m
-func modelIdentifiers(model *coreapi.Model) (modelID string, trimmedModelName string) {
-	if model.Spec.DataSource.ModelHub != nil {
-		// This model name should be aligned with model loader.
-		modelNames := "models--" + strings.ReplaceAll(model.Spec.DataSource.ModelHub.ModelID, "/", "--")
-		return model.Spec.DataSource.ModelHub.ModelID, modelNames
-	}
-	// TODO: handle other data source.
-	return "", ""
 }
