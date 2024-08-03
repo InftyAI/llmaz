@@ -5,8 +5,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    labels:
-      - "cleanup"
+    # labels:
+    #   - "cleanup"
     groups:
       kubernetes:
         patterns:
