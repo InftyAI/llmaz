@@ -1,0 +1,14 @@
+name: Workflow for Golang CI
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  call-workflow:
+    # Use a released version for stable.
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-golang-ci.yaml@main
+    secrets:
+      AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
