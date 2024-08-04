@@ -1,4 +1,4 @@
-name: Workflow for Golang CI
+name: CI Workflow
 
 on:
   pull_request:
@@ -7,8 +7,6 @@ on:
       - synchronize
 
 jobs:
-  call-workflow:
+  golang-ci:
     # Use a released version for stable.
     uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-golang-ci.yaml@main
-    secrets:
-      AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}

@@ -1,4 +1,4 @@
-name: workflow-as-kube
+name: Event Workflow
 
 on:
   issues:
@@ -10,12 +10,12 @@ on:
   pull_request_target:
     types:
       - opened
+      - synchronize
       - labeled
       - unlabeled
-      - synchronize
 
 jobs:
-  call-workflow:
+  event-handler:
     uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-as-kubernetes.yaml@main
     secrets:
       AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
