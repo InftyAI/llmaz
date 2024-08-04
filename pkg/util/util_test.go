@@ -100,7 +100,7 @@ func TestMergeKVs(t *testing.T) {
 			name:       "toBeMerge is nil",
 			toMerge:    map[string]string{"fuz": "buz"},
 			toBeMerged: nil,
-			want:       map[string]string{"fuz": "biuz"},
+			want:       map[string]string{"fuz": "buz"},
 		},
 	}
 
