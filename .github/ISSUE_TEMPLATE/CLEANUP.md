@@ -2,7 +2,7 @@
 name: Clean Up Request
 about: Suggest to clean up code, process or tech debt to the llmaz project
 title: ''
-labels: kind/cleanup
+labels: cleanup
 assignees: ''
 
 ---
