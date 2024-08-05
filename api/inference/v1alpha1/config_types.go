@@ -22,6 +22,7 @@ type BackendName string
 
 const (
 	VLLM           BackendName = "vllm"
+	SGLANG         BackendName = "sglang"
 	DefaultBackend BackendName = VLLM
 )
 

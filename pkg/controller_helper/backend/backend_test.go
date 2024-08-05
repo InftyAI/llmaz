@@ -36,6 +36,12 @@ func TestSwitchBackend(t *testing.T) {
 			shouldErr:           false,
 		},
 		{
+			name:                "sglang should support",
+			backendName:         inferenceapi.SGLANG,
+			expectedBackendName: inferenceapi.SGLANG,
+			shouldErr:           false,
+		},
+		{
 			name:                "tgi should not support",
 			backendName:         inferenceapi.BackendName("tgi"),
 			expectedBackendName: inferenceapi.BackendName(""),

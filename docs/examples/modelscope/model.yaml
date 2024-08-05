@@ -1,12 +1,12 @@
 apiVersion: llmaz.io/v1alpha1
 kind: Model
 metadata:
-  name: llama3-8b
+  name: opt-125m
 spec:
-  familyName: llama3
+  familyName: opt
   dataSource:
     name: ModelScope
-    modelID: LLM-Research/Meta-Llama-3-8B
+    modelID: AI-ModelScope/opt-125
   inferenceFlavors:
   - name: t4 # usually refer to the model type
     requests:

@@ -1,8 +1,8 @@
 apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:
-  name: llama3-8b
+  name: opt-125m
 spec:
   replicas: 1
   modelClaim:
-    modelName: llama3-8b
+    modelName: opt-125m
