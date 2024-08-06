@@ -19,6 +19,8 @@ package wrapper
 import (
 	core "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -55,6 +57,66 @@ func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) 
 	w.Spec.ModelClaim = &core.ModelClaim{
 		ModelName:        core.ModelName(modelName),
 		InferenceFlavors: names,
+	}
+	return w
+}
+
+func (w *PlaygroundWrapper) Backend(name string) *PlaygroundWrapper {
+	if w.Spec.BackendConfig == nil {
+		w.Spec.BackendConfig = &inferenceapi.BackendConfig{}
+	}
+	backendName := inferenceapi.BackendName(name)
+	w.Spec.BackendConfig.Name = &backendName
+	return w
+}
+
+func (w *PlaygroundWrapper) BackendVersion(version string) *PlaygroundWrapper {
+	if w.Spec.BackendConfig == nil {
+		w = w.Backend("vllm")
+	}
+	w.Spec.BackendConfig.Version = &version
+	return w
+}
+
+func (w *PlaygroundWrapper) BackendArgs(args []string) *PlaygroundWrapper {
+	if w.Spec.BackendConfig == nil {
+		w = w.Backend("vllm")
+	}
+	w.Spec.BackendConfig.Args = args
+	return w
+}
+
+func (w *PlaygroundWrapper) BackendEnv(k, v string) *PlaygroundWrapper {
+	if w.Spec.BackendConfig == nil {
+		w = w.Backend("vllm")
+	}
+	w.Spec.BackendConfig.Envs = append(w.Spec.BackendConfig.Envs, v1.EnvVar{
+		Name:  k,
+		Value: v,
+	})
+	return w
+}
+
+func (w *PlaygroundWrapper) BackendRequest(r, v string) *PlaygroundWrapper {
+	if w.Spec.BackendConfig == nil {
+		w = w.Backend("vllm")
+	}
+	w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{
+		Requests: v1.ResourceList{
+			v1.ResourceName(r): resource.MustParse(v),
+		},
+	}
+	return w
+}
+
+func (w *PlaygroundWrapper) BackendLimit(r, v string) *PlaygroundWrapper {
+	if w.Spec.BackendConfig == nil {
+		w = w.Backend("vllm")
+	}
+	w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{
+		Limits: v1.ResourceList{
+			v1.ResourceName(r): resource.MustParse(v),
+		},
 	}
 	return w
 }

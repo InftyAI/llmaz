@@ -29,21 +29,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def get_env_variable(var_name):
-    """Retrieve the value of the environment variable or raise an error
-    if it does not exist.
-    """
-    try:
-        return os.getenv(var_name, HUGGING_FACE)
-    except KeyError:
-        raise EnvironmentError(f"Environment variable '{var_name}' not found.")
-
-
 if __name__ == "__main__":
-    hub_name = get_env_variable("MODEL_HUB_NAME")
-    model_id = get_env_variable("MODEL_ID")
+    hub_name = os.getenv("MODEL_HUB_NAME", HUGGING_FACE)
+    revision = os.getenv("REVISION")
+    model_id = os.getenv("MODEL_ID")
+
+    if not model_id:
+        raise EnvironmentError(f"Environment variable '{model_id}' not found.")
+
     hub = HubFactory.new(hub_name)
 
     start_time = datetime.now()
-    hub.load_model(model_id)
+    hub.load_model(model_id, revision)
     logger.info(f"loading models takes {datetime.now() - start_time}s")

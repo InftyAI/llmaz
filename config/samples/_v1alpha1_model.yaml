@@ -10,7 +10,7 @@ metadata:
   name: opt-125m
 spec:
   familyName: "opt"
-  dataSource:
+  source:
     modelHub:
       # name: Huggingface
       modelID: "facebook/opt-125m"

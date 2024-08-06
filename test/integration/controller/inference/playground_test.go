@@ -31,6 +31,7 @@ import (
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/test/util"
 	"inftyai.com/llmaz/test/util/validation"
+	"inftyai.com/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("playground controller test", func() {
@@ -78,7 +79,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				}
 			}
 		},
-		ginkgo.Entry("normal playground create and update", &testValidatingCase{
+		ginkgo.Entry("normal Playground create and update", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return util.MockASamplePlayground(ns.Name)
 			},
@@ -110,6 +111,24 @@ var _ = ginkgo.Describe("playground controller test", func() {
 						newPlayground := inferenceapi.Playground{}
 						gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &newPlayground)).To(gomega.Succeed())
 						gomega.Expect(*newPlayground.Spec.Replicas).To(gomega.Equal(int32(3)))
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("advanced configured Playground created", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).
+					Backend("sglang").BackendVersion("main").BackendArgs([]string{"--foo", "bar"}).BackendEnv("FOO", "BAR").BackendRequest("cpu", "1").BackendLimit("cpu", "10").
+					Obj()
+			},
+			updates: []*update{
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
 					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)

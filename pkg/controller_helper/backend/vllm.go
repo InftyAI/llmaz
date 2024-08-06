@@ -25,7 +25,7 @@ import (
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/pkg"
-	datasource "inftyai.com/llmaz/pkg/controller_helper/datasource"
+	source "inftyai.com/llmaz/pkg/controller_helper/model_source"
 )
 
 var _ Backend = (*VLLM)(nil)
@@ -66,10 +66,10 @@ func (v *VLLM) DefaultCommands() []string {
 }
 
 func (v *VLLM) DefaultArgs(model *coreapi.Model) []string {
-	dataSource := datasource.NewDataSourceProvider(model)
+	modelSource := source.NewDataSourceProvider(model)
 	return []string{
-		"--model", dataSource.ModelPath(),
-		"--served-model-name", dataSource.ModelName(),
+		"--model", modelSource.ModelPath(),
+		"--served-model-name", modelSource.ModelName(),
 		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
 	}
 }

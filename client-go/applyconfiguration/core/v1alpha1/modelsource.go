@@ -17,22 +17,22 @@ limitations under the License.
 
 package v1alpha1
 
-// DataSourceApplyConfiguration represents an declarative configuration of the DataSource type for use
+// ModelSourceApplyConfiguration represents an declarative configuration of the ModelSource type for use
 // with apply.
-type DataSourceApplyConfiguration struct {
+type ModelSourceApplyConfiguration struct {
 	ModelHub *ModelHubApplyConfiguration `json:"modelHub,omitempty"`
 }
 
-// DataSourceApplyConfiguration constructs an declarative configuration of the DataSource type for use with
+// ModelSourceApplyConfiguration constructs an declarative configuration of the ModelSource type for use with
 // apply.
-func DataSource() *DataSourceApplyConfiguration {
-	return &DataSourceApplyConfiguration{}
+func ModelSource() *ModelSourceApplyConfiguration {
+	return &ModelSourceApplyConfiguration{}
 }
 
 // WithModelHub sets the ModelHub field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ModelHub field is set to the value of the last call.
-func (b *DataSourceApplyConfiguration) WithModelHub(value *ModelHubApplyConfiguration) *DataSourceApplyConfiguration {
+func (b *ModelSourceApplyConfiguration) WithModelHub(value *ModelHubApplyConfiguration) *ModelSourceApplyConfiguration {
 	b.ModelHub = value
 	return b
 }

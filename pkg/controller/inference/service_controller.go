@@ -42,7 +42,7 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg/controller_helper/datasource"
+	source "inftyai.com/llmaz/pkg/controller_helper/model_source"
 	"inftyai.com/llmaz/pkg/util"
 )
 
@@ -148,8 +148,8 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 }
 
 func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
-	dataSource := datasource.NewDataSourceProvider(model)
-	dataSource.InjectModelLoader(template.WorkerTemplate)
+	modelSource := source.NewDataSourceProvider(model)
+	modelSource.InjectModelLoader(template.WorkerTemplate)
 }
 
 func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {

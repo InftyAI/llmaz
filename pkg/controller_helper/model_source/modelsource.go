@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package datasource
+package modelSource
 
 import (
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +29,7 @@ type DataSourceProvider interface {
 }
 
 func NewDataSourceProvider(model *coreapi.Model) DataSourceProvider {
-	if model.Spec.DataSource.ModelHub != nil {
+	if model.Spec.Source.ModelHub != nil {
 		return &ModelHubProvider{model: model}
 	}
 	// Should not reach here, it will be validated at webhook in prior.

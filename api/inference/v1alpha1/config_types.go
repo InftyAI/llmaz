@@ -28,7 +28,7 @@ const (
 
 type BackendConfig struct {
 	// Name represents the inference backend under the hood, e.g. vLLM.
-	// +kubebuilder:validation:Enum={vllm}
+	// +kubebuilder:validation:Enum={vllm,sglang}
 	// +kubebuilder:default=vllm
 	// +optional
 	Name *BackendName `json:"name,omitempty"`

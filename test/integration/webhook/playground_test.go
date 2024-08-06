@@ -68,5 +68,17 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 			},
 			failed: true,
 		}),
+		ginkgo.Entry("sglang backend supporeted", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").Backend(string(inferenceapi.SGLANG)).Obj()
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("unknown backend configured", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).Backend("unknown").Obj()
+			},
+			failed: true,
+		}),
 	)
 })

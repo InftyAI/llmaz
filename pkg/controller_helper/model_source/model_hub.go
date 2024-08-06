@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package datasource
+package modelSource
 
 import (
 	"strings"
@@ -38,7 +38,7 @@ func (p *ModelHubProvider) ModelName() string {
 // - modelID: facebook/opt-125m
 // - modelPath: /workspace/models/models--facebook--opt-125m
 func (p *ModelHubProvider) ModelPath() string {
-	return pkg.CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.model.Spec.DataSource.ModelHub.ModelID, "/", "--")
+	return pkg.CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.model.Spec.Source.ModelHub.ModelID, "/", "--")
 }
 
 func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
@@ -56,9 +56,15 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 	// This is related to the model loader logics which will read the environment when loading models weights.
 	template.Spec.InitContainers[0].Env = append(
 		template.Spec.InitContainers[0].Env,
-		corev1.EnvVar{Name: "MODEL_ID", Value: p.model.Spec.DataSource.ModelHub.ModelID},
-		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: *p.model.Spec.DataSource.ModelHub.Name},
+		corev1.EnvVar{Name: "MODEL_ID", Value: p.model.Spec.Source.ModelHub.ModelID},
+		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: *p.model.Spec.Source.ModelHub.Name},
 	)
+	if p.model.Spec.Source.ModelHub.Revision != nil {
+		template.Spec.InitContainers[0].Env = append(
+			template.Spec.InitContainers[0].Env,
+			corev1.EnvVar{Name: "REVISION", Value: *p.model.Spec.Source.ModelHub.Revision},
+		)
+	}
 
 	for i := range template.Spec.Containers {
 		// We only consider this container.

@@ -14,8 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import os
 import concurrent.futures
+from typing import Optional
+
 from modelscope import snapshot_download
+
 from loader.model_hub.model_hub import ModelHub, MODEL_LOCAL_DIR
 
 MODEL_SCOPE = "ModelScope"
@@ -28,16 +32,20 @@ class ModelScope(ModelHub):
         return MODEL_SCOPE
 
     @classmethod
-    def load_model(cls, model_id: str) -> None:
+    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
         print(f"Start to download model {model_id}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
+            local_dir = os.path.join(
+                MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+            )
             futures.append(
                 executor.submit(
                     snapshot_download,
                     model_id=model_id,
-                    local_dir=MODEL_LOCAL_DIR,
+                    local_dir=local_dir,
+                    revision=revision,
                 ).add_done_callback(handle_completion)
             )
 
