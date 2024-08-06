@@ -36,6 +36,10 @@ type ModelHub struct {
 	// ModelID refers to the model identifier on model hub,
 	// such as meta-llama/Meta-Llama-3-8B.
 	ModelID string `json:"modelID,omitempty"`
+	// Revision refers to a Git revision id which can be a branch name, a tag, or a commit hash.
+	// Most of the time, you don't need to specify it.
+	// +optional
+	Revision *string `json:"revision,omitempty"`
 }
 
 // Add roles for operating leaderWorkerSet.
@@ -43,15 +47,16 @@ type ModelHub struct {
 // +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets/status,verbs=get;update;patch
 
-// DataSource represents where to load the model.
-// Only one data source will be used.
-type DataSource struct {
+// ModelSource represents source of the model.
+// Only one model source will be used.
+type ModelSource struct {
 	// ModelHub represents the model registry for model downloads.
 	ModelHub *ModelHub `json:"modelHub,omitempty"`
 	// URI represents a various kinds of model sources following the protocol of <type>://<address>,
 	// e.g. oci://<model address>. A wide range of source types are supported, such as s3, gcs
 	// docker images, oci artifacts and more.
 	// +optional
+	// URI *string `json:"uri,omitempty"`
 }
 
 type FlavorName string
@@ -129,9 +134,9 @@ type ModelSpec struct {
 	// FamilyName represents the model type, like llama2, which will be auto injected
 	// to the labels with the key of `llmaz.io/model-family-name`.
 	FamilyName ModelName `json:"familyName"`
-	// DataSource represents where the model stores, there're several ways like
-	// loading from huggingface, host path, s3 and so on.
-	DataSource DataSource `json:"dataSource"`
+	// Source represents the source of the model, there're several ways to load
+	// the model such as loading from huggingface, OCI registry, s3, host path and so on.
+	Source ModelSource `json:"source"`
 	// InferenceFlavors represents the accelerator requirements to serve the model.
 	// Flavors are fungible following the priority of slice order.
 	// +optional

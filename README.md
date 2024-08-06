@@ -7,7 +7,7 @@
 [GoReport Widget]: https://goreportcard.com/badge/github.com/inftyai/llmaz
 [GoReport Status]: https://goreportcard.com/report/github.com/inftyai/llmaz
 
-**llmaz** (pronounced `/lima:z/`), aims to provide a **Production-Ready** inference platform for large language models on Kubernetes. It closely integrates with state-of-the-art inference backends like [vLLM](https://github.com/vllm-project/vllm) to bring the cutting-edge researches to cloud.
+**llmaz** (pronounced `/lima:z/`), aims to provide a **Production-Ready** inference platform for large language models on Kubernetes. It closely integrates with state-of-the-art inference backends like [vLLM](https://github.com/vllm-project/vllm) to bring the leading-edge researches to cloud.
 
 ## Concept
 
@@ -16,7 +16,7 @@
 ## Feature Overview
 
 - **User Friendly**: People can quick deploy a LLM service with minimal configurations.
-- **High Performance**: llmaz integrates with vLLM by default for high performance inference. Other backends support is on the way.
+- **High performance**: llmaz supports a wide range of advanced inference backends for high performance, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang). The full supported backends list is [here](./docs/support-backends.md).
 - **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
 - **Accelerator Fungibility (WIP)**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
 - **SOTA Inference (WIP)**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677) to run on Kubernetes.
@@ -30,7 +30,10 @@ Read the [Installation](./docs/installation.md) for guidance.
 
 ### Deploy
 
-Once `Model`s (e.g. facebook/opt-125m) are published, you can quick deploy a `Playground` to serve the model.
+Here's a simplest sample for deploying `facebook/opt-125m`, all you need to do
+is to apply the `Model` and `Playground` yamls.
+
+Please refer to **[examples](/docs/examples/README.md)** to learn more.
 
 #### Model
 
@@ -41,8 +44,9 @@ metadata:
   name: opt-125m
 spec:
   familyName: opt
-  dataSource:
-    modelID: facebook/opt-125m
+  source:
+    modelHub:
+      modelID: facebook/opt-125m
   inferenceFlavors:
   - name: t4 # GPU type
     requests:
@@ -82,14 +86,12 @@ curl http://localhost:8080/v1/models
 curl http://localhost:8080/v1/completions \
 -H "Content-Type: application/json" \
 -d '{
-    "model": "facebook/opt-125m",
+    "model": "opt-125m",
     "prompt": "San Francisco is a",
     "max_tokens": 10,
     "temperature": 0
 }'
 ```
-
-Refer to **[examples](/docs/examples/README.md)** to learn more.
 
 ## Roadmap
 

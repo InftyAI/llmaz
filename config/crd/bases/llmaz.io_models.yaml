@@ -39,29 +39,6 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model
             properties:
-              dataSource:
-                description: |-
-                  DataSource represents where the model stores, there're several ways like
-                  loading from huggingface, host path, s3 and so on.
-                properties:
-                  modelHub:
-                    description: ModelHub represents the model registry for model
-                      downloads.
-                    properties:
-                      modelID:
-                        description: |-
-                          ModelID refers to the model identifier on model hub,
-                          such as meta-llama/Meta-Llama-3-8B.
-                        type: string
-                      name:
-                        default: Huggingface
-                        description: Name refers to the model registry, such as huggingface.
-                        enum:
-                        - Huggingface
-                        - ModelScope
-                        type: string
-                    type: object
-                type: object
               familyName:
                 description: |-
                   FamilyName represents the model type, like llama2, which will be auto injected
@@ -121,9 +98,37 @@ spec:
                   - name
                   type: object
                 type: array
+              source:
+                description: |-
+                  Source represents the source of the model, there're several ways to load
+                  the model such as loading from huggingface, OCI registry, s3, host path and so on.
+                properties:
+                  modelHub:
+                    description: ModelHub represents the model registry for model
+                      downloads.
+                    properties:
+                      modelID:
+                        description: |-
+                          ModelID refers to the model identifier on model hub,
+                          such as meta-llama/Meta-Llama-3-8B.
+                        type: string
+                      name:
+                        default: Huggingface
+                        description: Name refers to the model registry, such as huggingface.
+                        enum:
+                        - Huggingface
+                        - ModelScope
+                        type: string
+                      revision:
+                        description: |-
+                          Revision refers to a Git revision id which can be a branch name, a tag, or a commit hash.
+                          Most of the time, you don't need to specify it.
+                        type: string
+                    type: object
+                type: object
             required:
-            - dataSource
             - familyName
+            - source
             type: object
           status:
             description: ModelStatus defines the observed state of Model

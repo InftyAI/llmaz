@@ -31,6 +31,7 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	"inftyai.com/llmaz/pkg"
 	"inftyai.com/llmaz/pkg/controller_helper/backend"
 	"inftyai.com/llmaz/test/util"
 )
@@ -63,24 +64,26 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 
 		// TODO: MultiModelsClaim
 
+		backendName := inferenceapi.DefaultBackend
+		if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {
+			backendName = *playground.Spec.BackendConfig.Name
+		}
+		bkd := backend.SwitchBackend(backendName)
+
+		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != pkg.MODEL_RUNNER_CONTAINER_NAME {
+			return fmt.Errorf("container name not right, want %s, got %s", pkg.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
+		}
+		if diff := cmp.Diff(bkd.DefaultCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+			return errors.New("command not right")
+		}
 		if playground.Spec.BackendConfig != nil {
-			backendName := inferenceapi.DefaultBackend
-			if playground.Spec.BackendConfig.Name != nil {
-				backendName = *playground.Spec.BackendConfig.Name
-			}
-			if playground.Spec.BackendConfig.Version != nil && backend.SwitchBackend(backendName).Image(*playground.Spec.BackendConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
-				return fmt.Errorf("expected container image %s, got %s", backend.SwitchBackend(backendName).Image(*playground.Spec.BackendConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
-			}
-			if playground.Spec.BackendConfig.Resources != nil {
-				if playground.Spec.BackendConfig.Resources.Limits != nil {
-					if diff := cmp.Diff(playground.Spec.BackendConfig.Resources.Limits, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits); diff != "" {
-						return errors.New("unexpected resource limits")
-					}
+			if playground.Spec.BackendConfig.Version != nil {
+				if bkd.Image(*playground.Spec.BackendConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
+					return fmt.Errorf("expected container image %s, got %s", bkd.Image(*playground.Spec.BackendConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
-				if playground.Spec.BackendConfig.Resources.Requests != nil {
-					if diff := cmp.Diff(playground.Spec.BackendConfig.Resources.Requests, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests); diff != "" {
-						return errors.New("unexpected resource requests")
-					}
+			} else {
+				if bkd.Image(bkd.DefaultVersion()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
+					return fmt.Errorf("expected container image %s, got %s", bkd.Image(bkd.DefaultVersion()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
 			}
 			for _, arg := range playground.Spec.BackendConfig.Args {
@@ -91,8 +94,31 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendConfig.Envs); diff != "" {
 				return fmt.Errorf("unexpected envs")
 			}
+			if playground.Spec.BackendConfig.Resources != nil {
+				for k, v := range playground.Spec.BackendConfig.Resources.Limits {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+					}
+				}
+				for k, v := range playground.Spec.BackendConfig.Resources.Requests {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
+					}
+				}
+			} else {
+				// Validate default resources requirements.
+				for k, v := range bkd.DefaultResources().Limits {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+					}
+				}
+				for k, v := range bkd.DefaultResources().Requests {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
+					}
+				}
+			}
 		}
-		// TODO: validate multiModelsClaims config
 
 		return nil
 

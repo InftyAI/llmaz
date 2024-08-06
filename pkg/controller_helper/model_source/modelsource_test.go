@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package datasource
+package modelSource
 
 import (
 	"testing"
@@ -23,7 +23,7 @@ import (
 	"inftyai.com/llmaz/test/util"
 )
 
-func Test_DataSourceProvider(t *testing.T) {
+func Test_ModelSourceProvider(t *testing.T) {
 	testCases := []struct {
 		name          string
 		model         *coreapi.Model

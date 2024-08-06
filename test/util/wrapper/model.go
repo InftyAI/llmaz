@@ -49,27 +49,27 @@ func (w *ModelWrapper) FamilyName(name string) *ModelWrapper {
 
 func (w *ModelWrapper) DataSourceWithModelID(modelID string) *ModelWrapper {
 	if modelID != "" {
-		if w.Spec.DataSource.ModelHub == nil {
-			w.Spec.DataSource.ModelHub = &core.ModelHub{}
+		if w.Spec.Source.ModelHub == nil {
+			w.Spec.Source.ModelHub = &core.ModelHub{}
 		}
-		w.Spec.DataSource.ModelHub.ModelID = modelID
+		w.Spec.Source.ModelHub.ModelID = modelID
 	}
 	return w
 }
 
 func (w *ModelWrapper) DataSourceWithModelHub(modelHub string) *ModelWrapper {
 	if modelHub != "" {
-		if w.Spec.DataSource.ModelHub == nil {
-			w.Spec.DataSource.ModelHub = &core.ModelHub{}
+		if w.Spec.Source.ModelHub == nil {
+			w.Spec.Source.ModelHub = &core.ModelHub{}
 		}
-		w.Spec.DataSource.ModelHub.Name = &modelHub
+		w.Spec.Source.ModelHub.Name = &modelHub
 	}
 	return w
 }
 
 // func (w *ModelWrapper) DataSourceWithURI(uri string) *ModelWrapper {
 // 	if uri != "" {
-// 		w.Spec.DataSource.URI = &uri
+// 		w.Spec.Source.URI = &uri
 // 	}
 // 	return w
 // }

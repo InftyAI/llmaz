@@ -27,6 +27,7 @@ from loader.model_hub.model_hub import ModelHub, MODEL_LOCAL_DIR
 
 HUGGING_FACE = "Huggingface"
 MAX_WORKERS = 4
+from typing import Optional
 
 
 class Huggingface(ModelHub):
@@ -35,7 +36,7 @@ class Huggingface(ModelHub):
         return HUGGING_FACE
 
     @classmethod
-    def load_model(cls, model_id: str) -> None:
+    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
         print(f"Start to download model {model_id}")
         # # TODO: Should we verify the download is finished?
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -51,6 +52,7 @@ class Huggingface(ModelHub):
                         repo_id=model_id,
                         filename=file,
                         local_dir=local_dir,
+                        revision=revision,
                     ).add_done_callback(handle_completion)
                 )
 

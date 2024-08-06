@@ -169,6 +169,7 @@ spec:
                       e.g. vLLM.
                     enum:
                     - vllm
+                    - sglang
                     type: string
                   resources:
                     description: |-

@@ -15,7 +15,7 @@ limitations under the License.
 """
 
 from abc import ABC, abstractmethod
-
+from typing import Optional
 
 MODEL_LOCAL_DIR = "/workspace/models/"
 
@@ -28,5 +28,5 @@ class ModelHub(ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, model_id: str) -> None:
+    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
         pass
