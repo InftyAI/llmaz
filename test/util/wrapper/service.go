@@ -79,11 +79,21 @@ func (w *ServiceWrapper) WorkerTemplate() *ServiceWrapper {
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:  "mode-runner",
+					Name:  "model-runner",
 					Image: "vllm:test",
 				},
 			},
 		},
 	}
+	return w
+}
+
+func (w *ServiceWrapper) ContainerName(name string) *ServiceWrapper {
+	w.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name = name
+	return w
+}
+
+func (w *ServiceWrapper) InitContainerName(name string) *ServiceWrapper {
+	w.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers[0].Name = name
 	return w
 }

@@ -42,7 +42,8 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	source "inftyai.com/llmaz/pkg/controller_helper/model_source"
+	"inftyai.com/llmaz/pkg"
+	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 	"inftyai.com/llmaz/pkg/util"
 )
 
@@ -129,7 +130,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
 	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate)
 
-	// The core logic injected via the playground.
+	// The core logic to inject additional configurations.
 	injectModelProperties(leaderWorkerTemplate, model)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
@@ -141,15 +142,16 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 }
 
 func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+	modelSource := modelSource.NewDataSourceProvider(model)
+
 	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(model))
 
-	injectModelLoader(template, model)
+	injectModelLoader(template, modelSource)
 	injectModelFlavor(template, model)
 }
 
-func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
-	modelSource := source.NewDataSourceProvider(model)
-	modelSource.InjectModelLoader(template.WorkerTemplate)
+func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, source modelSource.DataSourceProvider) {
+	source.InjectModelLoader(template.WorkerTemplate)
 }
 
 func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
@@ -157,19 +159,26 @@ func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 		return
 	}
 
+	container := &corev1.Container{}
+	for i, c := range template.WorkerTemplate.Spec.Containers {
+		if c.Name == pkg.MODEL_RUNNER_CONTAINER_NAME {
+			container = &template.WorkerTemplate.Spec.Containers[i]
+		}
+	}
+
 	// Let's handle the 0-index flavor for the model first.
 	// TODO: fungibility support.
 	requests := model.Spec.InferenceFlavors[0].Requests
 	for k, v := range requests {
-		if template.WorkerTemplate.Spec.Containers[0].Resources.Requests == nil {
-			template.WorkerTemplate.Spec.Containers[0].Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
+		if container.Resources.Requests == nil {
+			container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
 		}
-		template.WorkerTemplate.Spec.Containers[0].Resources.Requests[k] = v
+		container.Resources.Requests[k] = v
 
-		if template.WorkerTemplate.Spec.Containers[0].Resources.Limits == nil {
-			template.WorkerTemplate.Spec.Containers[0].Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
+		if container.Resources.Limits == nil {
+			container.Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
 		}
-		template.WorkerTemplate.Spec.Containers[0].Resources.Limits[k] = v
+		container.Resources.Limits[k] = v
 	}
 
 	nodeSelector := model.Spec.InferenceFlavors[0].NodeSelector

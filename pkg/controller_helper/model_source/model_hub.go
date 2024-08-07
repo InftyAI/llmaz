@@ -22,6 +22,7 @@ import (
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/pkg"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/utils/ptr"
 )
 
 var _ DataSourceProvider = &ModelHubProvider{}
@@ -42,7 +43,8 @@ func (p *ModelHubProvider) ModelPath() string {
 }
 
 func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
-	template.Spec.InitContainers = append(template.Spec.InitContainers, corev1.Container{
+	// Handle initContainer.
+	initContainer := &corev1.Container{
 		Name:  pkg.MODEL_LOADER_CONTAINER_NAME,
 		Image: pkg.LOADER_IMAGE,
 		VolumeMounts: []corev1.VolumeMount{
@@ -51,20 +53,48 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 				MountPath: pkg.CONTAINER_MODEL_PATH,
 			},
 		},
-	})
+	}
 
 	// This is related to the model loader logics which will read the environment when loading models weights.
-	template.Spec.InitContainers[0].Env = append(
-		template.Spec.InitContainers[0].Env,
+	initContainer.Env = append(
+		initContainer.Env,
 		corev1.EnvVar{Name: "MODEL_ID", Value: p.model.Spec.Source.ModelHub.ModelID},
 		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: *p.model.Spec.Source.ModelHub.Name},
 	)
 	if p.model.Spec.Source.ModelHub.Revision != nil {
-		template.Spec.InitContainers[0].Env = append(
-			template.Spec.InitContainers[0].Env,
+		initContainer.Env = append(
+			initContainer.Env,
 			corev1.EnvVar{Name: "REVISION", Value: *p.model.Spec.Source.ModelHub.Revision},
 		)
 	}
+	initContainer.Env = append(initContainer.Env,
+		corev1.EnvVar{
+			Name: "HUGGING_FACE_HUB_TOKEN", // vllm
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: pkg.MODEL_SECRET_NAME, // if secret not exists, the env is empty.
+					},
+					Key:      pkg.HUGGINGFACE_TOKEN_KEY,
+					Optional: ptr.To[bool](true),
+				},
+			},
+		}, corev1.EnvVar{
+			Name: "HF_TOKEN", //sglang
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: pkg.MODEL_SECRET_NAME,
+					},
+					Key:      pkg.HUGGINGFACE_TOKEN_KEY,
+					Optional: ptr.To[bool](true),
+				},
+			},
+		},
+	)
+	template.Spec.InitContainers = append(template.Spec.InitContainers, *initContainer)
+
+	// Handle container.
 
 	for i := range template.Spec.Containers {
 		// We only consider this container.
@@ -76,6 +106,8 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 			})
 		}
 	}
+
+	// Handle spec.
 
 	hostType := corev1.HostPathDirectoryOrCreate
 	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{

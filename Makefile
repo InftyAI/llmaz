@@ -181,10 +181,10 @@ image-build:
 		$(PUSH) \
 		$(LOAD) \
 		$(IMAGE_BUILD_EXTRA_OPTS) ./
-
-.PHONY: image-push
 image-push: PUSH=--push
 image-push: image-build
+image-load: LOAD=--load
+image-load: image-load
 
 .PHONY: loader-image-build
 loader-image-build:
@@ -233,6 +233,7 @@ deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in
 quick-deploy: manifests kustomize kind-image-build ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | $(KUBECTL) apply --server-side --force-conflicts -f -
+	kind load docker-image ${IMG}
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.

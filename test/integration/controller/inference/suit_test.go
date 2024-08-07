@@ -38,7 +38,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	api "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/pkg/controller"
 	inferencecontroller "inftyai.com/llmaz/pkg/controller/inference"
@@ -89,7 +89,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	Expect(cfg).NotTo(BeNil())
 
-	err = api.AddToScheme(scheme.Scheme)
+	err = coreapi.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 	err = inferenceapi.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
