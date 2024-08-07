@@ -20,12 +20,13 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	core "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
 type ModelWebhook struct{}
@@ -33,7 +34,7 @@ type ModelWebhook struct{}
 // SetupModelWebhook will setup the manager to manage the webhooks
 func SetupModelWebhook(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(&core.Model{}).
+		For(&coreapi.Model{}).
 		WithDefaulter(&ModelWebhook{}).
 		WithValidator(&ModelWebhook{}).
 		Complete()
@@ -45,11 +46,11 @@ var _ webhook.CustomDefaulter = &ModelWebhook{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (w *ModelWebhook) Default(ctx context.Context, obj runtime.Object) error {
-	model := obj.(*core.Model)
+	model := obj.(*coreapi.Model)
 	if model.Labels == nil {
 		model.Labels = map[string]string{}
 	}
-	model.Labels[core.ModelFamilyNameLabelKey] = string(model.Spec.FamilyName)
+	model.Labels[coreapi.ModelFamilyNameLabelKey] = string(model.Spec.FamilyName)
 	return nil
 }
 
@@ -60,6 +61,10 @@ var _ webhook.CustomValidator = &ModelWebhook{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (w *ModelWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	allErrs := w.generateValidate(obj)
+	model := obj.(*coreapi.Model)
+	for _, err := range validation.IsDNS1123Label(model.Name) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("metadata.name"), model.Name, err))
+	}
 	return nil, allErrs.ToAggregate()
 }
 
@@ -75,7 +80,7 @@ func (w *ModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (
 }
 
 func (w *ModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
-	model := obj.(*core.Model)
+	model := obj.(*coreapi.Model)
 	dataSourcePath := field.NewPath("spec", "dataSource")
 
 	var allErrs field.ErrorList

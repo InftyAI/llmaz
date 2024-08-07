@@ -25,7 +25,7 @@ import (
 // with apply.
 type ModelSpecApplyConfiguration struct {
 	FamilyName       *v1alpha1.ModelName            `json:"familyName,omitempty"`
-	Source           *ModelSourceApplyConfiguration `json:"modelSource,omitempty"`
+	Source           *ModelSourceApplyConfiguration `json:"source,omitempty"`
 	InferenceFlavors []FlavorApplyConfiguration     `json:"inferenceFlavors,omitempty"`
 }
 

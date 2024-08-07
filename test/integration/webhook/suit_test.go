@@ -126,6 +126,8 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 	err = apiwebhook.SetupPlaygroundWebhook(mgr)
 	Expect(err).NotTo(HaveOccurred())
+	err = apiwebhook.SetupServiceWebhook(mgr)
+	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook
 

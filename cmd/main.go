@@ -165,5 +165,9 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Playground")
 			os.Exit(1)
 		}
+		if err := webhook.SetupServiceWebhook(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Service")
+			os.Exit(1)
+		}
 	}
 }

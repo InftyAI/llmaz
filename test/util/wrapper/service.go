@@ -79,7 +79,7 @@ func (w *ServiceWrapper) WorkerTemplate() *ServiceWrapper {
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name:  "vllm",
+					Name:  "mode-runner",
 					Image: "vllm:test",
 				},
 			},

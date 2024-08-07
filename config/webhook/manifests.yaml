@@ -44,6 +44,26 @@ webhooks:
     resources:
     - playgrounds
   sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-inference-llmaz-io-v1alpha1-service
+  failurePolicy: Fail
+  name: mservice.kb.io
+  rules:
+  - apiGroups:
+    - inference.llmaz.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - services
+  sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -89,4 +109,24 @@ webhooks:
     - UPDATE
     resources:
     - playgrounds
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-inference-llmaz-io-v1alpha1-service
+  failurePolicy: Fail
+  name: vservice.kb.io
+  rules:
+  - apiGroups:
+    - inference.llmaz.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - services
   sideEffects: None

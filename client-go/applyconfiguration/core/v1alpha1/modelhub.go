@@ -20,8 +20,9 @@ package v1alpha1
 // ModelHubApplyConfiguration represents an declarative configuration of the ModelHub type for use
 // with apply.
 type ModelHubApplyConfiguration struct {
-	Name    *string `json:"name,omitempty"`
-	ModelID *string `json:"modelID,omitempty"`
+	Name     *string `json:"name,omitempty"`
+	ModelID  *string `json:"modelID,omitempty"`
+	Revision *string `json:"revision,omitempty"`
 }
 
 // ModelHubApplyConfiguration constructs an declarative configuration of the ModelHub type for use with
@@ -43,5 +44,13 @@ func (b *ModelHubApplyConfiguration) WithName(value string) *ModelHubApplyConfig
 // If called multiple times, the ModelID field is set to the value of the last call.
 func (b *ModelHubApplyConfiguration) WithModelID(value string) *ModelHubApplyConfiguration {
 	b.ModelID = &value
+	return b
+}
+
+// WithRevision sets the Revision field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Revision field is set to the value of the last call.
+func (b *ModelHubApplyConfiguration) WithRevision(value string) *ModelHubApplyConfiguration {
+	b.Revision = &value
 	return b
 }
