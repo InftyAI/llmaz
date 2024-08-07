@@ -76,7 +76,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 	ginkgo.DescribeTable("test validating",
 		func(tc *testValidatingCase) {
 			if tc.failed {
-				gomega.Expect(k8sClient.Create(ctx, tc.model())).To(gomega.HaveOccurred())
+				gomega.Expect(k8sClient.Create(ctx, tc.model())).Should(gomega.HaveOccurred())
 			} else {
 				gomega.Expect(k8sClient.Create(ctx, tc.model())).To(gomega.Succeed())
 			}
@@ -87,11 +87,17 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			},
 			failed: false,
 		}),
-		ginkgo.Entry("normal modelscope model creation", &testValidatingCase{
+		ginkgo.Entry("normal modelScope model creation", &testValidatingCase{
 			model: func() *core.Model {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelHub("ModelScope").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
 			},
 			failed: false,
+		}),
+		ginkgo.Entry("invalid model name", &testValidatingCase{
+			model: func() *core.Model {
+				return wrapper.MakeModel("qwen-2-0.5b").FamilyName("qwen2").DataSourceWithModelID("Qwen/Qwen2-0.5B-Instruct").Obj()
+			},
+			failed: true,
 		}),
 		// ginkgo.Entry("model creation with URI configured", &testValidatingCase{
 		// 	model: func() *core.Model {

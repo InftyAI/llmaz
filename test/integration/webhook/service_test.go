@@ -16,33 +16,57 @@ limitations under the License.
 
 package webhook
 
-// import (
-// 	"github.com/onsi/ginkgo/v2"
-// 	"github.com/onsi/gomega"
-// 	corev1 "k8s.io/api/core/v1"
-// 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-// )
+import (
+	"github.com/onsi/ginkgo/v2"
+	"github.com/onsi/gomega"
+	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	"inftyai.com/llmaz/test/util"
+	"inftyai.com/llmaz/test/util/wrapper"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
-// var _ = ginkgo.Describe("model default and validation", func() {
-// 	// Each test runs in a separate namespace.
-// 	var ns *corev1.Namespace
+var _ = ginkgo.Describe("service default and validation", func() {
+	// Each test runs in a separate namespace.
+	var ns *corev1.Namespace
 
-// 	ginkgo.BeforeEach(func() {
-// 		// Create test namespace before each test.
-// 		ns = &corev1.Namespace{
-// 			ObjectMeta: metav1.ObjectMeta{
-// 				GenerateName: "test-ns-",
-// 			},
-// 		}
-// 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
-// 	})
-// 	ginkgo.AfterEach(func() {
-// 		gomega.Expect(k8sClient.Delete(ctx, ns)).To(gomega.Succeed())
-// 	})
+	ginkgo.BeforeEach(func() {
+		// Create test namespace before each test.
+		ns = &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				GenerateName: "test-ns-",
+			},
+		}
+		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
+	})
+	ginkgo.AfterEach(func() {
+		gomega.Expect(k8sClient.Delete(ctx, ns)).To(gomega.Succeed())
+	})
 
-// 	ginkgo.DescribeTable("test defaulting",
-// 		func() {
+	type testValidatingCase struct {
+		service func() *inferenceapi.Service
+		failed  bool
+	}
 
-// 		},
-// 	)
-// })
+	ginkgo.DescribeTable("test validating",
+		func(tc *testValidatingCase) {
+			if tc.failed {
+				gomega.Expect(k8sClient.Create(ctx, tc.service())).To(gomega.HaveOccurred())
+			} else {
+				gomega.Expect(k8sClient.Create(ctx, tc.service())).To(gomega.Succeed())
+			}
+		},
+		ginkgo.Entry("normal Service creation", &testValidatingCase{
+			service: func() *inferenceapi.Service {
+				return util.MockASampleService(ns.Name)
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("invalid name", &testValidatingCase{
+			service: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-0.5b", ns.Name).WorkerTemplate().Obj()
+			},
+			failed: true,
+		}),
+	)
+})

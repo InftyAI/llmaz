@@ -56,11 +56,17 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 				gomega.Expect(k8sClient.Create(ctx, tc.playground())).To(gomega.Succeed())
 			}
 		},
-		ginkgo.Entry("normal model creation", &testValidatingCase{
+		ginkgo.Entry("normal Playground creation", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").Obj()
 			},
 			failed: false,
+		}),
+		ginkgo.Entry("invalid name", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground-0.5b", ns.Name).Replicas(1).ModelClaim("llama3-8b").Obj()
+			},
+			failed: true,
 		}),
 		ginkgo.Entry("no model claim declared", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {

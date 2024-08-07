@@ -20,6 +20,7 @@ import (
 	"context"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -55,6 +56,10 @@ var _ webhook.CustomValidator = &PlaygroundWebhook{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (w *PlaygroundWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	allErrs := w.generateValidate(obj)
+	playground := obj.(*inferenceapi.Playground)
+	for _, err := range validation.IsDNS1123Label(playground.Name) {
+		allErrs = append(allErrs, field.Invalid(field.NewPath("metadata.name"), playground.Name, err))
+	}
 	return nil, allErrs.ToAggregate()
 }
 
