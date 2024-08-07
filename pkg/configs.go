@@ -25,4 +25,10 @@ const (
 	MODEL_VOLUME_NAME           = "model-volume"
 	MODEL_RUNNER_CONTAINER_NAME = "model-runner"
 	MODEL_LOADER_CONTAINER_NAME = "model-loader"
+	MODEL_SECRET_NAME           = "model-secret"
+
+	HUGGINGFACE_TOKEN_KEY = "HF_TOKEN"
+
+	HUGGINGFACE_HUB = "Huggingface"
+	MODELSCOPE_HUB  = "ModelScope"
 )

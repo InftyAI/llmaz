@@ -93,7 +93,7 @@ func ValidateModelLoader(model *coreapi.Model, workload *lws.LeaderWorkerSet, se
 			return fmt.Errorf("unexpected initContainer image, want %s, got %s", pkg.LOADER_IMAGE, initContainer.Image)
 		}
 
-		envStrings := []string{"MODEL_ID", "MODEL_HUB_NAME"}
+		envStrings := []string{"MODEL_ID", "MODEL_HUB_NAME", "HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"}
 		if model.Spec.Source.ModelHub.Revision != nil {
 			envStrings = append(envStrings, "REVISION")
 		}

@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	"inftyai.com/llmaz/pkg"
 )
 
 type ServiceWebhook struct{}
@@ -60,6 +61,18 @@ func (w *ServiceWebhook) ValidateCreate(ctx context.Context, obj runtime.Object)
 	for _, err := range validation.IsDNS1123Label(service.Name) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("metadata.name"), service.Name, err))
 	}
+
+	runnerContainerExists := false
+	for _, container := range service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers {
+		if container.Name == pkg.MODEL_RUNNER_CONTAINER_NAME {
+			runnerContainerExists = true
+			break
+		}
+	}
+	if !runnerContainerExists {
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec.workloadTemplate.leaderWorkerTemplate.workerTemplate.spec.containers"), "model-runner container doesn't exist"))
+	}
+
 	return nil, allErrs.ToAggregate()
 }
 
