@@ -22,13 +22,13 @@ import (
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
-type DataSourceProvider interface {
+type ModelSourceProvider interface {
 	ModelName() string
 	ModelPath() string
 	InjectModelLoader(*corev1.PodTemplateSpec)
 }
 
-func NewDataSourceProvider(model *coreapi.Model) DataSourceProvider {
+func NewModelSourceProvider(model *coreapi.Model) ModelSourceProvider {
 	if model.Spec.Source.ModelHub != nil {
 		return &ModelHubProvider{model: model}
 	}

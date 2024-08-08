@@ -25,7 +25,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-var _ DataSourceProvider = &ModelHubProvider{}
+var _ ModelSourceProvider = &ModelHubProvider{}
 
 type ModelHubProvider struct {
 	model *coreapi.Model

@@ -25,7 +25,7 @@ import (
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/pkg"
-	source "inftyai.com/llmaz/pkg/controller_helper/model_source"
+	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 )
 
 var _ Backend = (*SGLANG)(nil)
@@ -66,10 +66,10 @@ func (s *SGLANG) DefaultCommands() []string {
 }
 
 func (s *SGLANG) DefaultArgs(model *coreapi.Model) []string {
-	modelSource := source.NewDataSourceProvider(model)
+	source := modelSource.NewModelSourceProvider(model)
 	return []string{
-		"--model-path", modelSource.ModelPath(),
-		"--served-model-name", modelSource.ModelName(),
+		"--model-path", source.ModelPath(),
+		"--served-model-name", source.ModelName(),
 		"--host", "0.0.0.0",
 		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
 	}

@@ -142,15 +142,15 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 }
 
 func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
-	modelSource := modelSource.NewDataSourceProvider(model)
+	source := modelSource.NewModelSourceProvider(model)
 
 	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(model))
 
-	injectModelLoader(template, modelSource)
+	injectModelLoader(template, source)
 	injectModelFlavor(template, model)
 }
 
-func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, source modelSource.DataSourceProvider) {
+func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, source modelSource.ModelSourceProvider) {
 	source.InjectModelLoader(template.WorkerTemplate)
 }
 
