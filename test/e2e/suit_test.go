@@ -34,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	api "inftyai.com/llmaz/api/core/v1alpha1"
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/test/util"
@@ -103,6 +102,6 @@ func readyForTesting(client client.Client) {
 	// Delete this model before beginning tests.
 	Expect(client.Delete(ctx, model))
 	Eventually(func() error {
-		return client.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, &api.Model{})
+		return client.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, &coreapi.Model{})
 	}).ShouldNot(Succeed())
 }

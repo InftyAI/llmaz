@@ -46,7 +46,7 @@ func Test_ModelSourceProvider(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			provider := NewDataSourceProvider(tc.model)
+			provider := NewModelSourceProvider(tc.model)
 			if tc.wantModelName != provider.ModelName() {
 				t.Fatalf("unexpected model name, want %s, got %s", tc.wantModelName, provider.ModelName())
 			}

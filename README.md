@@ -16,7 +16,7 @@
 ## Feature Overview
 
 - **User Friendly**: People can quick deploy a LLM service with minimal configurations.
-- **High performance**: llmaz supports a wide range of advanced inference backends for high performance, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang). Find the full list of supported backends [here](./docs/support-backends.md).
+- **High Performance**: llmaz supports a wide range of advanced inference backends for high performance, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang). Find the full list of supported backends [here](./docs/support-backends.md).
 - **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
 - **Accelerator Fungibility (WIP)**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
 - **SOTA Inference (WIP)**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677) to run on Kubernetes.
@@ -35,7 +35,7 @@ is to apply the `Model` and `Playground` yamls.
 
 Please refer to **[examples](/docs/examples/README.md)** to learn more.
 
-> Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic model-secret  --from-literal=HF_TOKEN=<your token>` ahead.
+> Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic model-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
 #### Model
 

@@ -7,7 +7,6 @@ spec:
   source:
     modelHub:
       modelID: facebook/opt-125m
-      revision: main
   inferenceFlavors:
   - name: t4 # GPU type
     requests:
