@@ -1,5 +1,5 @@
 apiVersion: llmaz.io/v1alpha1
-kind: Model
+kind: OpenModel
 metadata:
   name: qwen2-05b
 spec:

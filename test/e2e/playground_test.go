@@ -22,7 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testing "sigs.k8s.io/lws/test/testutils"
 
-	api "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/test/util"
 )
 
@@ -30,7 +30,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
-	var model *api.Model
+	var model *coreapi.OpenModel
 
 	ginkgo.BeforeEach(func() {
 		// Create test namespace before each test.

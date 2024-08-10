@@ -26,7 +26,7 @@ import (
 func Test_ModelSourceProvider(t *testing.T) {
 	testCases := []struct {
 		name          string
-		model         *coreapi.Model
+		model         *coreapi.OpenModel
 		wantModelName string
 		wantModelPath string
 	}{

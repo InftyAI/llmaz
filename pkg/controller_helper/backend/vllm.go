@@ -65,7 +65,7 @@ func (v *VLLM) DefaultCommands() []string {
 	return []string{"python3", "-m", "vllm.entrypoints.openai.api_server"}
 }
 
-func (v *VLLM) DefaultArgs(model *coreapi.Model) []string {
+func (v *VLLM) DefaultArgs(model *coreapi.OpenModel) []string {
 	source := modelSource.NewModelSourceProvider(model)
 	return []string{
 		"--model", source.ModelPath(),

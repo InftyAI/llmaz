@@ -27,7 +27,7 @@ import (
 
 type LlmazV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	ModelsGetter
+	OpenModelsGetter
 }
 
 // LlmazV1alpha1Client is used to interact with features provided by the llmaz.io group.
@@ -35,8 +35,8 @@ type LlmazV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *LlmazV1alpha1Client) Models(namespace string) ModelInterface {
-	return newModels(c, namespace)
+func (c *LlmazV1alpha1Client) OpenModels(namespace string) OpenModelInterface {
+	return newOpenModels(c, namespace)
 }
 
 // NewForConfig creates a new LlmazV1alpha1Client for the given config.

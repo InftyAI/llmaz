@@ -52,8 +52,6 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		// Group=llmaz.io, Version=v1alpha1
 	case corev1alpha1.SchemeGroupVersion.WithKind("Flavor"):
 		return &applyconfigurationcorev1alpha1.FlavorApplyConfiguration{}
-	case corev1alpha1.SchemeGroupVersion.WithKind("Model"):
-		return &applyconfigurationcorev1alpha1.ModelApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelClaim"):
 		return &applyconfigurationcorev1alpha1.ModelClaimApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelHub"):
@@ -66,6 +64,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationcorev1alpha1.ModelStatusApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("MultiModelsClaim"):
 		return &applyconfigurationcorev1alpha1.MultiModelsClaimApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("OpenModel"):
+		return &applyconfigurationcorev1alpha1.OpenModelApplyConfiguration{}
 
 	}
 	return nil

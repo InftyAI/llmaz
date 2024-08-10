@@ -29,24 +29,24 @@ import (
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
-type ModelWebhook struct{}
+type OpenModelWebhook struct{}
 
-// SetupModelWebhook will setup the manager to manage the webhooks
-func SetupModelWebhook(mgr ctrl.Manager) error {
+// SetupOpenModelWebhook will setup the manager to manage the webhooks
+func SetupOpenModelWebhook(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
-		For(&coreapi.Model{}).
-		WithDefaulter(&ModelWebhook{}).
-		WithValidator(&ModelWebhook{}).
+		For(&coreapi.OpenModel{}).
+		WithDefaulter(&OpenModelWebhook{}).
+		WithValidator(&OpenModelWebhook{}).
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-llmaz-io-v1alpha1-model,mutating=true,failurePolicy=fail,sideEffects=None,groups=llmaz.io,resources=models,verbs=create;update,versions=v1alpha1,name=mmodel.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-llmaz-io-v1alpha1-openmodel,mutating=true,failurePolicy=fail,sideEffects=None,groups=llmaz.io,resources=openmodels,verbs=create;update,versions=v1alpha1,name=mopenmodel.kb.io,admissionReviewVersions=v1
 
-var _ webhook.CustomDefaulter = &ModelWebhook{}
+var _ webhook.CustomDefaulter = &OpenModelWebhook{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
-func (w *ModelWebhook) Default(ctx context.Context, obj runtime.Object) error {
-	model := obj.(*coreapi.Model)
+func (w *OpenModelWebhook) Default(ctx context.Context, obj runtime.Object) error {
+	model := obj.(*coreapi.OpenModel)
 	if model.Labels == nil {
 		model.Labels = map[string]string{}
 	}
@@ -54,14 +54,14 @@ func (w *ModelWebhook) Default(ctx context.Context, obj runtime.Object) error {
 	return nil
 }
 
-//+kubebuilder:webhook:path=/validate-llmaz-io-v1alpha1-model,mutating=false,failurePolicy=fail,sideEffects=None,groups=llmaz.io,resources=models,verbs=create;update,versions=v1alpha1,name=vmodel.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-llmaz-io-v1alpha1-openmodel,mutating=false,failurePolicy=fail,sideEffects=None,groups=llmaz.io,resources=openmodels,verbs=create;update,versions=v1alpha1,name=vopenmodel.kb.io,admissionReviewVersions=v1
 
-var _ webhook.CustomValidator = &ModelWebhook{}
+var _ webhook.CustomValidator = &OpenModelWebhook{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
-func (w *ModelWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (w *OpenModelWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	allErrs := w.generateValidate(obj)
-	model := obj.(*coreapi.Model)
+	model := obj.(*coreapi.OpenModel)
 	for _, err := range validation.IsDNS1123Label(model.Name) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("metadata.name"), model.Name, err))
 	}
@@ -69,18 +69,18 @@ func (w *ModelWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (w *ModelWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
+func (w *OpenModelWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
 	allErrs := w.generateValidate(newObj)
 	return nil, allErrs.ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
-func (w *ModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
+func (w *OpenModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	return nil, nil
 }
 
-func (w *ModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
-	model := obj.(*coreapi.Model)
+func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
+	model := obj.(*coreapi.OpenModel)
 	dataSourcePath := field.NewPath("spec", "dataSource")
 
 	var allErrs field.ErrorList

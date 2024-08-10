@@ -28,7 +28,7 @@ type ModelSourceProvider interface {
 	InjectModelLoader(*corev1.PodTemplateSpec)
 }
 
-func NewModelSourceProvider(model *coreapi.Model) ModelSourceProvider {
+func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	if model.Spec.Source.ModelHub != nil {
 		return &ModelHubProvider{model: model}
 	}

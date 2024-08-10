@@ -31,7 +31,7 @@ Read the [Installation](./docs/installation.md) for guidance.
 ### Deploy
 
 Here's a simplest sample for deploying `facebook/opt-125m`, all you need to do
-is to apply the `Model` and `Playground` yamls.
+is to apply a `Model` and a `Playground`.
 
 Please refer to **[examples](/docs/examples/README.md)** to learn more.
 
@@ -41,7 +41,7 @@ Please refer to **[examples](/docs/examples/README.md)** to learn more.
 
 ```yaml
 apiVersion: llmaz.io/v1alpha1
-kind: Model
+kind: OpenModel
 metadata:
   name: opt-125m
 spec:

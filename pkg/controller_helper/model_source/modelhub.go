@@ -28,7 +28,7 @@ import (
 var _ ModelSourceProvider = &ModelHubProvider{}
 
 type ModelHubProvider struct {
-	model *coreapi.Model
+	model *coreapi.OpenModel
 }
 
 func (p *ModelHubProvider) ModelName() string {

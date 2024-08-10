@@ -122,7 +122,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).NotTo(HaveOccurred())
 
-	err = apiwebhook.SetupModelWebhook(mgr)
+	err = apiwebhook.SetupOpenModelWebhook(mgr)
 	Expect(err).NotTo(HaveOccurred())
 	err = apiwebhook.SetupPlaygroundWebhook(mgr)
 	Expect(err).NotTo(HaveOccurred())

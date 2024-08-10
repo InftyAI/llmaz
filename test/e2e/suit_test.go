@@ -102,6 +102,6 @@ func readyForTesting(client client.Client) {
 	// Delete this model before beginning tests.
 	Expect(client.Delete(ctx, model))
 	Eventually(func() error {
-		return client.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, &coreapi.Model{})
+		return client.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, &coreapi.OpenModel{})
 	}).ShouldNot(Succeed())
 }

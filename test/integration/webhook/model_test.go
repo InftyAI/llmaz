@@ -22,7 +22,7 @@ import (
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	core "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/test/util/wrapper"
 )
 
@@ -30,7 +30,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 
 	// Delete all the Models for each case.
 	ginkgo.AfterEach(func() {
-		var models core.ModelList
+		var models coreapi.OpenModelList
 		gomega.Expect(k8sClient.List(ctx, &models)).To(gomega.Succeed())
 
 		for _, model := range models.Items {
@@ -39,37 +39,37 @@ var _ = ginkgo.Describe("model default and validation", func() {
 	})
 
 	type testDefaultingCase struct {
-		model     func() *core.Model
-		wantModel func() *core.Model
+		model     func() *coreapi.OpenModel
+		wantModel func() *coreapi.OpenModel
 	}
 	ginkgo.DescribeTable("Defaulting test",
 		func(tc *testDefaultingCase) {
 			model := tc.model()
 			gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 			gomega.Expect(model).To(gomega.BeComparableTo(tc.wantModel(),
-				cmpopts.IgnoreTypes(core.ModelStatus{}),
+				cmpopts.IgnoreTypes(coreapi.ModelStatus{}),
 				cmpopts.IgnoreFields(metav1.ObjectMeta{}, "UID", "ResourceVersion", "Generation", "CreationTimestamp", "ManagedFields")))
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
-			model: func() *core.Model {
+			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").FamilyName("llama3").Obj()
 			},
-			wantModel: func() *core.Model {
-				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").DataSourceWithModelHub("Huggingface").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
+			wantModel: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").DataSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 		ginkgo.Entry("apply modelscope model hub name", &testDefaultingCase{
-			model: func() *core.Model {
+			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelHub("ModelScope").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
 			},
-			wantModel: func() *core.Model {
-				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").DataSourceWithModelHub("ModelScope").FamilyName("llama3").Label(core.ModelFamilyNameLabelKey, "llama3").Obj()
+			wantModel: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").DataSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 	)
 
 	type testValidatingCase struct {
-		model  func() *core.Model
+		model  func() *coreapi.OpenModel
 		failed bool
 	}
 	// TODO: add more testCases to cover update.
@@ -82,19 +82,19 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			}
 		},
 		ginkgo.Entry("default normal huggingface model creation", &testValidatingCase{
-			model: func() *core.Model {
+			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("normal modelScope model creation", &testValidatingCase{
-			model: func() *core.Model {
+			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").DataSourceWithModelHub("ModelScope").DataSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("invalid model name", &testValidatingCase{
-			model: func() *core.Model {
+			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("qwen-2-0.5b").FamilyName("qwen2").DataSourceWithModelID("Qwen/Qwen2-0.5B-Instruct").Obj()
 			},
 			failed: true,
@@ -106,7 +106,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		// 	failed: false,
 		// }),
 		ginkgo.Entry("no data source configured", &testValidatingCase{
-			model: func() *core.Model {
+			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").Obj()
 			},
 			failed: true,

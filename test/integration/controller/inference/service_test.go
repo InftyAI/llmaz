@@ -27,7 +27,7 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	api "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/test/util"
 	"inftyai.com/llmaz/test/util/validation"
@@ -36,7 +36,7 @@ import (
 var _ = ginkgo.Describe("inferenceService controller test", func() {
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
-	var model *api.Model
+	var model *coreapi.OpenModel
 
 	type update struct {
 		serviceUpdateFn func(*inferenceapi.Service)

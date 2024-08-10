@@ -31,59 +31,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// ModelInformer provides access to a shared informer and lister for
-// Models.
-type ModelInformer interface {
+// OpenModelInformer provides access to a shared informer and lister for
+// OpenModels.
+type OpenModelInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.ModelLister
+	Lister() v1alpha1.OpenModelLister
 }
 
-type modelInformer struct {
+type openModelInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewModelInformer constructs a new informer for Model type.
+// NewOpenModelInformer constructs a new informer for OpenModel type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewModelInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredModelInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewOpenModelInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredOpenModelInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredModelInformer constructs a new informer for Model type.
+// NewFilteredOpenModelInformer constructs a new informer for OpenModel type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredModelInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredOpenModelInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.LlmazV1alpha1().Models(namespace).List(context.TODO(), options)
+				return client.LlmazV1alpha1().OpenModels(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.LlmazV1alpha1().Models(namespace).Watch(context.TODO(), options)
+				return client.LlmazV1alpha1().OpenModels(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&corev1alpha1.Model{},
+		&corev1alpha1.OpenModel{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *modelInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredModelInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *openModelInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredOpenModelInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *modelInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&corev1alpha1.Model{}, f.defaultInformer)
+func (f *openModelInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&corev1alpha1.OpenModel{}, f.defaultInformer)
 }
 
-func (f *modelInformer) Lister() v1alpha1.ModelLister {
-	return v1alpha1.NewModelLister(f.Informer().GetIndexer())
+func (f *openModelInformer) Lister() v1alpha1.OpenModelLister {
+	return v1alpha1.NewOpenModelLister(f.Informer().GetIndexer())
 }

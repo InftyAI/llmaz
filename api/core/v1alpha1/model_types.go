@@ -154,8 +154,8 @@ type ModelStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:scope=Cluster
 
-// Model is the Schema for the models API
-type Model struct {
+// OpenModel is the Schema for the open models API
+type OpenModel struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
@@ -165,13 +165,13 @@ type Model struct {
 
 //+kubebuilder:object:root=true
 
-// ModelList contains a list of Model
-type ModelList struct {
+// OpenModelList contains a list of OpenModel
+type OpenModelList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Model `json:"items"`
+	Items           []OpenModel `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Model{}, &ModelList{})
+	SchemeBuilder.Register(&OpenModel{}, &OpenModelList{})
 }

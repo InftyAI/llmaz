@@ -35,7 +35,7 @@ type Backend interface {
 	// DefaultCommands returns the default command to start the inference backend.
 	DefaultCommands() []string
 	// DefaultArgs returns the default bootstrap arguments to start the backend.
-	DefaultArgs(*coreapi.Model) []string
+	DefaultArgs(*coreapi.OpenModel) []string
 }
 
 func SwitchBackend(name inferenceapi.BackendName) Backend {

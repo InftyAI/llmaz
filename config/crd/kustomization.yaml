@@ -4,7 +4,7 @@
 resources:
 - bases/inference.llmaz.io_services.yaml
 - bases/inference.llmaz.io_playgrounds.yaml
-- bases/llmaz.io_models.yaml
+- bases/llmaz.io_openmodels.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patches:
@@ -12,14 +12,14 @@ patches:
 # patches here are for enabling the conversion webhook for each CRD
 # - path: patches/webhook_in_inference_services.yaml
 # - path: patches/webhook_in_inference_playgrounds.yaml
-- path: patches/webhook_in__models.yaml
+- path: patches/webhook_in__openmodels.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
 #- path: patches/cainjection_in_inference_services.yaml
 #- path: patches/cainjection_in_inference_playgrounds.yaml
-#- path: patches/cainjection_in__models.yaml
+#- path: patches/cainjection_in__openmodels.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # [WEBHOOK] To enable webhook, uncomment the following section
