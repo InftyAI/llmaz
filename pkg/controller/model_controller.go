@@ -28,7 +28,7 @@ import (
 	api "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
-// ModelReconciler reconciles a Model object
+// OpenModelReconciler reconciles a Model object
 type ModelReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
@@ -43,9 +43,9 @@ func NewModelReconciler(client client.Client, scheme *runtime.Scheme, record rec
 	}
 }
 
-//+kubebuilder:rbac:groups=llmaz.io,resources=models,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=llmaz.io,resources=models/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=llmaz.io,resources=models/finalizers,verbs=update
+//+kubebuilder:rbac:groups=llmaz.io,resources=openmodels,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=llmaz.io,resources=openmodels/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=llmaz.io,resources=openmodels/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -62,6 +62,6 @@ func (r *ModelReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 // SetupWithManager sets up the controller with the Manager.
 func (r *ModelReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&api.Model{}).
+		For(&api.OpenModel{}).
 		Complete(r)
 }

@@ -25,7 +25,7 @@ const (
 	sampleModelName = "llama3-8b"
 )
 
-func MockASampleModel() *api.Model {
+func MockASampleModel() *api.OpenModel {
 	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
 }
 

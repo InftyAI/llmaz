@@ -21,16 +21,16 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	core "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 )
 
 type ModelWrapper struct {
-	core.Model
+	coreapi.OpenModel
 }
 
 func MakeModel(name string) *ModelWrapper {
 	return &ModelWrapper{
-		core.Model{
+		coreapi.OpenModel{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
@@ -38,19 +38,19 @@ func MakeModel(name string) *ModelWrapper {
 	}
 }
 
-func (w *ModelWrapper) Obj() *core.Model {
-	return &w.Model
+func (w *ModelWrapper) Obj() *coreapi.OpenModel {
+	return &w.OpenModel
 }
 
 func (w *ModelWrapper) FamilyName(name string) *ModelWrapper {
-	w.Spec.FamilyName = core.ModelName(name)
+	w.Spec.FamilyName = coreapi.ModelName(name)
 	return w
 }
 
 func (w *ModelWrapper) DataSourceWithModelID(modelID string) *ModelWrapper {
 	if modelID != "" {
 		if w.Spec.Source.ModelHub == nil {
-			w.Spec.Source.ModelHub = &core.ModelHub{}
+			w.Spec.Source.ModelHub = &coreapi.ModelHub{}
 		}
 		w.Spec.Source.ModelHub.ModelID = modelID
 	}
@@ -60,7 +60,7 @@ func (w *ModelWrapper) DataSourceWithModelID(modelID string) *ModelWrapper {
 func (w *ModelWrapper) DataSourceWithModelHub(modelHub string) *ModelWrapper {
 	if modelHub != "" {
 		if w.Spec.Source.ModelHub == nil {
-			w.Spec.Source.ModelHub = &core.ModelHub{}
+			w.Spec.Source.ModelHub = &coreapi.ModelHub{}
 		}
 		w.Spec.Source.ModelHub.Name = &modelHub
 	}
@@ -87,24 +87,24 @@ func (w *ModelWrapper) Label(k, v string) *ModelWrapper {
 }
 
 type FlavorWrapper struct {
-	core.Flavor
+	coreapi.Flavor
 }
 
-func (w *FlavorWrapper) Obj() *core.Flavor {
+func (w *FlavorWrapper) Obj() *coreapi.Flavor {
 	return &w.Flavor
 }
 
-func (w *FlavorWrapper) SetName(name string) *core.Flavor {
-	w.Name = core.FlavorName(name)
+func (w *FlavorWrapper) SetName(name string) *coreapi.Flavor {
+	w.Name = coreapi.FlavorName(name)
 	return &w.Flavor
 }
 
-func (w *FlavorWrapper) SetRequest(r, v string) *core.Flavor {
+func (w *FlavorWrapper) SetRequest(r, v string) *coreapi.Flavor {
 	w.Requests[v1.ResourceName(r)] = resource.MustParse(v)
 	return &w.Flavor
 }
 
-func (w *FlavorWrapper) SetNodeSelector(k, v string) *core.Flavor {
+func (w *FlavorWrapper) SetNodeSelector(k, v string) *coreapi.Flavor {
 	if w.NodeSelector == nil {
 		w.NodeSelector = map[string]string{}
 	}
@@ -112,7 +112,7 @@ func (w *FlavorWrapper) SetNodeSelector(k, v string) *core.Flavor {
 	return &w.Flavor
 }
 
-func (w *FlavorWrapper) SetParams(k, v string) *core.Flavor {
+func (w *FlavorWrapper) SetParams(k, v string) *coreapi.Flavor {
 	w.Params[k] = v
 	return &w.Flavor
 }

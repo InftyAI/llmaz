@@ -77,7 +77,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, service); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-	model := &coreapi.Model{}
+	model := &coreapi.OpenModel{}
 	// TODO: multiModelsClaim
 	modelName := service.Spec.MultiModelsClaims[0].ModelNames[0]
 	if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
@@ -124,7 +124,7 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *coreapi.Model) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *coreapi.OpenModel) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
@@ -141,7 +141,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 	return workload
 }
 
-func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.OpenModel) {
 	source := modelSource.NewModelSourceProvider(model)
 
 	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(model))
@@ -154,7 +154,7 @@ func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 	source.InjectModelLoader(template.WorkerTemplate)
 }
 
-func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.Model) {
+func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.OpenModel) {
 	if len(model.Spec.InferenceFlavors) == 0 {
 		return
 	}
@@ -203,7 +203,7 @@ func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 
 }
 
-func modelLabels(model *coreapi.Model) map[string]string {
+func modelLabels(model *coreapi.OpenModel) map[string]string {
 	return map[string]string{
 		coreapi.ModelNameLabelKey:       model.Name,
 		coreapi.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),

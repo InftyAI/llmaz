@@ -59,8 +59,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Inference().V1alpha1().Services().Informer()}, nil
 
 		// Group=llmaz.io, Version=v1alpha1
-	case corev1alpha1.SchemeGroupVersion.WithResource("models"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Llmaz().V1alpha1().Models().Informer()}, nil
+	case corev1alpha1.SchemeGroupVersion.WithResource("openmodels"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Llmaz().V1alpha1().OpenModels().Informer()}, nil
 
 	}
 

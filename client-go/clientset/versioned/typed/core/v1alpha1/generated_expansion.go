@@ -17,4 +17,4 @@ limitations under the License.
 
 package v1alpha1
 
-type ModelExpansion interface{}
+type OpenModelExpansion interface{}

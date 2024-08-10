@@ -1,31 +1,27 @@
-# permissions for end users to edit models.
+# permissions for end users to view openmodels.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: clusterrole
-    app.kubernetes.io/instance: model-editor-role
+    app.kubernetes.io/instance: openmodel-viewer-role
     app.kubernetes.io/component: rbac
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
     app.kubernetes.io/managed-by: kustomize
-  name: model-editor-role
+  name: openmodel-viewer-role
 rules:
 - apiGroups:
   - llmaz.io
   resources:
-  - models
+  - openmodels
   verbs:
-  - create
-  - delete
   - get
   - list
-  - patch
-  - update
   - watch
 - apiGroups:
   - llmaz.io
   resources:
-  - models/status
+  - openmodels/status
   verbs:
   - get

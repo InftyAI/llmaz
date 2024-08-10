@@ -157,7 +157,7 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err := webhook.SetupModelWebhook(mgr); err != nil {
+		if err := webhook.SetupOpenModelWebhook(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Model")
 			os.Exit(1)
 		}

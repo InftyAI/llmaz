@@ -10,9 +10,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-llmaz-io-v1alpha1-model
+      path: /mutate-llmaz-io-v1alpha1-openmodel
   failurePolicy: Fail
-  name: mmodel.kb.io
+  name: mopenmodel.kb.io
   rules:
   - apiGroups:
     - llmaz.io
@@ -22,7 +22,7 @@ webhooks:
     - CREATE
     - UPDATE
     resources:
-    - models
+    - openmodels
   sideEffects: None
 - admissionReviewVersions:
   - v1
@@ -76,9 +76,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-llmaz-io-v1alpha1-model
+      path: /validate-llmaz-io-v1alpha1-openmodel
   failurePolicy: Fail
-  name: vmodel.kb.io
+  name: vopenmodel.kb.io
   rules:
   - apiGroups:
     - llmaz.io
@@ -88,7 +88,7 @@ webhooks:
     - CREATE
     - UPDATE
     resources:
-    - models
+    - openmodels
   sideEffects: None
 - admissionReviewVersions:
   - v1

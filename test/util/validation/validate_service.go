@@ -50,7 +50,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		// TODO: multi-host
 
 		modelName := string(service.Spec.MultiModelsClaims[0].ModelNames[0])
-		model := coreapi.Model{}
+		model := coreapi.OpenModel{}
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: modelName}, &model); err != nil {
 			return errors.New("failed to get model")
 		}
@@ -78,7 +78,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
-func ValidateModelLoader(model *coreapi.Model, workload *lws.LeaderWorkerSet, service *inferenceapi.Service) error {
+func ValidateModelLoader(model *coreapi.OpenModel, workload *lws.LeaderWorkerSet, service *inferenceapi.Service) error {
 	if model.Spec.Source.ModelHub != nil {
 		if len(workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers) == 0 {
 			return errors.New("no initContainer configured")
@@ -133,7 +133,7 @@ func ValidateModelLoader(model *coreapi.Model, workload *lws.LeaderWorkerSet, se
 	return nil
 }
 
-func ValidateModelFlavor(model *coreapi.Model, workload *lws.LeaderWorkerSet) error {
+func ValidateModelFlavor(model *coreapi.OpenModel, workload *lws.LeaderWorkerSet) error {
 	// TODO: Use the 0-index flavor for validation right now.
 	flavor := model.Spec.InferenceFlavors[0]
 

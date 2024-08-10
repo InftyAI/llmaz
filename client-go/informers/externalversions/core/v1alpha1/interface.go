@@ -23,8 +23,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// Models returns a ModelInformer.
-	Models() ModelInformer
+	// OpenModels returns a OpenModelInformer.
+	OpenModels() OpenModelInformer
 }
 
 type version struct {
@@ -38,7 +38,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// Models returns a ModelInformer.
-func (v *version) Models() ModelInformer {
-	return &modelInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// OpenModels returns a OpenModelInformer.
+func (v *version) OpenModels() OpenModelInformer {
+	return &openModelInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

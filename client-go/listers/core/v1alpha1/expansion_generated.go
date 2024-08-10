@@ -17,10 +17,10 @@ limitations under the License.
 
 package v1alpha1
 
-// ModelListerExpansion allows custom methods to be added to
-// ModelLister.
-type ModelListerExpansion interface{}
+// OpenModelListerExpansion allows custom methods to be added to
+// OpenModelLister.
+type OpenModelListerExpansion interface{}
 
-// ModelNamespaceListerExpansion allows custom methods to be added to
-// ModelNamespaceLister.
-type ModelNamespaceListerExpansion interface{}
+// OpenModelNamespaceListerExpansion allows custom methods to be added to
+// OpenModelNamespaceLister.
+type OpenModelNamespaceListerExpansion interface{}

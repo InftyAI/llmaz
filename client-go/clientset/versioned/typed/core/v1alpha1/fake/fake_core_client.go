@@ -27,8 +27,8 @@ type FakeLlmazV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeLlmazV1alpha1) Models(namespace string) v1alpha1.ModelInterface {
-	return &FakeModels{c, namespace}
+func (c *FakeLlmazV1alpha1) OpenModels(namespace string) v1alpha1.OpenModelInterface {
+	return &FakeOpenModels{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

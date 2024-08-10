@@ -106,7 +106,7 @@ rules:
 - apiGroups:
   - llmaz.io
   resources:
-  - models
+  - openmodels
   verbs:
   - create
   - delete
@@ -118,13 +118,13 @@ rules:
 - apiGroups:
   - llmaz.io
   resources:
-  - models/finalizers
+  - openmodels/finalizers
   verbs:
   - update
 - apiGroups:
   - llmaz.io
   resources:
-  - models/status
+  - openmodels/status
   verbs:
   - get
   - patch

@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: models.llmaz.io
+  name: openmodels.llmaz.io
 spec:
   group: llmaz.io
   names:
-    kind: Model
-    listKind: ModelList
-    plural: models
-    singular: model
+    kind: OpenModel
+    listKind: OpenModelList
+    plural: openmodels
+    singular: openmodel
   scope: Cluster
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Model is the Schema for the models API
+        description: OpenModel is the Schema for the open models API
         properties:
           apiVersion:
             description: |-

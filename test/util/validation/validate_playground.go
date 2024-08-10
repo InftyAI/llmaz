@@ -47,7 +47,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			return fmt.Errorf("expected replicas: %d, got %d", *playground.Spec.Replicas, *service.Spec.WorkloadTemplate.Replicas)
 		}
 
-		model := coreapi.Model{}
+		model := coreapi.OpenModel{}
 
 		if playground.Spec.ModelClaim != nil {
 			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName), Namespace: playground.Namespace}, &model); err != nil {
