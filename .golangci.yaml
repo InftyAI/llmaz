@@ -21,9 +21,6 @@ issues:
       linters:
         - dupl
         - lll
-    - path: "pkg/controller_helper/backend/*"
-      linters:
-        - dupl
 linters:
   disable-all: true
   enable:
