@@ -1,6 +1,6 @@
 # llmaz
 
-[![stability-wip](https://img.shields.io/badge/stability-wip-lightgrey.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#work-in-progress)
+[![stability-alpha](https://img.shields.io/badge/stability-alpha-f4d03f.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#alpha)
 [![GoReport Widget]][GoReport Status]
 [![Latest Release](https://img.shields.io/github/v/release/inftyai/llmaz?include_prereleases)](https://github.com/inftyai/llmaz/releases/latest)
 
@@ -8,6 +8,8 @@
 [GoReport Status]: https://goreportcard.com/report/github.com/inftyai/llmaz
 
 **llmaz** (pronounced `/lima:z/`), aims to provide a **Production-Ready** inference platform for large language models on Kubernetes. It closely integrates with state-of-the-art inference backends like [vLLM](https://github.com/vllm-project/vllm) to bring the leading-edge researches to cloud.
+
+> 🌱 llmaz is alpha now, so API may change before graduating to Beta.
 
 ## Concept
 
