@@ -106,7 +106,7 @@ curl http://localhost:8080/v1/completions \
 
 ## Contributions
 
-🚀 All kinds of contributions are welcomed ! Please follow [Contributing](https://github.com/InftyAI/community/blob/main/CONTRIBUTING.md). Thanks to all these contributors.
+🚀 All kinds of contributions are welcomed ! Please follow [Contributing](./CONTRIBUTION.md). Thanks to all these contributors.
 
 <a href="https://github.com/inftyai/llmaz/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=inftyai/llmaz" />
