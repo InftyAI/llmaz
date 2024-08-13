@@ -1,6 +1,6 @@
 # Contributing
 
-👋 Welcome to InftyAI!
+👋 Welcome to InftyAI community !
 
 - [Before you get started](#before-you-get-started)
   - [Code of Conduct](#code-of-conduct)

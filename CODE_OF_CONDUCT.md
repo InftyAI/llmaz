@@ -1,6 +1,6 @@
 # Code of Conduct
 
-👋 Welcome to InftyAI!
+👋 Welcome to InftyAI community !
 
 - [Scope](#scope)
 - [Our Standards](#our-standards)
