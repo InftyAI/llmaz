@@ -31,8 +31,8 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
 	"inftyai.com/llmaz/pkg/controller_helper/backend"
+	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 	"inftyai.com/llmaz/test/util"
 )
 
@@ -70,8 +70,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		}
 		bkd := backend.SwitchBackend(backendName)
 
-		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != pkg.MODEL_RUNNER_CONTAINER_NAME {
-			return fmt.Errorf("container name not right, want %s, got %s", pkg.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
+		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
+			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
 		}
 		if diff := cmp.Diff(bkd.DefaultCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
 			return errors.New("command not right")

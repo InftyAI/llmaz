@@ -1,0 +1,14 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-7b
+spec:
+  familyName: qwen2
+  source:
+    # You should replace this with your own oss address following the protocol:
+    # oss://<bucket>.<endpoint>/<path-to-your-model>
+    uri: oss://llmaz.oss-ap-southeast-1-internal.aliyuncs.com/models/Qwen2-7B
+  inferenceFlavors:
+  - name: t4 # GPU type
+    requests:
+      nvidia.com/gpu: 1

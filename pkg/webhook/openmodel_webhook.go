@@ -27,6 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
+	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
+	"inftyai.com/llmaz/pkg/util"
 )
 
 type OpenModelWebhook struct{}
@@ -43,6 +45,10 @@ func SetupOpenModelWebhook(mgr ctrl.Manager) error {
 //+kubebuilder:webhook:path=/mutate-llmaz-io-v1alpha1-openmodel,mutating=true,failurePolicy=fail,sideEffects=None,groups=llmaz.io,resources=openmodels,verbs=create;update,versions=v1alpha1,name=mopenmodel.kb.io,admissionReviewVersions=v1
 
 var _ webhook.CustomDefaulter = &OpenModelWebhook{}
+
+var SUPPORTED_OBJ_STORES = map[string]struct{}{
+	modelSource.OSS: {},
+}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (w *OpenModelWebhook) Default(ctx context.Context, obj runtime.Object) error {
@@ -84,8 +90,25 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 	dataSourcePath := field.NewPath("spec", "dataSource")
 
 	var allErrs field.ErrorList
-	if model.Spec.Source.ModelHub == nil {
+	if model.Spec.Source.ModelHub == nil && model.Spec.Source.URI == nil {
 		allErrs = append(allErrs, field.Forbidden(dataSourcePath, "data source can't be all null"))
+	}
+
+	if model.Spec.Source.URI != nil {
+		if protocol, address, err := util.ParseURI(string(*model.Spec.Source.URI)); err != nil {
+			allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong format"))
+		} else {
+			if _, ok := SUPPORTED_OBJ_STORES[protocol]; !ok {
+				allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("uri"), *model.Spec.Source.URI, "URI with unsupported protocol"))
+			} else {
+				switch protocol {
+				case modelSource.OSS:
+					if _, _, _, err := util.ParseOSS(address); err != nil {
+						allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
+					}
+				}
+			}
+		}
 	}
 	return allErrs
 }

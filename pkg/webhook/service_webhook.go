@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
+	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 )
 
 type ServiceWebhook struct{}
@@ -64,7 +64,7 @@ func (w *ServiceWebhook) ValidateCreate(ctx context.Context, obj runtime.Object)
 
 	runnerContainerExists := false
 	for _, container := range service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers {
-		if container.Name == pkg.MODEL_RUNNER_CONTAINER_NAME {
+		if container.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			runnerContainerExists = true
 			break
 		}

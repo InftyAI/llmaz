@@ -47,7 +47,7 @@ func (w *ModelWrapper) FamilyName(name string) *ModelWrapper {
 	return w
 }
 
-func (w *ModelWrapper) DataSourceWithModelID(modelID string) *ModelWrapper {
+func (w *ModelWrapper) ModelSourceWithModelID(modelID string) *ModelWrapper {
 	if modelID != "" {
 		if w.Spec.Source.ModelHub == nil {
 			w.Spec.Source.ModelHub = &coreapi.ModelHub{}
@@ -57,7 +57,7 @@ func (w *ModelWrapper) DataSourceWithModelID(modelID string) *ModelWrapper {
 	return w
 }
 
-func (w *ModelWrapper) DataSourceWithModelHub(modelHub string) *ModelWrapper {
+func (w *ModelWrapper) ModelSourceWithModelHub(modelHub string) *ModelWrapper {
 	if modelHub != "" {
 		if w.Spec.Source.ModelHub == nil {
 			w.Spec.Source.ModelHub = &coreapi.ModelHub{}
@@ -67,12 +67,13 @@ func (w *ModelWrapper) DataSourceWithModelHub(modelHub string) *ModelWrapper {
 	return w
 }
 
-// func (w *ModelWrapper) DataSourceWithURI(uri string) *ModelWrapper {
-// 	if uri != "" {
-// 		w.Spec.Source.URI = &uri
-// 	}
-// 	return w
-// }
+func (w *ModelWrapper) ModelSourceWithURI(uri string) *ModelWrapper {
+	value := coreapi.URIProtocol(uri)
+	if uri != "" {
+		w.Spec.Source.URI = &value
+	}
+	return w
+}
 
 func (w *ModelWrapper) InferenceFlavors() *ModelWrapper {
 	return w

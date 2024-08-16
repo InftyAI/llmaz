@@ -1,4 +1,4 @@
-/*
+"""
 Copyright 2024.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,23 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+"""
 
-package pkg
+from abc import ABC, abstractmethod
+from typing import Optional
 
-const (
-	LOADER_IMAGE = "inftyai/model-loader:v0.0.4"
+MAX_WORKERS = 4
+HUGGING_FACE = "Huggingface"
+MODEL_SCOPE = "ModelScope"
 
-	HOST_MODEL_PATH             = "/cache/models/"
-	CONTAINER_MODEL_PATH        = "/workspace/models/"
-	DEFAULT_BACKEND_PORT        = 8080
-	MODEL_VOLUME_NAME           = "model-volume"
-	MODEL_RUNNER_CONTAINER_NAME = "model-runner"
-	MODEL_LOADER_CONTAINER_NAME = "model-loader"
-	MODEL_SECRET_NAME           = "model-secret"
 
-	HUGGINGFACE_TOKEN_KEY = "HF_TOKEN"
+class ModelHub(ABC):
+    @classmethod
+    @abstractmethod
+    def name(cls) -> str:
+        pass
 
-	HUGGINGFACE_HUB = "Huggingface"
-	MODELSCOPE_HUB  = "ModelScope"
-)
+    @classmethod
+    @abstractmethod
+    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
+        pass

@@ -37,7 +37,7 @@ is to apply a `Model` and a `Playground`.
 
 Please refer to **[examples](/docs/examples/README.md)** to learn more.
 
-> Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic model-secret --from-literal=HF_TOKEN=<your token>` ahead.
+> Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic modelhub-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
 #### Model
 
@@ -106,7 +106,7 @@ curl http://localhost:8080/v1/completions \
 
 ## Contributions
 
-🚀 All kinds of contributions are welcomed ! Please follow [Contributing](./CONTRIBUTION.md). Thanks to all these contributors.
+🚀 All kinds of contributions are welcomed ! Please follow [Contributing](./CONTRIBUTING.md). Thanks to all these contributors.
 
 <a href="https://github.com/inftyai/llmaz/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=inftyai/llmaz" />

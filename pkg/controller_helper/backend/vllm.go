@@ -24,7 +24,6 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
 	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 )
 
@@ -70,6 +69,6 @@ func (v *VLLM) DefaultArgs(model *coreapi.OpenModel) []string {
 	return []string{
 		"--model", source.ModelPath(),
 		"--served-model-name", source.ModelName(),
-		"--port", strconv.Itoa(pkg.DEFAULT_BACKEND_PORT),
+		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
 	}
 }

@@ -31,12 +31,12 @@ import (
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	"inftyai.com/llmaz/test/util"
 	"inftyai.com/llmaz/test/util/validation"
+	"inftyai.com/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("inferenceService controller test", func() {
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
-	var model *coreapi.OpenModel
 
 	type update struct {
 		serviceUpdateFn func(*inferenceapi.Service)
@@ -51,12 +51,18 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
-		model = util.MockASampleModel()
+		model := util.MockASampleModel()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		modelWithURI := wrapper.MakeModel("model-with-uri").FamilyName("llama3").ModelSourceWithURI("oss://bucket.endpoint/modelPath").Obj()
+		gomega.Expect(k8sClient.Create(ctx, modelWithURI)).To(gomega.Succeed())
 	})
 	ginkgo.AfterEach(func() {
 		gomega.Expect(k8sClient.Delete(ctx, ns)).To(gomega.Succeed())
-		gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		var models coreapi.OpenModelList
+		gomega.Expect(k8sClient.List(ctx, &models)).To(gomega.Succeed())
+		for i := range models.Items {
+			gomega.Expect(k8sClient.Delete(ctx, &models.Items[i])).To(gomega.Succeed())
+		}
 	})
 
 	type testValidatingCase struct {
@@ -110,6 +116,25 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 						newService := inferenceapi.Service{}
 						gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &newService)).To(gomega.Succeed())
 						gomega.Expect(*newService.Spec.WorkloadTemplate.Replicas).To(gomega.Equal(int32(3)))
+					},
+					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("service created with URI configured Model", &testValidatingCase{
+			makeService: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelsClaim([]string{"model-with-uri"}, []string{}, nil).
+					WorkerTemplate().
+					Obj()
+			},
+			updates: []*update{
+				{
+					serviceUpdateFn: func(service *inferenceapi.Service) {
+						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
 					},
 					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)

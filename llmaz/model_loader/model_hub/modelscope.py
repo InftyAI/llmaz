@@ -20,10 +20,12 @@ from typing import Optional
 
 from modelscope import snapshot_download
 
-from loader.model_hub.model_hub import ModelHub, MODEL_LOCAL_DIR
-
-MODEL_SCOPE = "ModelScope"
-MAX_WORKERS = 4
+from llmaz.model_loader.defaults import MODEL_LOCAL_DIR
+from llmaz.model_loader.model_hub.model_hub import (
+    MAX_WORKERS,
+    MODEL_SCOPE,
+    ModelHub,
+)
 
 
 class ModelScope(ModelHub):

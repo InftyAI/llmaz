@@ -19,7 +19,6 @@ package modelSource
 import (
 	"strings"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/pkg"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
@@ -28,29 +27,32 @@ import (
 var _ ModelSourceProvider = &ModelHubProvider{}
 
 type ModelHubProvider struct {
-	model *coreapi.OpenModel
+	modelName     string
+	modelID       string
+	modelHub      string
+	modelRevision *string
 }
 
 func (p *ModelHubProvider) ModelName() string {
-	return p.model.Name
+	return p.modelName
 }
 
 // Example:
 // - modelID: facebook/opt-125m
 // - modelPath: /workspace/models/models--facebook--opt-125m
 func (p *ModelHubProvider) ModelPath() string {
-	return pkg.CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.model.Spec.Source.ModelHub.ModelID, "/", "--")
+	return CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.modelID, "/", "--")
 }
 
 func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 	// Handle initContainer.
 	initContainer := &corev1.Container{
-		Name:  pkg.MODEL_LOADER_CONTAINER_NAME,
+		Name:  MODEL_LOADER_CONTAINER_NAME,
 		Image: pkg.LOADER_IMAGE,
 		VolumeMounts: []corev1.VolumeMount{
 			{
-				Name:      pkg.MODEL_VOLUME_NAME,
-				MountPath: pkg.CONTAINER_MODEL_PATH,
+				Name:      MODEL_VOLUME_NAME,
+				MountPath: CONTAINER_MODEL_PATH,
 			},
 		},
 	}
@@ -58,13 +60,14 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 	// This is related to the model loader logics which will read the environment when loading models weights.
 	initContainer.Env = append(
 		initContainer.Env,
-		corev1.EnvVar{Name: "MODEL_ID", Value: p.model.Spec.Source.ModelHub.ModelID},
-		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: *p.model.Spec.Source.ModelHub.Name},
+		corev1.EnvVar{Name: "MODEL_SOURCE_TYPE", Value: MODEL_SOURCE_MODELHUB},
+		corev1.EnvVar{Name: "MODEL_ID", Value: p.modelID},
+		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: p.modelHub},
 	)
-	if p.model.Spec.Source.ModelHub.Revision != nil {
+	if p.modelRevision != nil {
 		initContainer.Env = append(
 			initContainer.Env,
-			corev1.EnvVar{Name: "REVISION", Value: *p.model.Spec.Source.ModelHub.Revision},
+			corev1.EnvVar{Name: "REVISION", Value: *p.modelRevision},
 		)
 	}
 	initContainer.Env = append(initContainer.Env,
@@ -73,9 +76,9 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: pkg.MODEL_SECRET_NAME, // if secret not exists, the env is empty.
+						Name: MODELHUB_SECRET_NAME, // if secret not exists, the env is empty.
 					},
-					Key:      pkg.HUGGINGFACE_TOKEN_KEY,
+					Key:      HUGGINGFACE_TOKEN_KEY,
 					Optional: ptr.To[bool](true),
 				},
 			},
@@ -84,9 +87,9 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: pkg.MODEL_SECRET_NAME,
+						Name: MODELHUB_SECRET_NAME,
 					},
-					Key:      pkg.HUGGINGFACE_TOKEN_KEY,
+					Key:      HUGGINGFACE_TOKEN_KEY,
 					Optional: ptr.To[bool](true),
 				},
 			},
@@ -98,10 +101,10 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 
 	for i := range template.Spec.Containers {
 		// We only consider this container.
-		if template.Spec.Containers[i].Name == pkg.MODEL_RUNNER_CONTAINER_NAME {
+		if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
 			template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-				Name:      pkg.MODEL_VOLUME_NAME,
-				MountPath: pkg.CONTAINER_MODEL_PATH,
+				Name:      MODEL_VOLUME_NAME,
+				MountPath: CONTAINER_MODEL_PATH,
 				ReadOnly:  true,
 			})
 		}
@@ -111,10 +114,10 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 
 	hostType := corev1.HostPathDirectoryOrCreate
 	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-		Name: pkg.MODEL_VOLUME_NAME,
+		Name: MODEL_VOLUME_NAME,
 		VolumeSource: corev1.VolumeSource{
 			HostPath: &corev1.HostPathVolumeSource{
-				Path: pkg.HOST_MODEL_PATH,
+				Path: HOST_MODEL_PATH,
 				Type: &hostType,
 			},
 		},

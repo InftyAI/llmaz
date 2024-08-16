@@ -22,7 +22,6 @@ import (
 )
 
 var _ = ginkgo.Describe("model e2e tests", func() {
-
 	ginkgo.It("Can deploy a normal model", func() {
 		model := util.MockASampleModel()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
