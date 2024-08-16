@@ -15,7 +15,7 @@ Deploy models hosted in Huggingface, see [example](./huggingface/) here.
 
 > Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic modelhub-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
-In theory, we support any size of model. However, the bandwidth is limited. For example, we want to load the `llama2-7B` model, which takes about 15GB memory size, if we have a 200 Mbps bandwidth, it will take about 10mins to download the model, so the bandwidth plays a vital role here.
+In theory, we support any size of model. However, the bandwidth is limited. For example, we want to load the `llama2-7B` model, which takes about 15GB memory size, if we have a 200Mbps bandwidth, it will take about 10mins to download the model, so the bandwidth plays a vital role here.
 
 ### Deploy models from ModelScope
 
@@ -23,7 +23,9 @@ Deploy models hosted in ModelScope, see [example](./modelscope/) here, similar t
 
 ### Deploy models from ObjectStore
 
-Deploy models stored in object stores, we support various object store providers, see:
+Deploy models stored in object stores, we support various providers, see the full list below.
+
+In theory, if we want to load the `Qwen2-7B` model, which occupies about 14.2 GB memory size, and the intranet bandwidth is about 800Mbps, it will take about 2 ~ 3 minutes to download the model. However, the intranet bandwidth can be improved.
 
 - Alibaba Cloud OSS, see [example](./objstore-oss/) here
 
