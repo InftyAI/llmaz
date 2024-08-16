@@ -42,7 +42,6 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
 	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 	"inftyai.com/llmaz/pkg/util"
 )
@@ -161,7 +160,7 @@ func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 
 	container := &corev1.Container{}
 	for i, c := range template.WorkerTemplate.Spec.Containers {
-		if c.Name == pkg.MODEL_RUNNER_CONTAINER_NAME {
+		if c.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			container = &template.WorkerTemplate.Spec.Containers[i]
 		}
 	}

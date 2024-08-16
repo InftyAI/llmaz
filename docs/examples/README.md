@@ -1,22 +1,33 @@
 # Examples
 
-We provide a bunch of examples to serve large language models.
+We provide a set of examples to help you serve large language models, by default, we use vLLM as the backend.
 
 ## Table of Contents
 
 - [Deploy models from Huggingface](#deploy-models-from-huggingface)
 - [Deploy models from ModelScope](#deploy-models-from-modelscope)
+- [Deploy models from ObjectStore](#deploy-models-from-objectstore)
 - [Deploy models serving by SGLang](#deploy-models-serving-by-sglang)
 
 ### Deploy models from Huggingface
 
-Deploy models hosted in Huggingface, see [example](./vllm-huggingface/) here.
+Deploy models hosted in Huggingface, see [example](./huggingface/) here.
+
+> Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic modelhub-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
 In theory, we support any size of model. However, the bandwidth is limited. For example, we want to load the `llama2-7B` model, which takes about 15GB memory size, if we have a 200 Mbps bandwidth, it will take about 10mins to download the model, so the bandwidth plays a vital role here.
 
 ### Deploy models from ModelScope
 
-Deploy models hosted in ModelScope, see [example](./vllm-modelscope/) here.
+Deploy models hosted in ModelScope, see [example](./modelscope/) here, similar to other backends.
+
+### Deploy models from ObjectStore
+
+Deploy models stored in object stores, we support various object store providers, see:
+
+- Alibaba Cloud OSS, see [example](./objstore-oss/) here
+
+    > Note: you should set OSS_ACCESS_KEY_ID and OSS_ACCESS_kEY_SECRET first by running `kubectl create secret generic oss-access-secret --from-literal=OSS_ACCESS_KEY_ID=<your ID> --from-literal=OSS_ACCESS_kEY_SECRET=<your secret>`
 
 ### Deploy models serving by SGLang
 

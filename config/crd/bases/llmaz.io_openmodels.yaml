@@ -125,6 +125,11 @@ spec:
                           Most of the time, you don't need to specify it.
                         type: string
                     type: object
+                  uri:
+                    description: |-
+                      URI represents a various kinds of model sources following the uri protocol, e.g.:
+                      - OSS: oss://<bucket>.<endpoint>/<path-to-your-model>
+                    type: string
                 type: object
             required:
             - familyName

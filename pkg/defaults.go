@@ -1,4 +1,4 @@
-"""
+/*
 Copyright 2024.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +12,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-"""
+*/
 
-from loader.model_hub.model_hub import ModelHub
-from loader.model_hub.huggingface import HUGGING_FACE, Huggingface
-from loader.model_hub.model_scope import MODEL_SCOPE, ModelScope
+package pkg
 
-
-SUPPORT_MODEL_HUBS = {
-    HUGGING_FACE: Huggingface,
-    MODEL_SCOPE: ModelScope,
-}
-
-
-class HubFactory:
-    @classmethod
-    def new(cls, hub_name: str) -> ModelHub:
-        if hub_name not in SUPPORT_MODEL_HUBS.keys():
-            raise ValueError(f"Unknown model hub: {hub_name}")
-
-        return SUPPORT_MODEL_HUBS[hub_name]
+const (
+	LOADER_IMAGE = "inftyai/model-loader:v0.0.5"
+)

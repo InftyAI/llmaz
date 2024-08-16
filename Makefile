@@ -179,21 +179,20 @@ image-build:
 		--build-arg BUILDER_IMAGE=$(BUILDER_IMAGE) \
 		--build-arg CGO_ENABLED=$(CGO_ENABLED) \
 		$(IMAGE_BUILD_EXTRA_OPTS) ./
-image-push: IMAGE_BUILD_EXTRA_OPTS=--push
-image-push: image-build
 image-load: IMAGE_BUILD_EXTRA_OPTS=--load
 image-load: image-load
+image-push: IMAGE_BUILD_EXTRA_OPTS=--push
+image-push: image-build
 
 .PHONY: loader-image-build
 loader-image-build:
 	$(IMAGE_BUILD_CMD) -t $(LOADER_IMG) \
 		-f Dockerfile.loader \
 		$(IMAGE_BUILD_EXTRA_OPTS) ./
-loader-image-push: IMAGE_BUILD_EXTRA_OPTS=--push
-loader-image-push: loader-image-build
-
 loader-image-load: IMAGE_BUILD_EXTRA_OPTS=--load
 loader-image-load: loader-image-build
+loader-image-push: IMAGE_BUILD_EXTRA_OPTS=--push
+loader-image-push: loader-image-build
 
 KIND = $(shell pwd)/bin/kind
 .PHONY: kind

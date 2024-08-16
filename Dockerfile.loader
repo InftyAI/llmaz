@@ -16,6 +16,6 @@ COPY pyproject.toml poetry.lock .
 RUN poetry install --no-dev
 
 COPY llmaz/ llmaz/
-WORKDIR /workspace/llmaz
+RUN mv llmaz/main.py main.py
 
 CMD ["poetry", "run", "python", "main.py"]

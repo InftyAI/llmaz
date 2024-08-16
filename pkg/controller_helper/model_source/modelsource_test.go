@@ -21,6 +21,7 @@ import (
 
 	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
 	"inftyai.com/llmaz/test/util"
+	"inftyai.com/llmaz/test/util/wrapper"
 )
 
 func Test_ModelSourceProvider(t *testing.T) {
@@ -36,12 +37,12 @@ func Test_ModelSourceProvider(t *testing.T) {
 			wantModelName: "llama3-8b",
 			wantModelPath: "/workspace/models/models--meta-llama--Meta-Llama-3-8B",
 		},
-		// {
-		// 	name:          "model with URI configured",
-		// 	model:         wrapper.MakeModel("test-7b").FamilyName("test").DataSourceWithURI("s3://a/b/c").Obj(),
-		// 	wantModelName: "test-7b",
-		// 	wantModelPath: "/workspace/models/",
-		// },
+		{
+			name:          "model with URI configured",
+			model:         wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oss://bucket.endpoint/modelPath/subPath").Obj(),
+			wantModelName: "test-7b",
+			wantModelPath: "/workspace/models/subPath",
+		},
 	}
 
 	for _, tc := range testCases {

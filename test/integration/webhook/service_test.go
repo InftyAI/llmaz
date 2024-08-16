@@ -71,7 +71,7 @@ var _ = ginkgo.Describe("service default and validation", func() {
 		ginkgo.Entry("model-runner container doesn't exist", &testValidatingCase{
 			service: func() *inferenceapi.Service {
 				return wrapper.MakeService("service-llama3-8b", ns.Name).
-					ModelsClaim([]string{"llama3-8b"}, []string{}, 1).
+					ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
 					WorkerTemplate().
 					ContainerName("model-runner-fake").
 					Obj()

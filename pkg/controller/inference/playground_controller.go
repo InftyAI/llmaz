@@ -42,8 +42,8 @@ import (
 	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
 	coreclientgo "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	inferenceclientgo "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
 	"inftyai.com/llmaz/pkg/controller_helper/backend"
+	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
 	"inftyai.com/llmaz/pkg/util"
 )
 
@@ -214,7 +214,7 @@ func buildWorkerTemplate(model *coreapi.OpenModel, playground *inferenceapi.Play
 			// TODO: support readiness/liveness
 			Containers: []corev1.Container{
 				{
-					Name:      pkg.MODEL_RUNNER_CONTAINER_NAME,
+					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
 					Image:     bkd.Image(version),
 					Resources: resources,
 					Command:   bkd.DefaultCommands(),
@@ -224,7 +224,7 @@ func buildWorkerTemplate(model *coreapi.OpenModel, playground *inferenceapi.Play
 						{
 							Name:          "http",
 							Protocol:      corev1.ProtocolTCP,
-							ContainerPort: pkg.DEFAULT_BACKEND_PORT,
+							ContainerPort: modelSource.DEFAULT_BACKEND_PORT,
 						},
 					},
 				},

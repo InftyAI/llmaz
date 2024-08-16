@@ -15,18 +15,17 @@ limitations under the License.
 """
 
 import concurrent.futures
-from json import load
 import os
-from fileinput import filename
-from threading import local
 
 from huggingface_hub import hf_hub_download, list_repo_files
 
-from loader.model_hub.model_hub import ModelHub, MODEL_LOCAL_DIR
+from llmaz.model_loader.defaults import MODEL_LOCAL_DIR
+from llmaz.model_loader.model_hub.model_hub import (
+    HUGGING_FACE,
+    MAX_WORKERS,
+    ModelHub,
+)
 
-
-HUGGING_FACE = "Huggingface"
-MAX_WORKERS = 4
 from typing import Optional
 
 

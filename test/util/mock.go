@@ -26,7 +26,7 @@ const (
 )
 
 func MockASampleModel() *api.OpenModel {
-	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").DataSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
+	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
 }
 
 func MockASamplePlayground(ns string) *inferenceapi.Playground {
@@ -35,7 +35,7 @@ func MockASamplePlayground(ns string) *inferenceapi.Playground {
 
 func MockASampleService(ns string) *inferenceapi.Service {
 	return wrapper.MakeService("service-llama3-8b", ns).
-		ModelsClaim([]string{"llama3-8b"}, []string{}, 1).
+		ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
 		WorkerTemplate().
 		Obj()
 }

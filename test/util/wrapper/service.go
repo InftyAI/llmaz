@@ -45,7 +45,7 @@ func (w *ServiceWrapper) Obj() *inferenceapi.Service {
 	return &w.Service
 }
 
-func (w *ServiceWrapper) ModelsClaim(modelNames []string, flavorNames []string, rate int32) *ServiceWrapper {
+func (w *ServiceWrapper) ModelsClaim(modelNames []string, flavorNames []string, rate *int32) *ServiceWrapper {
 	names := []v1alpha1.ModelName{}
 	for i := range modelNames {
 		names = append(names, v1alpha1.ModelName(modelNames[i]))
@@ -57,7 +57,7 @@ func (w *ServiceWrapper) ModelsClaim(modelNames []string, flavorNames []string, 
 	w.Spec.MultiModelsClaims = append(w.Spec.MultiModelsClaims, v1alpha1.MultiModelsClaim{
 		ModelNames:       names,
 		InferenceFlavors: flavors,
-		Rate:             ptr.To[int32](rate),
+		Rate:             rate,
 	})
 	return w
 }

@@ -14,19 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from abc import ABC, abstractmethod
-from typing import Optional
+from llmaz.model_loader.model_hub.model_hub import ModelHub
+from llmaz.model_loader.model_hub.huggingface import HUGGING_FACE, Huggingface
+from llmaz.model_loader.model_hub.modelscope import MODEL_SCOPE, ModelScope
 
-MODEL_LOCAL_DIR = "/workspace/models/"
+
+SUPPORT_MODEL_HUBS = {
+    HUGGING_FACE: Huggingface,
+    MODEL_SCOPE: ModelScope,
+}
 
 
-class ModelHub(ABC):
+class HubFactory:
     @classmethod
-    @abstractmethod
-    def name(cls) -> str:
-        pass
+    def new(cls, hub_name: str) -> ModelHub:
+        if hub_name not in SUPPORT_MODEL_HUBS.keys():
+            raise ValueError(f"Unknown model hub: {hub_name}")
 
-    @classmethod
-    @abstractmethod
-    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
-        pass
+        return SUPPORT_MODEL_HUBS[hub_name]
