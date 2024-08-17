@@ -33,8 +33,11 @@ class ModelScope(ModelHub):
     def name(cls) -> str:
         return MODEL_SCOPE
 
+    # TODO: support filename
     @classmethod
-    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
+    def load_model(
+        cls, model_id: str, filename: Optional[str], revision: Optional[str]
+    ) -> None:
         print(f"Start to download model {model_id}")
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:

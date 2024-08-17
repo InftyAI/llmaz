@@ -31,19 +31,25 @@ func TestSwitchBackend(t *testing.T) {
 	}{
 		{
 			name:                "vllm should support",
-			backendName:         inferenceapi.VLLM,
+			backendName:         "vllm",
 			expectedBackendName: inferenceapi.VLLM,
 			shouldErr:           false,
 		},
 		{
 			name:                "sglang should support",
-			backendName:         inferenceapi.SGLANG,
+			backendName:         "sglang",
 			expectedBackendName: inferenceapi.SGLANG,
 			shouldErr:           false,
 		},
 		{
+			name:                "llamacpp should support",
+			backendName:         "llamacpp",
+			expectedBackendName: inferenceapi.LLAMACPP,
+			shouldErr:           false,
+		},
+		{
 			name:                "tgi should not support",
-			backendName:         inferenceapi.BackendName("tgi"),
+			backendName:         "tgi",
 			expectedBackendName: inferenceapi.BackendName(""),
 			shouldErr:           true,
 		},

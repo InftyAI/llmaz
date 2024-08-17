@@ -107,6 +107,14 @@ spec:
                     description: ModelHub represents the model registry for model
                       downloads.
                     properties:
+                      filename:
+                        description: |-
+                          Filename refers to a specified model file rather than the whole repo.
+                          This is helpful to download a specified GGUF model rather than downloading
+                          the whole repo which includes all kinds of quantized models.
+                          TODO: this is only supported with Huggingface, add support for ModelScope
+                          in the near future.
+                        type: string
                       modelID:
                         description: |-
                           ModelID refers to the model identifier on model hub,

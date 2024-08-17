@@ -21,14 +21,16 @@ import corev1 "k8s.io/api/core/v1"
 type BackendName string
 
 const (
-	VLLM           BackendName = "vllm"
-	SGLANG         BackendName = "sglang"
+	LLAMACPP BackendName = "llamacpp"
+	SGLANG   BackendName = "sglang"
+	VLLM     BackendName = "vllm"
+
 	DefaultBackend BackendName = VLLM
 )
 
 type BackendConfig struct {
 	// Name represents the inference backend under the hood, e.g. vLLM.
-	// +kubebuilder:validation:Enum={vllm,sglang}
+	// +kubebuilder:validation:Enum={vllm,sglang,llamacpp}
 	// +kubebuilder:default=vllm
 	// +optional
 	Name *BackendName `json:"name,omitempty"`

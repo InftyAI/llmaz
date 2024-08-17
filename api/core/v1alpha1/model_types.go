@@ -24,6 +24,9 @@ import (
 const (
 	ModelFamilyNameLabelKey = "llmaz.io/model-family-name"
 	ModelNameLabelKey       = "llmaz.io/model-name"
+
+	HUGGING_FACE = "Huggingface"
+	MODEL_SCOPE  = "ModelScope"
 )
 
 // ModelHub represents the model registry for model downloads.
@@ -36,6 +39,12 @@ type ModelHub struct {
 	// ModelID refers to the model identifier on model hub,
 	// such as meta-llama/Meta-Llama-3-8B.
 	ModelID string `json:"modelID,omitempty"`
+	// Filename refers to a specified model file rather than the whole repo.
+	// This is helpful to download a specified GGUF model rather than downloading
+	// the whole repo which includes all kinds of quantized models.
+	// TODO: this is only supported with Huggingface, add support for ModelScope
+	// in the near future.
+	Filename *string `json:"filename,omitempty"`
 	// Revision refers to a Git revision id which can be a branch name, a tag, or a commit hash.
 	// Most of the time, you don't need to specify it.
 	// +optional

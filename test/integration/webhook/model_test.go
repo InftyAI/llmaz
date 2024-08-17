@@ -52,18 +52,18 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B").FamilyName("llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "").FamilyName("llama3").Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B").ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "").ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 		ginkgo.Entry("apply modelscope model hub name", &testDefaultingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "").Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B").ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "").ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 	)
@@ -83,19 +83,19 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("default normal huggingface model creation", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("normal modelScope model creation", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("invalid model name", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("qwen-2-0.5b").FamilyName("qwen2").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct").Obj()
+				return wrapper.MakeModel("qwen-2-0.5b").FamilyName("qwen2").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct", "").Obj()
 			},
 			failed: true,
 		}),
@@ -117,9 +117,27 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			},
 			failed: true,
 		}),
+		ginkgo.Entry("unknown modelHub", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelHub("unknown").FamilyName("llama3").Obj()
+			},
+			failed: true,
+		}),
 		ginkgo.Entry("no data source configured", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("set filename when modelHub is Huggingface", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf").FamilyName("llama3").Obj()
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("set filename when modelHub is ModelScope", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf").FamilyName("llama3").Obj()
 			},
 			failed: true,
 		}),

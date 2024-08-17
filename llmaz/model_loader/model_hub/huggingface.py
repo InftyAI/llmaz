@@ -35,16 +35,29 @@ class Huggingface(ModelHub):
         return HUGGING_FACE
 
     @classmethod
-    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
+    def load_model(
+        cls, model_id: str, filename: Optional[str], revision: Optional[str]
+    ) -> None:
         print(f"Start to download model {model_id}")
+
+        if filename:
+            hf_hub_download(
+                repo_id=model_id,
+                filename=filename,
+                local_dir=MODEL_LOCAL_DIR,
+                revision=revision,
+            )
+            return
+
         # # TODO: Should we verify the download is finished?
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            local_dir = os.path.join(
+                MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+            )
+
             futures = []
             for file in list_repo_files(repo_id=model_id):
                 # TODO: support version management, right now we didn't distinguish with them.
-                local_dir = os.path.join(
-                    MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
-                )
                 futures.append(
                     executor.submit(
                         hf_hub_download,

@@ -119,10 +119,28 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
-		ginkgo.Entry("advanced configured Playground created", &testValidatingCase{
+		ginkgo.Entry("advance configured Playground with sglang", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).
 					Backend("sglang").BackendVersion("main").BackendArgs([]string{"--foo", "bar"}).BackendEnv("FOO", "BAR").BackendRequest("cpu", "1").BackendLimit("cpu", "10").
+					Obj()
+			},
+			updates: []*update{
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("advance configured Playground with llamacpp", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).
+					Backend("llamacpp").BackendVersion("main").BackendArgs([]string{"--foo", "bar"}).BackendEnv("FOO", "BAR").BackendRequest("cpu", "1").BackendLimit("cpu", "10").
 					Obj()
 			},
 			updates: []*update{

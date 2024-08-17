@@ -170,6 +170,7 @@ spec:
                     enum:
                     - vllm
                     - sglang
+                    - llamacpp
                     type: string
                   resources:
                     description: |-

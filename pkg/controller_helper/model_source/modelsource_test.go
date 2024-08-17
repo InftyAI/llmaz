@@ -32,16 +32,28 @@ func Test_ModelSourceProvider(t *testing.T) {
 		wantModelPath string
 	}{
 		{
-			name:          "model with model hub configured",
+			name:          "model with modelhub configured",
 			model:         util.MockASampleModel(),
 			wantModelName: "llama3-8b",
 			wantModelPath: "/workspace/models/models--meta-llama--Meta-Llama-3-8B",
 		},
 		{
+			name:          "modelhub with GGUF file",
+			model:         wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf").Obj(),
+			wantModelName: "test-7b",
+			wantModelPath: "/workspace/models/qwen2-0_5b-instruct-q5_k_m.gguf",
+		},
+		{
 			name:          "model with URI configured",
 			model:         wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oss://bucket.endpoint/modelPath/subPath").Obj(),
 			wantModelName: "test-7b",
-			wantModelPath: "/workspace/models/subPath",
+			wantModelPath: "/workspace/models/models--subPath",
+		},
+		{
+			name:          "URI with GGUF model",
+			model:         wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oss://bucket.endpoint/modelPath/weight.gguf").Obj(),
+			wantModelName: "test-7b",
+			wantModelPath: "/workspace/models/weight.gguf",
 		},
 	}
 

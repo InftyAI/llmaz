@@ -30,5 +30,7 @@ class ModelHub(ABC):
 
     @classmethod
     @abstractmethod
-    def load_model(cls, model_id: str, revision: Optional[str]) -> None:
+    def load_model(
+        cls, model_id: str, filename: Optional[str], revision: Optional[str]
+    ) -> None:
         pass

@@ -17,10 +17,15 @@ limitations under the License.
 
 package v1alpha1
 
+import (
+	corev1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
+)
+
 // ModelSourceApplyConfiguration represents an declarative configuration of the ModelSource type for use
 // with apply.
 type ModelSourceApplyConfiguration struct {
 	ModelHub *ModelHubApplyConfiguration `json:"modelHub,omitempty"`
+	URI      *corev1alpha1.URIProtocol   `json:"uri,omitempty"`
 }
 
 // ModelSourceApplyConfiguration constructs an declarative configuration of the ModelSource type for use with
@@ -34,5 +39,13 @@ func ModelSource() *ModelSourceApplyConfiguration {
 // If called multiple times, the ModelHub field is set to the value of the last call.
 func (b *ModelSourceApplyConfiguration) WithModelHub(value *ModelHubApplyConfiguration) *ModelSourceApplyConfiguration {
 	b.ModelHub = value
+	return b
+}
+
+// WithURI sets the URI field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the URI field is set to the value of the last call.
+func (b *ModelSourceApplyConfiguration) WithURI(value corev1alpha1.URIProtocol) *ModelSourceApplyConfiguration {
+	b.URI = &value
 	return b
 }

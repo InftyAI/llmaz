@@ -40,9 +40,20 @@ func (p *URIProvider) ModelName() string {
 	return p.modelName
 }
 
+// Example 1:
+//   - uri: bucket.endpoint/modelPath/opt-125m
+//     modelPath: /workspace/models/models--opt-125m
+//
+// Example 2:
+//   - uri: bucket.endpoint/modelPath/model.gguf
+//     modelPath: /workspace/models/model.gguf
 func (p *URIProvider) ModelPath() string {
 	splits := strings.Split(p.modelPath, "/")
-	return CONTAINER_MODEL_PATH + splits[len(splits)-1]
+
+	if strings.Contains(p.modelPath, ".") {
+		return CONTAINER_MODEL_PATH + splits[len(splits)-1]
+	}
+	return CONTAINER_MODEL_PATH + "models--" + splits[len(splits)-1]
 }
 
 func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
@@ -68,7 +79,7 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 			corev1.EnvVar{Name: "BUCKET", Value: p.bucket},
 			corev1.EnvVar{Name: "MODEL_PATH", Value: p.modelPath},
 			corev1.EnvVar{
-				Name: "OSS_ACCESS_KEY_ID",
+				Name: OSS_ACCESS_KEY_ID,
 				ValueFrom: &corev1.EnvVarSource{
 					SecretKeyRef: &corev1.SecretKeySelector{
 						LocalObjectReference: corev1.LocalObjectReference{
@@ -80,7 +91,7 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 				},
 			},
 			corev1.EnvVar{
-				Name: "OSS_ACCESS_KEY_SECRET",
+				Name: OSS_ACCESS_KEY_SECRET,
 				ValueFrom: &corev1.EnvVarSource{
 					SecretKeyRef: &corev1.SecretKeySelector{
 						LocalObjectReference: corev1.LocalObjectReference{

@@ -47,12 +47,16 @@ func (w *ModelWrapper) FamilyName(name string) *ModelWrapper {
 	return w
 }
 
-func (w *ModelWrapper) ModelSourceWithModelID(modelID string) *ModelWrapper {
+func (w *ModelWrapper) ModelSourceWithModelID(modelID string, filename string) *ModelWrapper {
 	if modelID != "" {
 		if w.Spec.Source.ModelHub == nil {
 			w.Spec.Source.ModelHub = &coreapi.ModelHub{}
 		}
 		w.Spec.Source.ModelHub.ModelID = modelID
+
+		if filename != "" {
+			w.Spec.Source.ModelHub.Filename = &filename
+		}
 	}
 	return w
 }
