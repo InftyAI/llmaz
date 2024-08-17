@@ -1,0 +1,11 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-0-5b-gguf
+spec:
+  familyName: qwen2
+  source:
+    modelHub:
+      modelID: Qwen/Qwen2-0.5B-Instruct-GGUF
+      filename: qwen2-0_5b-instruct-q5_k_m.gguf
+    # uri: oss://llmaz.oss-ap-southeast-1-internal.aliyuncs.com/models/qwen2-0_5b-instruct-q5_k_m.gguf

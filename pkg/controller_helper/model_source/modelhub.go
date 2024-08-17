@@ -30,6 +30,7 @@ type ModelHubProvider struct {
 	modelName     string
 	modelID       string
 	modelHub      string
+	fileName      *string
 	modelRevision *string
 }
 
@@ -37,10 +38,18 @@ func (p *ModelHubProvider) ModelName() string {
 	return p.modelName
 }
 
-// Example:
-// - modelID: facebook/opt-125m
-// - modelPath: /workspace/models/models--facebook--opt-125m
+// Example 1:
+//   - modelID: facebook/opt-125m
+//     modelPath: /workspace/models/models--facebook--opt-125m
+//
+// Example 2:
+//   - modelID: Qwen/Qwen2-0.5B-Instruct-GGUF
+//     fileName: qwen2-0_5b-instruct-q5_k_m.gguf
+//     modelPath: /workspace/models/qwen2-0_5b-instruct-q5_k_m.gguf
 func (p *ModelHubProvider) ModelPath() string {
+	if p.fileName != nil {
+		return CONTAINER_MODEL_PATH + *p.fileName
+	}
 	return CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.modelID, "/", "--")
 }
 
@@ -64,9 +73,12 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 		corev1.EnvVar{Name: "MODEL_ID", Value: p.modelID},
 		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: p.modelHub},
 	)
+	if p.fileName != nil {
+		initContainer.Env = append(initContainer.Env,
+			corev1.EnvVar{Name: "MODEL_FILENAME", Value: *p.fileName})
+	}
 	if p.modelRevision != nil {
-		initContainer.Env = append(
-			initContainer.Env,
+		initContainer.Env = append(initContainer.Env,
 			corev1.EnvVar{Name: "REVISION", Value: *p.modelRevision},
 		)
 	}

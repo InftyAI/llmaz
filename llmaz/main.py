@@ -37,12 +37,13 @@ if __name__ == "__main__":
         hub_name = os.getenv("MODEL_HUB_NAME", HUGGING_FACE)
         revision = os.getenv("REVISION")
         model_id = os.getenv("MODEL_ID")
+        model_file_name = os.getenv("MODEL_FILENAME")
 
         if not model_id:
             raise EnvironmentError(f"Environment variable '{model_id}' not found.")
 
         hub = HubFactory.new(hub_name)
-        hub.load_model(model_id, revision)
+        hub.load_model(model_id, model_file_name, revision)
     elif model_source_type == "objstore":
         provider = os.getenv("PROVIDER")
         endpoint = os.getenv("ENDPOINT")

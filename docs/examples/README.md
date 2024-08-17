@@ -34,3 +34,7 @@ In theory, if we want to load the `Qwen2-7B` model, which occupies about 14.2 GB
 ### Deploy models serving by SGLang
 
 By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference backend, however, if you want to use other backends like [SGLang](https://github.com/sgl-project/sglang), see [examples](./sglang/) here.
+
+### Deploy models serving by llama.cpp
+
+[llama.cpp](https://github.com/ggerganov/llama.cpp) can serve models on a wide variety of hardwares, such as CPU, see [examples](./llamacpp/) here.

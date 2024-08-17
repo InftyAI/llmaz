@@ -59,6 +59,7 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 			modelName:     model.Name,
 			modelID:       model.Spec.Source.ModelHub.ModelID,
 			modelHub:      *model.Spec.Source.ModelHub.Name,
+			fileName:      model.Spec.Source.ModelHub.Filename,
 			modelRevision: model.Spec.Source.ModelHub.Revision,
 		}
 	}

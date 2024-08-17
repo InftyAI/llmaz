@@ -48,6 +48,8 @@ func SwitchBackend(name inferenceapi.BackendName) Backend {
 		return &VLLM{}
 	case inferenceapi.SGLANG:
 		return &SGLANG{}
+	case inferenceapi.LLAMACPP:
+		return &LLAMACPP{}
 	default:
 		// We should not reach here because apiserver already did validation.
 		return nil

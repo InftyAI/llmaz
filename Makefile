@@ -133,6 +133,10 @@ golangci-lint:
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell dirname $(GOLANGCI_LINT)) $(GOLANGCI_LINT_VERSION) ;\
 	}
 
+.PHONY: pytest
+pytest:
+	poetry run pytest
+
 .PHONY: pythonci-lint
 pythonci-lint:
 	poetry run black .
@@ -140,6 +144,7 @@ pythonci-lint:
 .PHONY: lint
 lint: golangci-lint pythonci-lint
 	$(GOLANGCI_LINT) run
+	black ./llmaz
 
 .PHONY: lint-fix
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
