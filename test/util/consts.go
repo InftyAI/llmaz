@@ -20,4 +20,6 @@ import "time"
 const (
 	IntegrationTimeout = 10 * time.Second
 	Interval           = time.Millisecond * 250
+	E2ETimeout         = 3 * time.Minute
+	E2EInterval        = 1 * time.Second
 )
