@@ -190,5 +190,22 @@ func ValidateServiceStatusEqualTo(ctx context.Context, k8sClient client.Client, 
 			}
 		}
 		return nil
-	})
+	}).Should(gomega.Succeed())
+}
+
+// This can only be used in e2e test because of integration test has no lws controllers, no pods will be created.
+func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+	gomega.Eventually(func() error {
+		pods := corev1.PodList{}
+		podSelector := client.MatchingLabels(map[string]string{
+			lws.SetNameLabelKey: service.Name,
+		})
+		if err := k8sClient.List(ctx, &pods, podSelector, client.InNamespace(service.Namespace)); err != nil {
+			return err
+		}
+		if len(pods.Items) != int(*service.Spec.WorkloadTemplate.Replicas)*int(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size) {
+			return fmt.Errorf("pods number not right, want: %d, got: %d", int(*service.Spec.WorkloadTemplate.Replicas)*int(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size), len(pods.Items))
+		}
+		return nil
+	}).Should(gomega.Succeed())
 }

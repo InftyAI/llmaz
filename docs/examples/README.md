@@ -7,7 +7,8 @@ We provide a set of examples to help you serve large language models, by default
 - [Deploy models from Huggingface](#deploy-models-from-huggingface)
 - [Deploy models from ModelScope](#deploy-models-from-modelscope)
 - [Deploy models from ObjectStore](#deploy-models-from-objectstore)
-- [Deploy models serving by SGLang](#deploy-models-serving-by-sglang)
+- [Deploy models via SGLang](#deploy-models-via-sglang)
+- [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
 
 ### Deploy models from Huggingface
 
@@ -31,10 +32,10 @@ In theory, if we want to load the `Qwen2-7B` model, which occupies about 14.2 GB
 
     > Note: you should set OSS_ACCESS_KEY_ID and OSS_ACCESS_kEY_SECRET first by running `kubectl create secret generic oss-access-secret --from-literal=OSS_ACCESS_KEY_ID=<your ID> --from-literal=OSS_ACCESS_kEY_SECRET=<your secret>`
 
-### Deploy models serving by SGLang
+### Deploy models via SGLang
 
 By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference backend, however, if you want to use other backends like [SGLang](https://github.com/sgl-project/sglang), see [examples](./sglang/) here.
 
-### Deploy models serving by llama.cpp
+### Deploy models via llama.cpp
 
 [llama.cpp](https://github.com/ggerganov/llama.cpp) can serve models on a wide variety of hardwares, such as CPU, see [examples](./llamacpp/) here.

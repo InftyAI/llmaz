@@ -139,5 +139,5 @@ func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Clien
 			}
 		}
 		return nil
-	})
+	}, util.E2ETimeout, util.E2EInterval).Should(gomega.Succeed())
 }

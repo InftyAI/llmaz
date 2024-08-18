@@ -19,13 +19,17 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	"inftyai.com/llmaz/test/util"
+	"inftyai.com/llmaz/test/util/validation"
 )
 
 var _ = ginkgo.Describe("model e2e tests", func() {
 	ginkgo.It("Can deploy a normal model", func() {
 		model := util.MockASampleModel()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
-		// cleanup
-		gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		validation.ValidateModel(ctx, k8sClient, model)
 	})
 })

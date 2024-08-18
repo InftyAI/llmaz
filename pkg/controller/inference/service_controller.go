@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,12 +71,15 @@ func NewServiceReconciler(client client.Client, scheme *runtime.Scheme, record r
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.16.3/pkg/reconcile
 func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	logger := log.FromContext(ctx)
 
 	service := &inferenceapi.Service{}
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, service); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
+
+	logger.V(10).Info("reconcile Service", "Playground", klog.KObj(service))
+
 	model := &coreapi.OpenModel{}
 	// TODO: multiModelsClaim
 	modelName := service.Spec.MultiModelsClaims[0].ModelNames[0]

@@ -20,17 +20,18 @@ import (
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	testing "sigs.k8s.io/lws/test/testutils"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	"inftyai.com/llmaz/test/util"
+	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	"inftyai.com/llmaz/test/util/validation"
+	"inftyai.com/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("playground e2e tests", func() {
 
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
-	var model *coreapi.OpenModel
 
 	ginkgo.BeforeEach(func() {
 		// Create test namespace before each test.
@@ -40,18 +41,26 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
-		model = util.MockASampleModel()
-		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 	})
 
 	ginkgo.AfterEach(func() {
 		gomega.Expect(testing.DeleteNamespace(ctx, k8sClient, ns)).To(gomega.Succeed())
-		gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
 	})
 
-	ginkgo.It("Can deploy a normal playground", func() {
-		playground := util.MockASamplePlayground(ns.Name)
+	ginkgo.It("Deploy a huggingface model with llama.cpp", func() {
+		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf").Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		playground := wrapper.MakePlayground("qwen2-0-5b-gguf", ns.Name).ModelClaim("qwen2-0-5b-gguf").Backend("llamacpp").Replicas(3).Obj()
 		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
-		// TODO: validate the corresponding inferenceService
+		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		validation.ValidateServicePods(ctx, k8sClient, service)
 	})
 })
