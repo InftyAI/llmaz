@@ -127,7 +127,7 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 		Name: MODEL_VOLUME_NAME,
 		VolumeSource: corev1.VolumeSource{
 			HostPath: &corev1.HostPathVolumeSource{
-				Path: HOST_MODEL_PATH,
+				Path: HOST_CLUSTER_MODEL_PATH,
 				Type: &hostType,
 			},
 		},

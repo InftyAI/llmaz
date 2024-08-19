@@ -85,6 +85,8 @@ func (w *OpenModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Objec
 	return nil, nil
 }
 
+// TODO: once namespaced models enabled, we should validate that only such volume path
+// /mnt/models/<model-namespace>/ is allowed.
 func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
 	model := obj.(*coreapi.OpenModel)
 	dataSourcePath := field.NewPath("spec", "dataSource")

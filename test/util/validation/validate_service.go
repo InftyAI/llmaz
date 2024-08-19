@@ -133,7 +133,7 @@ func ValidateModelLoader(model *coreapi.OpenModel, workload *lws.LeaderWorkerSet
 
 		for _, v := range service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes {
 			if v.Name == modelSource.MODEL_VOLUME_NAME {
-				if v.HostPath == nil || v.HostPath.Path != modelSource.HOST_MODEL_PATH || *v.HostPath.Type != corev1.HostPathDirectoryOrCreate {
+				if v.HostPath == nil || v.HostPath.Path != modelSource.HOST_CLUSTER_MODEL_PATH || *v.HostPath.Type != corev1.HostPathDirectoryOrCreate {
 					return errors.New("when using modelHub modelSource, the hostPath shouldn't be nil")
 				}
 			}

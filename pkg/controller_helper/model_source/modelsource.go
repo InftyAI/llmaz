@@ -26,7 +26,9 @@ import (
 const (
 	// model path
 	CONTAINER_MODEL_PATH = "/workspace/models/"
-	HOST_MODEL_PATH      = "/cache/models/"
+	HOST_MODEL_BASE_PATH = "/mnt/models/"
+	// TODO: we may need /mnt/models/namespace1/ path in the future for isolations.
+	HOST_CLUSTER_MODEL_PATH = HOST_MODEL_BASE_PATH + "cluster/"
 
 	// container & volume configs
 	DEFAULT_BACKEND_PORT        = 8080
