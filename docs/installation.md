@@ -14,7 +14,7 @@ LWS_VERSION=v0.3.0
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/lws/releases/download/$LWS_VERSION/manifests.yaml
 
 # llmaz runs in llmaz-system
-LLMAZ_VERSION=v0.0.3
+LLMAZ_VERSION=v0.0.4
 kubectl apply --server-side -f https://github.com/inftyai/llmaz/releases/download/$LLMAZ_VERSION/manifests.yaml
 ```
 
@@ -24,7 +24,7 @@ kubectl apply --server-side -f https://github.com/inftyai/llmaz/releases/downloa
 LWS_VERSION=v0.3.0
 kubectl delete -f https://github.com/kubernetes-sigs/lws/releases/download/$LWS_VERSION/manifests.yaml
 
-LLMAZ_VERSION=v0.0.3
+LLMAZ_VERSION=v0.0.4
 kubectl delete -f https://github.com/inftyai/llmaz/releases/download/$LLMAZ_VERSION/manifests.yaml
 ```
 
