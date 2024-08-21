@@ -122,14 +122,10 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 
 	// Handle spec.
 
-	hostType := corev1.HostPathDirectoryOrCreate
 	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
 		Name: MODEL_VOLUME_NAME,
 		VolumeSource: corev1.VolumeSource{
-			HostPath: &corev1.HostPathVolumeSource{
-				Path: HOST_CLUSTER_MODEL_PATH,
-				Type: &hostType,
-			},
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	})
 

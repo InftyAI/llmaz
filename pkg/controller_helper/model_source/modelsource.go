@@ -27,7 +27,7 @@ const (
 	// model path
 	CONTAINER_MODEL_PATH = "/workspace/models/"
 	HOST_MODEL_BASE_PATH = "/mnt/models/"
-	// TODO: we may need /mnt/models/namespace1/ path in the future for isolations.
+	// TODO: we may need /mnt/models/namespace1/ path in the future for isolates.
 	HOST_CLUSTER_MODEL_PATH = HOST_MODEL_BASE_PATH + "cluster/"
 
 	// container & volume configs
