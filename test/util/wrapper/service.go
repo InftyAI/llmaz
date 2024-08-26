@@ -22,8 +22,8 @@ import (
 	"k8s.io/utils/ptr"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	"inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 )
 
 type ServiceWrapper struct {
@@ -46,15 +46,15 @@ func (w *ServiceWrapper) Obj() *inferenceapi.Service {
 }
 
 func (w *ServiceWrapper) ModelsClaim(modelNames []string, flavorNames []string, rate *int32) *ServiceWrapper {
-	names := []v1alpha1.ModelName{}
+	names := []coreapi.ModelName{}
 	for i := range modelNames {
-		names = append(names, v1alpha1.ModelName(modelNames[i]))
+		names = append(names, coreapi.ModelName(modelNames[i]))
 	}
-	flavors := []v1alpha1.FlavorName{}
+	flavors := []coreapi.FlavorName{}
 	for i := range flavorNames {
-		flavors = append(flavors, v1alpha1.FlavorName(flavorNames[i]))
+		flavors = append(flavors, coreapi.FlavorName(flavorNames[i]))
 	}
-	w.Spec.MultiModelsClaims = append(w.Spec.MultiModelsClaims, v1alpha1.MultiModelsClaim{
+	w.Spec.MultiModelsClaims = append(w.Spec.MultiModelsClaims, coreapi.MultiModelsClaim{
 		ModelNames:       names,
 		InferenceFlavors: flavors,
 		Rate:             rate,

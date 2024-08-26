@@ -18,8 +18,8 @@ limitations under the License.
 package inference
 
 import (
-	v1alpha1 "inftyai.com/llmaz/client-go/informers/externalversions/inference/v1alpha1"
-	internalinterfaces "inftyai.com/llmaz/client-go/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/inftyai/llmaz/client-go/informers/externalversions/inference/v1alpha1"
+	internalinterfaces "github.com/inftyai/llmaz/client-go/informers/externalversions/internalinterfaces"
 )
 
 // Interface provides access to each of this group's versions.

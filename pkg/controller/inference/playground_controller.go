@@ -39,13 +39,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	coreclientgo "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
-	inferenceclientgo "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg/controller_helper/backend"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
-	"inftyai.com/llmaz/pkg/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	coreclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
+	inferenceclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
+	"github.com/inftyai/llmaz/pkg/controller_helper/backend"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	"github.com/inftyai/llmaz/pkg/util"
 )
 
 // PlaygroundReconciler reconciles a Playground object

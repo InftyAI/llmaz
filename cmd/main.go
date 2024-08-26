@@ -33,12 +33,12 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	corev1 "inftyai.com/llmaz/api/core/v1alpha1"
-	inferencev1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg/cert"
-	"inftyai.com/llmaz/pkg/controller"
-	inferencecontroller "inftyai.com/llmaz/pkg/controller/inference"
-	"inftyai.com/llmaz/pkg/webhook"
+	corev1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/pkg/cert"
+	"github.com/inftyai/llmaz/pkg/controller"
+	inferencecontroller "github.com/inftyai/llmaz/pkg/controller/inference"
+	"github.com/inftyai/llmaz/pkg/webhook"
 	//+kubebuilder:scaffold:imports
 )
 

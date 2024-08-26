@@ -19,9 +19,9 @@ package modelSource
 import (
 	"testing"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	"inftyai.com/llmaz/test/util"
-	"inftyai.com/llmaz/test/util/wrapper"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	"github.com/inftyai/llmaz/test/util"
+	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
 func Test_ModelSourceProvider(t *testing.T) {

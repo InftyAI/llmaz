@@ -22,8 +22,8 @@ import (
 	"github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	"inftyai.com/llmaz/test/util/wrapper"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("model default and validation", func() {

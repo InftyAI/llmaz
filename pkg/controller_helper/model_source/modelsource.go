@@ -19,8 +19,8 @@ package modelSource
 import (
 	corev1 "k8s.io/api/core/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	"inftyai.com/llmaz/pkg/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	"github.com/inftyai/llmaz/pkg/util"
 )
 
 const (

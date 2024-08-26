@@ -22,8 +22,8 @@ import (
 	json "encoding/json"
 	"fmt"
 
-	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
-	inferencev1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
+	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	types "k8s.io/apimachinery/pkg/types"

@@ -1,4 +1,4 @@
-module inftyai.com/llmaz
+module github.com/inftyai/llmaz
 
 go 1.22.0
 
@@ -19,7 +19,6 @@ require (
 	sigs.k8s.io/controller-runtime v0.18.4
 	sigs.k8s.io/lws v0.3.0
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
-
 )
 
 require (

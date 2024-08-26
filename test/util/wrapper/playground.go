@@ -17,8 +17,8 @@ limitations under the License.
 package wrapper
 
 import (
-	core "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,13 +49,13 @@ func (w *PlaygroundWrapper) Replicas(replicas int32) *PlaygroundWrapper {
 }
 
 func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) *PlaygroundWrapper {
-	names := []core.FlavorName{}
+	names := []coreapi.FlavorName{}
 	for _, name := range flavorNames {
-		names = append(names, core.FlavorName(name))
+		names = append(names, coreapi.FlavorName(name))
 	}
 
-	w.Spec.ModelClaim = &core.ModelClaim{
-		ModelName:        core.ModelName(modelName),
+	w.Spec.ModelClaim = &coreapi.ModelClaim{
+		ModelName:        coreapi.ModelName(modelName),
 		InferenceFlavors: names,
 	}
 	return w

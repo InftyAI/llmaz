@@ -19,9 +19,10 @@ package modelSource
 import (
 	"strings"
 
-	"inftyai.com/llmaz/pkg"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
+
+	"github.com/inftyai/llmaz/pkg"
 )
 
 var _ ModelSourceProvider = &ModelHubProvider{}

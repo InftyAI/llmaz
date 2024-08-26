@@ -22,9 +22,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 )
 
 var _ Backend = (*VLLM)(nil)

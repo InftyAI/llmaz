@@ -20,7 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	api "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 // ServiceSpec defines the desired state of Service.
@@ -34,7 +34,7 @@ type ServiceSpec struct {
 	// Note: properties (nodeSelectors, resources, e.g.) of the model flavors
 	// will be applied to the workload if not exist.
 	// +kubebuilder:validation:MinItems=1
-	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
+	MultiModelsClaims []coreapi.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
 	// WorkloadTemplate defines the underlying workload layout and configuration.
 	// Note: the LWS spec might be twisted with various LWS instances to support
 	// accelerator fungibility or other cutting-edge researches.

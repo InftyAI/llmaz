@@ -20,8 +20,8 @@ package v1alpha1
 import (
 	"net/http"
 
-	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/client-go/clientset/versioned/scheme"
+	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/client-go/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

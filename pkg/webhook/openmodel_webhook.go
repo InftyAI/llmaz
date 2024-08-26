@@ -26,9 +26,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
-	"inftyai.com/llmaz/pkg/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	"github.com/inftyai/llmaz/pkg/util"
 )
 
 type OpenModelWebhook struct{}

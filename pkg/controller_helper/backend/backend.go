@@ -17,8 +17,8 @@ limitations under the License.
 package backend
 
 import (
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 )
 
 const (

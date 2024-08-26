@@ -19,7 +19,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
 
-	"inftyai.com/llmaz/pkg"
+	"github.com/inftyai/llmaz/pkg"
 )
 
 var _ ModelSourceProvider = &URIProvider{}

@@ -90,6 +90,11 @@ func (in *ModelHub) DeepCopyInto(out *ModelHub) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Filename != nil {
+		in, out := &in.Filename, &out.Filename
+		*out = new(string)
+		**out = **in
+	}
 	if in.Revision != nil {
 		in, out := &in.Revision, &out.Revision
 		*out = new(string)

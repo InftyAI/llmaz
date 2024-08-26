@@ -34,9 +34,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/test/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/test/util"
 )
 
 const (

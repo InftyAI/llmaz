@@ -18,7 +18,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
+	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 // ModelSpecApplyConfiguration represents an declarative configuration of the ModelSpec type for use

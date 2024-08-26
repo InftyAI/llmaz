@@ -41,10 +41,10 @@ import (
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 	applyconfigurationv1 "sigs.k8s.io/lws/client-go/applyconfiguration/leaderworkerset/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
-	"inftyai.com/llmaz/pkg/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	"github.com/inftyai/llmaz/pkg/util"
 )
 
 // ServiceReconciler reconciles a Service object

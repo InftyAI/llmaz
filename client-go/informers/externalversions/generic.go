@@ -20,8 +20,8 @@ package externalversions
 import (
 	"fmt"
 
-	corev1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
-	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

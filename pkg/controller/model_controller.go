@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 // OpenModelReconciler reconciles a Model object

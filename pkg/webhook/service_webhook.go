@@ -26,8 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 )
 
 type ServiceWebhook struct{}

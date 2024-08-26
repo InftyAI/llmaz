@@ -23,9 +23,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	testing "sigs.k8s.io/lws/test/testutils"
 
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/test/util/validation"
-	"inftyai.com/llmaz/test/util/wrapper"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/test/util/validation"
+	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("playground e2e tests", func() {

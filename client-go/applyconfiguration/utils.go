@@ -18,10 +18,10 @@ limitations under the License.
 package applyconfiguration
 
 import (
-	corev1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
-	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
-	applyconfigurationcorev1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
-	inferencev1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/inference/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	applyconfigurationcorev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 

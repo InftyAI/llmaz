@@ -27,11 +27,11 @@ import (
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/test/util"
-	"inftyai.com/llmaz/test/util/validation"
-	"inftyai.com/llmaz/test/util/wrapper"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/test/util"
+	"github.com/inftyai/llmaz/test/util/validation"
+	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("playground controller test", func() {

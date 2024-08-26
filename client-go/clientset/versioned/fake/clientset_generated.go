@@ -18,11 +18,11 @@ limitations under the License.
 package fake
 
 import (
-	clientset "inftyai.com/llmaz/client-go/clientset/versioned"
-	llmazv1alpha1 "inftyai.com/llmaz/client-go/clientset/versioned/typed/core/v1alpha1"
-	fakellmazv1alpha1 "inftyai.com/llmaz/client-go/clientset/versioned/typed/core/v1alpha1/fake"
-	inferencev1alpha1 "inftyai.com/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1"
-	fakeinferencev1alpha1 "inftyai.com/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1/fake"
+	clientset "github.com/inftyai/llmaz/client-go/clientset/versioned"
+	llmazv1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/core/v1alpha1"
+	fakellmazv1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/core/v1alpha1/fake"
+	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1"
+	fakeinferencev1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"

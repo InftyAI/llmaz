@@ -18,7 +18,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
+	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 )
 

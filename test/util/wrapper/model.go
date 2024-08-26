@@ -21,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 type ModelWrapper struct {

@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"net/http"
 
-	llmazv1alpha1 "inftyai.com/llmaz/client-go/clientset/versioned/typed/core/v1alpha1"
-	inferencev1alpha1 "inftyai.com/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1"
+	llmazv1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/core/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
