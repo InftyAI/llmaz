@@ -19,11 +19,12 @@ package webhook
 import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/test/util"
-	"inftyai.com/llmaz/test/util/wrapper"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/test/util"
+	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("service default and validation", func() {

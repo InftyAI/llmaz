@@ -16,18 +16,15 @@ source "${CODEGEN_PKG}/kube_codegen.sh"
 # (https://github.com/kubernetes/code-generator/issues/165).
 # Here, we create the soft link named "x-k8s.io" to the parent directory of
 # LeaderWorkerSet to ensure the layout required by the kube_codegen.sh script.
-ln -s .. inftyai.com
-trap "rm inftyai.com" EXIT
+mkdir -p github.com && ln -s ../.. github.com/inftyai
+trap "rm -r github.com" EXIT
 
-kube::codegen::gen_helpers \
-    --input-pkg-root inftyai.com/llmaz/api \
-    --output-base "${REPO_ROOT}" \
+kube::codegen::gen_helpers github.com/inftyai/llmaz/api \
     --boilerplate "${REPO_ROOT}/hack/boilerplate.go.txt"
 
-kube::codegen::gen_client \
+kube::codegen::gen_client github.com/inftyai/llmaz/api \
     --with-watch \
     --with-applyconfig \
-    --input-pkg-root inftyai.com/llmaz/api \
-    --output-base "$REPO_ROOT" \
-    --output-pkg-root inftyai.com/llmaz/client-go \
+    --output-dir "$REPO_ROOT"/client-go \
+    --output-pkg github.com/inftyai/llmaz/client-go \
     --boilerplate "${REPO_ROOT}/hack/boilerplate.go.txt"

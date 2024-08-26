@@ -16,10 +16,10 @@ limitations under the License.
 package e2e
 
 import (
+	"github.com/inftyai/llmaz/test/util"
+	"github.com/inftyai/llmaz/test/util/validation"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
-	"inftyai.com/llmaz/test/util"
-	"inftyai.com/llmaz/test/util/validation"
 )
 
 var _ = ginkgo.Describe("model e2e tests", func() {

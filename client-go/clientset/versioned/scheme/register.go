@@ -18,8 +18,8 @@ limitations under the License.
 package scheme
 
 import (
-	llmazv1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
-	inferencev1alpha1 "inftyai.com/llmaz/api/inference/v1alpha1"
+	llmazv1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

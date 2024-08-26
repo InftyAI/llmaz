@@ -18,7 +18,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1alpha1 "inftyai.com/llmaz/api/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 // ModelSourceApplyConfiguration represents an declarative configuration of the ModelSource type for use

@@ -22,6 +22,7 @@ package v1alpha1
 type ModelHubApplyConfiguration struct {
 	Name     *string `json:"name,omitempty"`
 	ModelID  *string `json:"modelID,omitempty"`
+	Filename *string `json:"filename,omitempty"`
 	Revision *string `json:"revision,omitempty"`
 }
 
@@ -44,6 +45,14 @@ func (b *ModelHubApplyConfiguration) WithName(value string) *ModelHubApplyConfig
 // If called multiple times, the ModelID field is set to the value of the last call.
 func (b *ModelHubApplyConfiguration) WithModelID(value string) *ModelHubApplyConfiguration {
 	b.ModelID = &value
+	return b
+}
+
+// WithFilename sets the Filename field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Filename field is set to the value of the last call.
+func (b *ModelHubApplyConfiguration) WithFilename(value string) *ModelHubApplyConfiguration {
+	b.Filename = &value
 	return b
 }
 

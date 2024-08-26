@@ -21,10 +21,11 @@ import (
 	"errors"
 
 	"github.com/onsi/gomega"
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	"inftyai.com/llmaz/test/util"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	"github.com/inftyai/llmaz/test/util"
 )
 
 func ValidateModel(ctx context.Context, k8sClient client.Client, model *coreapi.OpenModel) {

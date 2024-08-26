@@ -29,11 +29,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg/controller_helper/backend"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
-	"inftyai.com/llmaz/test/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/pkg/controller_helper/backend"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	"github.com/inftyai/llmaz/test/util"
 )
 
 func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {

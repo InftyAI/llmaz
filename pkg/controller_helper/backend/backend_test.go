@@ -19,7 +19,7 @@ package backend
 import (
 	"testing"
 
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 )
 
 func TestSwitchBackend(t *testing.T) {

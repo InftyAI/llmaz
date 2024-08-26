@@ -19,7 +19,7 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	api "inftyai.com/llmaz/api/core/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 // PlaygroundSpec defines the desired state of Playground
@@ -34,13 +34,13 @@ type PlaygroundSpec struct {
 	// Note: properties (nodeSelectors, resources, e.g.) of the model flavors
 	// will be applied to the workload if not exist.
 	// +optional
-	ModelClaim *api.ModelClaim `json:"modelClaim,omitempty"`
+	ModelClaim *coreapi.ModelClaim `json:"modelClaim,omitempty"`
 	// MultiModelsClaims represents multiple modelClaim, which is useful when different
 	// sub-workload has different accelerator requirements, like the state-of-the-art
 	// technology called splitwise, the workload template is shared by both.
 	// ModelClaim and multiModelsClaims are exclusive configured.
 	// +optional
-	MultiModelsClaims []api.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
+	MultiModelsClaims []coreapi.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
 	// BackendConfig represents the inference backend configuration
 	// under the hood, e.g. vLLM, which is the default backend.
 	// +optional

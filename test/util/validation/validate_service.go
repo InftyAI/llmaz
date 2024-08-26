@@ -30,11 +30,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
-	coreapi "inftyai.com/llmaz/api/core/v1alpha1"
-	inferenceapi "inftyai.com/llmaz/api/inference/v1alpha1"
-	"inftyai.com/llmaz/pkg"
-	modelSource "inftyai.com/llmaz/pkg/controller_helper/model_source"
-	"inftyai.com/llmaz/test/util"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/pkg"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	"github.com/inftyai/llmaz/test/util"
 )
 
 func ValidateService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {

@@ -18,7 +18,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "inftyai.com/llmaz/client-go/applyconfiguration/core/v1alpha1"
+	v1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	v1 "sigs.k8s.io/lws/api/leaderworkerset/v1"
 )
 
