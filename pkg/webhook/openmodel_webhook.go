@@ -89,24 +89,24 @@ func (w *OpenModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Objec
 // /mnt/models/<model-namespace>/ is allowed.
 func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
 	model := obj.(*coreapi.OpenModel)
-	dataSourcePath := field.NewPath("spec", "dataSource")
+	sourcePath := field.NewPath("spec", "source")
 
 	var allErrs field.ErrorList
 	if model.Spec.Source.ModelHub == nil && model.Spec.Source.URI == nil {
-		allErrs = append(allErrs, field.Forbidden(dataSourcePath, "data source can't be all null"))
+		allErrs = append(allErrs, field.Forbidden(sourcePath, "Source can't be all null"))
 	}
 
 	if model.Spec.Source.URI != nil {
 		if protocol, address, err := util.ParseURI(string(*model.Spec.Source.URI)); err != nil {
-			allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong format"))
+			allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong format"))
 		} else {
 			if _, ok := SUPPORTED_OBJ_STORES[protocol]; !ok {
-				allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("uri"), *model.Spec.Source.URI, "URI with unsupported protocol"))
+				allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with unsupported protocol"))
 			} else {
 				switch protocol {
 				case modelSource.OSS:
 					if _, _, _, err := util.ParseOSS(address); err != nil {
-						allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
+						allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
 					}
 				}
 			}
@@ -115,7 +115,7 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 
 	if model.Spec.Source.ModelHub != nil {
 		if model.Spec.Source.ModelHub.Filename != nil && model.Spec.Source.ModelHub.Name != nil && *model.Spec.Source.ModelHub.Name == coreapi.MODEL_SCOPE {
-			allErrs = append(allErrs, field.Invalid(dataSourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modeHub is Huggingface"))
+			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modeHub is Huggingface"))
 		}
 	}
 	return allErrs
