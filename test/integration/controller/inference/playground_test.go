@@ -157,6 +157,41 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
+		ginkgo.Entry("playground is created when service exists with the same name", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return util.MockASamplePlayground(ns.Name)
+			},
+			updates: []*update{
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						// Create a service with the same name as the playground.
+						service := wrapper.MakeService(playground.Name, playground.Namespace).
+							ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
+							WorkerTemplate().
+							Obj()
+						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "AbortProcessing", metav1.ConditionFalse)
+					},
+				},
+				{
+					// Delete the service, playground should be updated to Pending.
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						service := wrapper.MakeService(playground.Name, playground.Namespace).
+							ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
+							WorkerTemplate().
+							Obj()
+						gomega.Expect(k8sClient.Delete(ctx, service)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
 		ginkgo.Entry("create the model after playground is created", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return util.MockASamplePlayground(ns.Name)

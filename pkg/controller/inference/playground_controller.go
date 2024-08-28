@@ -33,6 +33,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -81,6 +82,24 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	logger.V(10).Info("reconcile Playground", "Playground", klog.KObj(playground))
 
+	service := &inferenceapi.Service{}
+	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err == nil {
+		if !controllerutil.HasControllerReference(service) {
+			condition := metav1.Condition{
+				Type:    inferenceapi.PlaygroundProgressing,
+				Status:  metav1.ConditionFalse,
+				Reason:  "AbortProcessing",
+				Message: "Playground owns the same name with an existing Service",
+			}
+			apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+			if err := r.Client.Status().Update(ctx, playground); err != nil {
+				return ctrl.Result{}, err
+			}
+			// No need to requeue. Once the Service is deleted, the Playground will be reconciled.
+			return ctrl.Result{}, nil
+		}
+	}
+
 	var serviceApplyConfiguration *inferenceclientgo.ServiceApplyConfiguration
 
 	model := &coreapi.OpenModel{}
@@ -94,7 +113,6 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// TODO: handle MultiModelsClaims in the future.
-
 	if err := setControllerReferenceForService(playground, serviceApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -104,7 +122,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Handle status.
-	service := &inferenceapi.Service{}
+	service = &inferenceapi.Service{}
 	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -272,7 +290,7 @@ func buildWorkerTemplate(model *coreapi.OpenModel, playground *inferenceapi.Play
 
 func setPlaygroundCondition(playground *inferenceapi.Playground, service *inferenceapi.Service) {
 	// For the start up.
-	if len(playground.Status.Conditions) == 0 {
+	if len(playground.Status.Conditions) == 0 || !apimeta.IsStatusConditionTrue(service.Status.Conditions, inferenceapi.PlaygroundProgressing) {
 		condition := metav1.Condition{
 			Type:    inferenceapi.PlaygroundProgressing,
 			Status:  metav1.ConditionTrue,

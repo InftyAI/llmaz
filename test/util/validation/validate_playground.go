@@ -34,6 +34,7 @@ import (
 	"github.com/inftyai/llmaz/pkg/controller_helper/backend"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 	"github.com/inftyai/llmaz/test/util"
+	"github.com/inftyai/llmaz/test/util/format"
 )
 
 func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
@@ -136,10 +137,10 @@ func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Clien
 			return err
 		}
 		if condition := apimeta.FindStatusCondition(newPlayground.Status.Conditions, conditionType); condition == nil {
-			return errors.New("condition not found")
+			return fmt.Errorf("condition not found: %s", format.Object(newPlayground, 1))
 		} else {
 			if condition.Reason != reason || condition.Status != status {
-				return errors.New("reason or status not right")
+				return fmt.Errorf("expected reason %q or status %q, but got %s", reason, status, format.Object(condition, 1))
 			}
 		}
 		return nil

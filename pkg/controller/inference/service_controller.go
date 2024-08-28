@@ -116,7 +116,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&inferenceapi.Service{}).
-		Watches(&lws.LeaderWorkerSet{}, &handler.EnqueueRequestForObject{},
+		Watches(&lws.LeaderWorkerSet{}, handler.EnqueueRequestForOwner(r.Scheme, r.RESTMapper(), &inferenceapi.Service{}, handler.OnlyControllerOwner()),
 			builder.WithPredicates(predicate.Funcs{
 				UpdateFunc: func(e event.UpdateEvent) bool {
 					oldBar := e.ObjectOld.(*lws.LeaderWorkerSet)
