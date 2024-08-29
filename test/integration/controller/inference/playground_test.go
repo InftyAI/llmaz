@@ -18,10 +18,12 @@ package inference
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
@@ -147,6 +149,55 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				{
 					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("create the model after playground is created", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return util.MockASamplePlayground(ns.Name)
+			},
+			updates: []*update{
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						// Delete the pre-provision model before creating playground.
+						gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+						// To make sure model not exists.
+						gomega.Eventually(func() error {
+							oldModel := &coreapi.OpenModel{}
+							if err := k8sClient.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, oldModel); err != nil {
+								if apierrors.IsNotFound(err) {
+									return nil
+								}
+								return err
+							}
+							return fmt.Errorf("model %s/%s still exists", model.Namespace, model.Name)
+						}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
+
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						gomega.Consistently(func() error {
+							updatePlayground := inferenceapi.Playground{}
+							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &updatePlayground); err != nil {
+								return err
+							}
+							if len(updatePlayground.Status.Conditions) != 0 {
+								return fmt.Errorf("playground status conditions should be empty, got %v", updatePlayground.Status.Conditions)
+							}
+							return nil
+						}, 3*util.Interval, util.Interval).Should(gomega.Succeed())
+					},
+				},
+				{
+					// create the model after playground is created.
+					playgroundUpdateFn: func(_ *inferenceapi.Playground) {
+						model = util.MockASampleModel()
+						gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 					},
 					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)

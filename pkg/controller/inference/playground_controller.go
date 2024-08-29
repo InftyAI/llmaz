@@ -119,6 +119,32 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	mapFn := func(ctx context.Context, obj client.Object) []ctrl.Request {
+		logger := log.FromContext(ctx)
+
+		modelName := obj.GetName()
+
+		playgrounds := &inferenceapi.PlaygroundList{}
+		err := r.List(ctx, playgrounds, client.MatchingLabels{coreapi.ModelNameLabelKey: modelName})
+		if err != nil {
+			logger.Error(err, "failed to list playgrounds")
+			return nil
+		}
+
+		var reqs []ctrl.Request
+		for _, playground := range playgrounds.Items {
+			reqs = append(reqs, ctrl.Request{
+				NamespacedName: types.NamespacedName{
+					Name: playground.Name,
+				},
+			})
+		}
+
+		// TODO: handle MultiModelsClaims in the future.
+
+		return reqs
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&inferenceapi.Playground{}).
 		Watches(&inferenceapi.Service{}, &handler.EnqueueRequestForObject{},
@@ -128,6 +154,12 @@ func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					newBar := e.ObjectNew.(*inferenceapi.Service)
 					return !reflect.DeepEqual(oldBar.Status, newBar.Status)
 				},
+			})).
+		Watches(&coreapi.OpenModel{}, handler.EnqueueRequestsFromMapFunc(mapFn),
+			builder.WithPredicates(predicate.Funcs{
+				UpdateFunc:  func(e event.UpdateEvent) bool { return false },
+				DeleteFunc:  func(e event.DeleteEvent) bool { return false },
+				GenericFunc: func(e event.GenericEvent) bool { return false },
 			})).
 		Complete(r)
 }
