@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 )
 
@@ -46,6 +47,19 @@ var _ webhook.CustomDefaulter = &PlaygroundWebhook{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (w *PlaygroundWebhook) Default(ctx context.Context, obj runtime.Object) error {
+	playground := obj.(*inferenceapi.Playground)
+
+	var modelName string
+	if playground.Spec.ModelClaim != nil {
+		modelName = string(playground.Spec.ModelClaim.ModelName)
+	}
+	// TODO: handle MultiModelsClaims in the future.
+
+	if playground.Labels == nil {
+		playground.Labels = map[string]string{}
+	}
+	playground.Labels[coreapi.ModelNameLabelKey] = modelName
+
 	return nil
 }
 

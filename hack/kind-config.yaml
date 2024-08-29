@@ -4,11 +4,6 @@ featureGates:
   MaxUnavailableStatefulSet: true
 nodes:
 - role: control-plane
-  extraPortMappings:
-  - containerPort: 30000
-    hostPort: 30000
-    listenAddress: "0.0.0.0"
-    protocol: tcp
 - role: worker
 - role: worker
 - role: worker

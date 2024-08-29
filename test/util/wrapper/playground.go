@@ -43,6 +43,14 @@ func (w *PlaygroundWrapper) Obj() *inferenceapi.Playground {
 	return &w.Playground
 }
 
+func (w *PlaygroundWrapper) Label(k, v string) *PlaygroundWrapper {
+	if w.Labels == nil {
+		w.Labels = map[string]string{}
+	}
+	w.Labels[k] = v
+	return w
+}
+
 func (w *PlaygroundWrapper) Replicas(replicas int32) *PlaygroundWrapper {
 	w.Spec.Replicas = &replicas
 	return w
@@ -53,10 +61,12 @@ func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) 
 	for _, name := range flavorNames {
 		names = append(names, coreapi.FlavorName(name))
 	}
-
 	w.Spec.ModelClaim = &coreapi.ModelClaim{
-		ModelName:        coreapi.ModelName(modelName),
-		InferenceFlavors: names,
+		ModelName: coreapi.ModelName(modelName),
+	}
+
+	if len(names) > 0 {
+		w.Spec.ModelClaim.InferenceFlavors = names
 	}
 	return w
 }

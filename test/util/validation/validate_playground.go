@@ -62,6 +62,10 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			}
 		}
 
+		if playground.Labels[coreapi.ModelNameLabelKey] != model.Name {
+			return fmt.Errorf("unexpected Playground label value, want %v, got %v", model.Name, playground.Labels[coreapi.ModelNameLabelKey])
+		}
+
 		// TODO: MultiModelsClaim
 
 		backendName := inferenceapi.DefaultBackend
