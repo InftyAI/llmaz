@@ -83,9 +83,9 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	var serviceApplyConfiguration *inferenceclientgo.ServiceApplyConfiguration
 
+	model := &coreapi.OpenModel{}
 	if playground.Spec.ModelClaim != nil {
 		modelName := playground.Spec.ModelClaim.ModelName
-		model := &coreapi.OpenModel{}
 
 		if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
 			return ctrl.Result{}, err

@@ -16,7 +16,7 @@ limitations under the License.
 package util
 
 import (
-	api "github.com/inftyai/llmaz/api/core/v1alpha1"
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util/wrapper"
 )
@@ -25,12 +25,12 @@ const (
 	sampleModelName = "llama3-8b"
 )
 
-func MockASampleModel() *api.OpenModel {
+func MockASampleModel() *coreapi.OpenModel {
 	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "").Obj()
 }
 
 func MockASamplePlayground(ns string) *inferenceapi.Playground {
-	return wrapper.MakePlayground("playground-llama3-8b", ns).ModelClaim(sampleModelName).Obj()
+	return wrapper.MakePlayground("playground-llama3-8b", ns).ModelClaim(sampleModelName).Label(coreapi.ModelNameLabelKey, sampleModelName).Obj()
 }
 
 func MockASampleService(ns string) *inferenceapi.Service {

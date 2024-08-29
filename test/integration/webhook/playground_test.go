@@ -17,11 +17,13 @@ limitations under the License.
 package webhook
 
 import (
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util/wrapper"
 )
@@ -47,7 +49,6 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 		playground func() *inferenceapi.Playground
 		failed     bool
 	}
-	// TODO: Add more testCases to cover updating.
 	ginkgo.DescribeTable("test validating",
 		func(tc *testValidatingCase) {
 			if tc.failed {
@@ -91,6 +92,28 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).Backend("unknown").Obj()
 			},
 			failed: true,
+		}),
+	)
+
+	type testDefaultingCase struct {
+		playground     func() *inferenceapi.Playground
+		wantPlayground func() *inferenceapi.Playground
+	}
+	ginkgo.DescribeTable("test validating",
+		func(tc *testDefaultingCase) {
+			playground := tc.playground()
+			gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+			gomega.Expect(playground).To(gomega.BeComparableTo(tc.wantPlayground(),
+				cmpopts.IgnoreTypes(inferenceapi.PlaygroundStatus{}),
+				cmpopts.IgnoreFields(metav1.ObjectMeta{}, "UID", "ResourceVersion", "Generation", "CreationTimestamp", "ManagedFields")))
+		},
+		ginkgo.Entry("defaulting label with modelClaim", &testDefaultingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).Obj()
+			},
+			wantPlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).Label(coreapi.ModelNameLabelKey, "llama3-8b").Obj()
+			},
 		}),
 	)
 })
