@@ -1,4 +1,13 @@
-# llmaz
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo.png">
+    <img alt="llmaz" src="./docs/assets/logo.png" width=55%>
+  </picture>
+</p>
+
+<h3 align="center">
+Easy, advanced inference platform for large language models on Kubernetes
+</h3>
 
 [![stability-alpha](https://img.shields.io/badge/stability-alpha-f4d03f.svg)](https://github.com/mkenney/software-guides/blob/master/STABILITY-BADGES.md#alpha)
 [![GoReport Widget]][GoReport Status]
@@ -17,8 +26,8 @@
 
 ## Feature Overview
 
-- **User Friendly**: People can quick deploy a LLM service with minimal configurations.
-- **High Performance**: llmaz supports a wide range of advanced inference backends for high performance, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
+- **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
+- **Broad Backend Support**: llmaz supports a wide range of advanced inference backends for high performance, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
 - **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
 - **Accelerator Fungibility (WIP)**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
 - **SOTA Inference (WIP)**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677) to run on Kubernetes.
