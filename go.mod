@@ -7,7 +7,7 @@ toolchain go1.22.1
 require (
 	github.com/google/go-cmp v0.6.0
 	github.com/onsi/ginkgo/v2 v2.20.2
-	github.com/onsi/gomega v1.34.1
+	github.com/onsi/gomega v1.34.2
 	github.com/open-policy-agent/cert-controller v0.11.0
 	k8s.io/api v0.30.4
 	k8s.io/apiextensions-apiserver v0.30.4
