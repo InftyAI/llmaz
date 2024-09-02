@@ -64,7 +64,15 @@ func (s *SGLANG) DefaultCommands() []string {
 	return []string{"python3", "-m", "sglang.launch_server"}
 }
 
-func (s *SGLANG) DefaultArgs(model *coreapi.OpenModel) []string {
+func (s *SGLANG) Args(models []*coreapi.OpenModel, mode coreapi.InferenceMode) []string {
+	if mode == coreapi.Standard {
+		return s.defaultArgs(models[0])
+	}
+	// We should not reach here.
+	return nil
+}
+
+func (s *SGLANG) defaultArgs(model *coreapi.OpenModel) []string {
 	source := modelSource.NewModelSourceProvider(model)
 	return []string{
 		"--model-path", source.ModelPath(),

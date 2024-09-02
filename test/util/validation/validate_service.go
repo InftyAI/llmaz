@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
@@ -47,30 +48,36 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.WorkloadTemplate.Replicas, *workload.Spec.Replicas)
 		}
 
-		// TODO: multiModelsClaim
 		// TODO: multi-host
 
-		modelName := string(service.Spec.MultiModelsClaims[0].ModelNames[0])
-		model := coreapi.OpenModel{}
-		if err := k8sClient.Get(ctx, types.NamespacedName{Name: modelName}, &model); err != nil {
-			return errors.New("failed to get model")
+		models := []*coreapi.OpenModel{}
+		modelNames := service.Spec.MultiModelsClaim.ModelNames
+		for _, modelName := range modelNames {
+			model := &coreapi.OpenModel{}
+			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+				return errors.New("failed to get model")
+			}
+			models = append(models, model)
 		}
 
-		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelNameLabelKey] != model.Name {
-			return fmt.Errorf("unexpected model name %s in template, want %s", workload.Labels[coreapi.ModelNameLabelKey], model.Name)
-		}
-		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey] != string(model.Spec.FamilyName) {
-			return fmt.Errorf("unexpected model family name %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey], model.Spec.FamilyName)
+		for index, model := range models {
+			// Validate injecting modelLoaders
+			if err := ValidateModelLoader(model, index, &workload, service); err != nil {
+				return err
+			}
 		}
 
-		// Validate injecting modelLoaders
-		if err := ValidateModelLoader(&model, &workload, service); err != nil {
-			return err
+		mainModel := models[0]
+		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelNameLabelKey] != mainModel.Name {
+			return fmt.Errorf("unexpected model name %s in template, want %s", workload.Labels[coreapi.ModelNameLabelKey], mainModel.Name)
+		}
+		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey] != string(mainModel.Spec.FamilyName) {
+			return fmt.Errorf("unexpected model family name %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey], mainModel.Spec.FamilyName)
 		}
 
 		// Validate injecting flavors.
-		if len(model.Spec.InferenceFlavors) != 0 {
-			if err := ValidateModelFlavor(&model, &workload); err != nil {
+		if len(mainModel.Spec.InferenceFlavors) != 0 {
+			if err := ValidateModelFlavor(mainModel, &workload); err != nil {
 				return err
 			}
 		}
@@ -79,15 +86,19 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
-func ValidateModelLoader(model *coreapi.OpenModel, workload *lws.LeaderWorkerSet, service *inferenceapi.Service) error {
+func ValidateModelLoader(model *coreapi.OpenModel, index int, workload *lws.LeaderWorkerSet, service *inferenceapi.Service) error {
 	if model.Spec.Source.ModelHub != nil || model.Spec.Source.URI != nil {
 		if len(workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers) == 0 {
 			return errors.New("no initContainer configured")
 		}
 
-		initContainer := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers[0]
+		initContainer := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers[index]
 
-		if initContainer.Name != modelSource.MODEL_LOADER_CONTAINER_NAME {
+		containerName := modelSource.MODEL_LOADER_CONTAINER_NAME
+		if index != 0 {
+			containerName += "-" + strconv.Itoa(index)
+		}
+		if initContainer.Name != containerName {
 			return fmt.Errorf("unexpected initContainer name, want %s, got %s", modelSource.MODEL_LOADER_CONTAINER_NAME, initContainer.Name)
 		}
 		if initContainer.Image != pkg.LOADER_IMAGE {

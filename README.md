@@ -27,11 +27,11 @@ Easy, advanced inference platform for large language models on Kubernetes
 ## Feature Overview
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
-- **Broad Backend Support**: llmaz supports a wide range of advanced inference backends for high performance, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
+- **Broad Backend Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
 - **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
 - **Accelerator Fungibility (WIP)**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
-- **SOTA Inference (WIP)**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677) to run on Kubernetes.
-- **Various Model Providers**: llmaz automatically loads models from various providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores(aliyun OSS, more on the way).
+- **SOTA Inference**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677)(WIP) to run on Kubernetes.
+- **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores(aliyun OSS, more on the way). llmaz automatically handles the model loading requiring no effort from users.
 - **Multi-hosts Support**: llmaz supports both single-host and multi-hosts scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 1.
 
 ## Quick Start
@@ -110,9 +110,18 @@ curl http://localhost:8080/v1/completions \
 ## Roadmap
 
 - Gateway support for traffic routing
+- Metrics support
 - Serverless support for cloud-agnostic users
 - CLI tool support
 - Model training, fine tuning in the long-term
+
+## Project Structures
+
+```structure
+llmaz # root
+├── llmaz # where the model loader logic locates
+├── pkg # where the main logic for Kubernetes controllers locates
+```
 
 ## Contributions
 

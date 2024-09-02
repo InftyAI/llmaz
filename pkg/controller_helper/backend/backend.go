@@ -38,8 +38,16 @@ type Backend interface {
 	DefaultResources() inferenceapi.ResourceRequirements
 	// DefaultCommands returns the default command to start the inference backend.
 	DefaultCommands() []string
-	// DefaultArgs returns the default bootstrap arguments to start the backend.
-	DefaultArgs(*coreapi.OpenModel) []string
+	// Args returns the bootstrap arguments to start the backend.
+	Args([]*coreapi.OpenModel, coreapi.InferenceMode) []string
+	// defaultArgs returns the bootstrap arguments when inferenceMode is standard.
+	defaultArgs(*coreapi.OpenModel) []string
+}
+
+// SpeculativeBackend represents backend supports speculativeDecoding inferenceMode.
+type SpeculativeBackend interface {
+	// speculativeArgs returns the bootstrap arguments when inferenceMode is speculativeDecoding.
+	speculativeArgs([]*coreapi.OpenModel) []string
 }
 
 func SwitchBackend(name inferenceapi.BackendName) Backend {

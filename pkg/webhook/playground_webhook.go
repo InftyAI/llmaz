@@ -52,8 +52,10 @@ func (w *PlaygroundWebhook) Default(ctx context.Context, obj runtime.Object) err
 	var modelName string
 	if playground.Spec.ModelClaim != nil {
 		modelName = string(playground.Spec.ModelClaim.ModelName)
+	} else if playground.Spec.MultiModelsClaim != nil {
+		// We choose the first model as the main model.
+		modelName = string(playground.Spec.MultiModelsClaim.ModelNames[0])
 	}
-	// TODO: handle MultiModelsClaims in the future.
 
 	if playground.Labels == nil {
 		playground.Labels = map[string]string{}
@@ -93,8 +95,19 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 	specPath := field.NewPath("spec")
 
 	var allErrs field.ErrorList
-	if playground.Spec.ModelClaim == nil && len(playground.Spec.MultiModelsClaims) == 0 {
-		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and multiModelsClaims couldn't be both empty"))
+	if playground.Spec.ModelClaim == nil && playground.Spec.MultiModelsClaim == nil {
+		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and multiModelsClaim couldn't be both nil"))
+	}
+	if playground.Spec.MultiModelsClaim != nil {
+		if playground.Spec.MultiModelsClaim.InferenceMode == coreapi.SpeculativeDecoding {
+			if playground.Spec.BackendConfig != nil && *playground.Spec.BackendConfig.Name != inferenceapi.VLLM {
+				allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "inferenceMode"), "only vLLM supports speculativeDecoding mode"))
+			}
+			if len(playground.Spec.MultiModelsClaim.ModelNames) != 2 {
+				allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "modelNames"), "only two models are allowed in speculativeDecoding mode"))
+			}
+		}
+
 	}
 	return allErrs
 }

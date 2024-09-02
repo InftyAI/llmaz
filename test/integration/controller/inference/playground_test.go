@@ -40,6 +40,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
 	var model *coreapi.OpenModel
+	var draftModel *coreapi.OpenModel
 
 	type update struct {
 		playgroundUpdateFn func(*inferenceapi.Playground)
@@ -56,10 +57,13 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
 		model = util.MockASampleModel()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		draftModel = wrapper.MakeModel("llama3-2b").FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-2B", "").Obj()
+		gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
 	})
 	ginkgo.AfterEach(func() {
 		gomega.Expect(k8sClient.Delete(ctx, ns)).To(gomega.Succeed())
 		gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		gomega.Expect(k8sClient.Delete(ctx, draftModel)).To(gomega.Succeed())
 	})
 
 	type testValidatingCase struct {
@@ -139,6 +143,23 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
+		ginkgo.Entry("Playground with speculativeDecoding", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).MultiModelsClaim([]string{model.Name, draftModel.Name}, coreapi.SpeculativeDecoding).Label(coreapi.ModelNameLabelKey, model.Name).
+					Obj()
+			},
+			updates: []*update{
+				{
+					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
 		ginkgo.Entry("advance configured Playground with llamacpp", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
@@ -166,7 +187,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
 						// Create a service with the same name as the playground.
 						service := wrapper.MakeService(playground.Name, playground.Namespace).
-							ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
+							ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
 							WorkerTemplate().
 							Obj()
 						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
@@ -180,7 +201,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 					// Delete the service, playground should be updated to Pending.
 					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
 						service := wrapper.MakeService(playground.Name, playground.Namespace).
-							ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
+							ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
 							WorkerTemplate().
 							Obj()
 						gomega.Expect(k8sClient.Delete(ctx, service)).To(gomega.Succeed())

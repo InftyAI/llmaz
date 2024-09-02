@@ -64,7 +64,15 @@ func (l *LLAMACPP) DefaultCommands() []string {
 	return []string{"./llama-server"}
 }
 
-func (l *LLAMACPP) DefaultArgs(model *coreapi.OpenModel) []string {
+func (l *LLAMACPP) Args(models []*coreapi.OpenModel, mode coreapi.InferenceMode) []string {
+	if mode == coreapi.Standard {
+		return l.defaultArgs(models[0])
+	}
+	// We should not reach here.
+	return nil
+}
+
+func (l *LLAMACPP) defaultArgs(model *coreapi.OpenModel) []string {
 	source := modelSource.NewModelSourceProvider(model)
 	return []string{
 		"-m", source.ModelPath(),

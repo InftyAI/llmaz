@@ -22,6 +22,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/wrapper"
@@ -72,7 +73,7 @@ var _ = ginkgo.Describe("service default and validation", func() {
 		ginkgo.Entry("model-runner container doesn't exist", &testValidatingCase{
 			service: func() *inferenceapi.Service {
 				return wrapper.MakeService("service-llama3-8b", ns.Name).
-					ModelsClaim([]string{"llama3-8b"}, []string{}, nil).
+					ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
 					WorkerTemplate().
 					ContainerName("model-runner-fake").
 					Obj()

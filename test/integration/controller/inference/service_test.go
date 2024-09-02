@@ -65,11 +65,12 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 		}
 	})
 
+	// TODO: Add more testCases to cover status update.
+
 	type testValidatingCase struct {
 		makeService func() *inferenceapi.Service
 		updates     []*update
 	}
-	// TODO: Add more testCases to cover updating.
 	ginkgo.DescribeTable("test playground creation and update",
 		func(tc *testValidatingCase) {
 			service := tc.makeService()
@@ -127,7 +128,26 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 		ginkgo.Entry("service created with URI configured Model", &testValidatingCase{
 			makeService: func() *inferenceapi.Service {
 				return wrapper.MakeService("service-llama3-8b", ns.Name).
-					ModelsClaim([]string{"model-with-uri"}, []string{}, nil).
+					ModelsClaim([]string{"model-with-uri"}, coreapi.Standard, nil).
+					WorkerTemplate().
+					Obj()
+			},
+			updates: []*update{
+				{
+					serviceUpdateFn: func(service *inferenceapi.Service) {
+						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
+					},
+					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("service created with speculativeDecoding mode", &testValidatingCase{
+			makeService: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelsClaim([]string{"llama3-8b", "model-with-uri"}, coreapi.SpeculativeDecoding, nil).
 					WorkerTemplate().
 					Obj()
 			},

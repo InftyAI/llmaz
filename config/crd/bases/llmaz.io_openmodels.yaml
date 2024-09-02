@@ -47,7 +47,7 @@ spec:
               inferenceFlavors:
                 description: |-
                   InferenceFlavors represents the accelerator requirements to serve the model.
-                  Flavors are fungible following the priority of slice order.
+                  Flavors are fungible following the priority represented by the slice order.
                 items:
                   description: |-
                     Flavor defines the accelerator requirements for a model and the necessary parameters
@@ -63,9 +63,9 @@ spec:
                       additionalProperties:
                         type: string
                       description: |-
-                        NodeSelector defines the labels to filter specified nodes, like
-                        cloud-provider.com/accelerator: nvidia-a100.
-                        NodeSelector will be auto injected to the Pods as scheduling primitives.
+                        NodeSelector represents the node candidates for Pod placements, if a node doesn't
+                        meet the nodeSelector, it will be filtered out in the resourceFungibility scheduler plugin.
+                        If nodeSelector is empty, it means every node is a candidate.
                       type: object
                     params:
                       additionalProperties:
@@ -97,6 +97,7 @@ spec:
                   required:
                   - name
                   type: object
+                maxItems: 8
                 type: array
               source:
                 description: |-
