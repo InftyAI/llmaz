@@ -80,14 +80,16 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	logger.V(10).Info("reconcile Service", "Playground", klog.KObj(service))
 
-	model := &coreapi.OpenModel{}
-	// TODO: multiModelsClaim
-	modelName := service.Spec.MultiModelsClaims[0].ModelNames[0]
-	if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
-		return ctrl.Result{}, err
+	models := []*coreapi.OpenModel{}
+	for _, modelName := range service.Spec.MultiModelsClaim.ModelNames {
+		model := &coreapi.OpenModel{}
+		if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+			return ctrl.Result{}, err
+		}
+		models = append(models, model)
 	}
 
-	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, model)
+	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
 	if err := setControllerReferenceForLWS(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -127,14 +129,14 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *coreapi.OpenModel) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
 	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate)
 
 	// The core logic to inject additional configurations.
-	injectModelProperties(leaderWorkerTemplate, model)
+	injectModelProperties(leaderWorkerTemplate, models)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
@@ -144,17 +146,16 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, model *corea
 	return workload
 }
 
-func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.OpenModel) {
-	source := modelSource.NewModelSourceProvider(model)
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel) {
+	for i, model := range models {
+		source := modelSource.NewModelSourceProvider(model)
+		source.InjectModelLoader(template.WorkerTemplate, i)
+	}
 
-	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(model))
-
-	injectModelLoader(template, source)
-	injectModelFlavor(template, model)
-}
-
-func injectModelLoader(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, source modelSource.ModelSourceProvider) {
-	source.InjectModelLoader(template.WorkerTemplate)
+	// We treat the 0-index model as the main model, we only consider the main model's requirements,
+	// like label, flavor.
+	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(models[0]))
+	injectModelFlavor(template, models[0])
 }
 
 func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.OpenModel) {
@@ -203,7 +204,6 @@ func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyC
 		}
 		template.WorkerTemplate.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms = []corev1.NodeSelectorTerm{term}
 	}
-
 }
 
 func modelLabels(model *coreapi.OpenModel) map[string]string {

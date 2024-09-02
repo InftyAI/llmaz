@@ -37,6 +37,39 @@ import (
 	"github.com/inftyai/llmaz/test/util/format"
 )
 
+func validateModelClaim(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground, service inferenceapi.Service) error {
+	model := coreapi.OpenModel{}
+
+	if playground.Spec.ModelClaim != nil {
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName), Namespace: playground.Namespace}, &model); err != nil {
+			return errors.New("failed to get model")
+		}
+
+		if playground.Spec.ModelClaim.ModelName != service.Spec.MultiModelsClaim.ModelNames[0] {
+			return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.MultiModelsClaim.ModelNames[0])
+		}
+		if diff := cmp.Diff(playground.Spec.ModelClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors); diff != "" {
+			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors)
+		}
+	} else if playground.Spec.MultiModelsClaim != nil {
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.MultiModelsClaim.ModelNames[0]), Namespace: playground.Namespace}, &model); err != nil {
+			return errors.New("failed to get model")
+		}
+		if diff := cmp.Diff(playground.Spec.MultiModelsClaim.ModelNames, service.Spec.MultiModelsClaim.ModelNames); diff != "" {
+			return fmt.Errorf("expected modelNames, want %s, got %s", playground.Spec.MultiModelsClaim.ModelNames, service.Spec.MultiModelsClaim.ModelNames)
+		}
+		if diff := cmp.Diff(playground.Spec.MultiModelsClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors); diff != "" {
+			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.MultiModelsClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors)
+		}
+	}
+
+	if playground.Labels[coreapi.ModelNameLabelKey] != model.Name {
+		return fmt.Errorf("unexpected Playground label value, want %v, got %v", model.Name, playground.Labels[coreapi.ModelNameLabelKey])
+	}
+
+	return nil
+}
+
 func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 	gomega.Eventually(func() error {
 		service := inferenceapi.Service{}
@@ -44,30 +77,13 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			return errors.New("failed to get inferenceService")
 		}
 
+		if err := validateModelClaim(ctx, k8sClient, playground, service); err != nil {
+			return err
+		}
+
 		if *playground.Spec.Replicas != *service.Spec.WorkloadTemplate.Replicas {
 			return fmt.Errorf("expected replicas: %d, got %d", *playground.Spec.Replicas, *service.Spec.WorkloadTemplate.Replicas)
 		}
-
-		model := coreapi.OpenModel{}
-
-		if playground.Spec.ModelClaim != nil {
-			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName), Namespace: playground.Namespace}, &model); err != nil {
-				return errors.New("failed to get model")
-			}
-
-			if playground.Spec.ModelClaim.ModelName != service.Spec.MultiModelsClaims[0].ModelNames[0] {
-				return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.MultiModelsClaims[0].ModelNames[0])
-			}
-			if diff := cmp.Diff(playground.Spec.ModelClaim.InferenceFlavors, service.Spec.MultiModelsClaims[0].InferenceFlavors); diff != "" {
-				return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.MultiModelsClaims[0].InferenceFlavors)
-			}
-		}
-
-		if playground.Labels[coreapi.ModelNameLabelKey] != model.Name {
-			return fmt.Errorf("unexpected Playground label value, want %v, got %v", model.Name, playground.Labels[coreapi.ModelNameLabelKey])
-		}
-
-		// TODO: MultiModelsClaim
 
 		backendName := inferenceapi.DefaultBackend
 		if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {

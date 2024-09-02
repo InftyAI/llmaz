@@ -45,7 +45,9 @@ spec:
                   under the hood, e.g. vLLM, which is the default backend.
                 properties:
                   args:
-                    description: Args represents the arguments passed to the backend.
+                    description: |-
+                      Args represents the arguments passed to the backend.
+                      You can add new args or overwrite the default args.
                     items:
                       type: string
                     type: array
@@ -222,66 +224,59 @@ spec:
                 type: object
               modelClaim:
                 description: |-
-                  ModelClaim represents one modelClaim, it's a simple configuration
-                  compared to multiModelsClaims only work for one model and one claim.
-                  ModelClaim and multiModelsClaims are exclusive configured.
-                  Note: properties (nodeSelectors, resources, e.g.) of the model flavors
-                  will be applied to the workload if not exist.
+                  ModelClaim represents claiming for one model, it's the standard claimMode
+                  of multiModelsClaim compared to other modes like SpeculativeDecoding.
+                  Most of the time, modelClaim is enough.
+                  ModelClaim and multiModelsClaim are exclusive configured.
                 properties:
                   inferenceFlavors:
                     description: |-
-                      InferenceFlavors represents a list of flavors with fungibility supports
-                      to serve the model. The flavor names should be a subset of the model
-                      configured flavors. If not set, will use the model configured flavors.
+                      InferenceFlavors represents a list of flavors with fungibility support
+                      to serve the model.
+                      If set, The flavor names should be a subset of the model configured flavors.
+                      If not set, Model configured flavors will be used by default.
                     items:
                       type: string
                     type: array
                   modelName:
-                    description: |-
-                      ModelName represents a list of models, there maybe multiple models here
-                      to support state-of-the-art technologies like speculative decoding.
+                    description: ModelName represents the name of the Model.
                     type: string
                 type: object
-              multiModelsClaims:
+              multiModelsClaim:
                 description: |-
-                  MultiModelsClaims represents multiple modelClaim, which is useful when different
-                  sub-workload has different accelerator requirements, like the state-of-the-art
-                  technology called splitwise, the workload template is shared by both.
-                  ModelClaim and multiModelsClaims are exclusive configured.
-                items:
-                  description: |-
-                    MultiModelsClaim represents the references to multiple models.
-                    It's an advanced and more complicated config comparing to modelClaim.
-                  properties:
-                    inferenceFlavors:
-                      description: |-
-                        InferenceFlavors represents a list of flavors with fungibility supported
-                        to serve the model.
-                        - If not set, always apply with the 0-index model by default.
-                        - If set, will lookup the flavor names following the model orders.
-                      items:
-                        type: string
-                      type: array
-                    modelNames:
-                      description: |-
-                        ModelNames represents a list of models, there maybe multiple models here
-                        to support state-of-the-art technologies like speculative decoding.
-                      items:
-                        type: string
-                      minItems: 1
-                      type: array
-                    rate:
-                      description: |-
-                        Rate works only when multiple claims declared, it represents the replicas rates of
-                        the sub-workload, like when claim1.rate:claim2.rate = 1:2 and 3 replicas defined in
-                        workload, then sub-workload1 will have 1 replica, and sub-workload2 will have 2 replicas.
-                        This is mostly designed for state-of-the-art technology called splitwise, the prefill
-                        and decode phase will be separated and requires different accelerators.
-                        The sum of the rates should be divisible by replicas.
-                      format: int32
-                      type: integer
-                  type: object
-                type: array
+                  MultiModelsClaim represents claiming for multiple models with different claimModes,
+                  like standard or speculative-decoding to support different inference scenarios.
+                  ModelClaim and multiModelsClaim are exclusive configured.
+                properties:
+                  inferenceFlavors:
+                    description: |-
+                      InferenceFlavors represents a list of flavors with fungibility supported
+                      to serve the model.
+                      - If not set, always apply with the 0-index model by default.
+                      - If set, will lookup the flavor names following the model orders.
+                    items:
+                      type: string
+                    type: array
+                  inferenceMode:
+                    default: Standard
+                    description: |-
+                      Mode represents the paradigm to serve the model, whether via a standard way
+                      or via an advanced technique like SpeculativeDecoding.
+                    enum:
+                    - Standard
+                    - SpeculativeDecoding
+                    type: string
+                  modelNames:
+                    description: |-
+                      ModelNames represents a list of models, there maybe multiple models here
+                      to support state-of-the-art technologies like speculative decoding.
+                      If the composedMode is SpeculativeDecoding, the first model is the target model,
+                      and the second model is the draft model.
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                type: object
               replicas:
                 default: 1
                 description: Replicas represents the replica number of inference workloads.

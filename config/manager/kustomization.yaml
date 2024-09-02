@@ -4,5 +4,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: inftyai/llmaz
-  newTag: main
+  newName: inftyai/llmaz-test
+  newTag: 0901-04

@@ -1,0 +1,18 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: speculator
+spec:
+  replicas: 1
+  multiModelsClaim:
+    inferenceMode: SpeculativeDecoding
+    modelNames:
+      - opt-6--7b # the target model, should be the first one
+      - opt-125m  # the draft model
+  backendConfig:
+    args:
+      - --use-v2-block-manager
+      - -tp
+      - 1
+      - --num_speculative_tokens
+      - 5

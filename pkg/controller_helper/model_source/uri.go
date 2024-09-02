@@ -14,6 +14,7 @@ limitations under the License.
 package modelSource
 
 import (
+	"strconv"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -56,10 +57,14 @@ func (p *URIProvider) ModelPath() string {
 	return CONTAINER_MODEL_PATH + "models--" + splits[len(splits)-1]
 }
 
-func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
+func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
+	initContainerName := MODEL_LOADER_CONTAINER_NAME
+	if index != 0 {
+		initContainerName += "-" + strconv.Itoa(index)
+	}
 	// Handle initContainer.
 	initContainer := &corev1.Container{
-		Name:  MODEL_LOADER_CONTAINER_NAME,
+		Name:  initContainerName,
 		Image: pkg.LOADER_IMAGE,
 		VolumeMounts: []corev1.VolumeMount{
 			{
@@ -106,6 +111,11 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec) {
 	}
 
 	template.Spec.InitContainers = append(template.Spec.InitContainers, *initContainer)
+
+	// Return once not the main model, because all the below has already been injected.
+	if index != 0 {
+		return
+	}
 
 	// Handle container.
 

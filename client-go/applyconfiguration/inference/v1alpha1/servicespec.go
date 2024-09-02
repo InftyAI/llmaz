@@ -25,9 +25,9 @@ import (
 // ServiceSpecApplyConfiguration represents an declarative configuration of the ServiceSpec type for use
 // with apply.
 type ServiceSpecApplyConfiguration struct {
-	MultiModelsClaims []v1alpha1.MultiModelsClaimApplyConfiguration `json:"multiModelsClaims,omitempty"`
-	WorkloadTemplate  *v1.LeaderWorkerSetSpec                       `json:"workloadTemplate,omitempty"`
-	ElasticConfig     *ElasticConfigApplyConfiguration              `json:"elasticConfig,omitempty"`
+	MultiModelsClaim *v1alpha1.MultiModelsClaimApplyConfiguration `json:"multiModelsClaim,omitempty"`
+	WorkloadTemplate *v1.LeaderWorkerSetSpec                      `json:"workloadTemplate,omitempty"`
+	ElasticConfig    *ElasticConfigApplyConfiguration             `json:"elasticConfig,omitempty"`
 }
 
 // ServiceSpecApplyConfiguration constructs an declarative configuration of the ServiceSpec type for use with
@@ -36,16 +36,11 @@ func ServiceSpec() *ServiceSpecApplyConfiguration {
 	return &ServiceSpecApplyConfiguration{}
 }
 
-// WithMultiModelsClaims adds the given value to the MultiModelsClaims field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the MultiModelsClaims field.
-func (b *ServiceSpecApplyConfiguration) WithMultiModelsClaims(values ...*v1alpha1.MultiModelsClaimApplyConfiguration) *ServiceSpecApplyConfiguration {
-	for i := range values {
-		if values[i] == nil {
-			panic("nil value passed to WithMultiModelsClaims")
-		}
-		b.MultiModelsClaims = append(b.MultiModelsClaims, *values[i])
-	}
+// WithMultiModelsClaim sets the MultiModelsClaim field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the MultiModelsClaim field is set to the value of the last call.
+func (b *ServiceSpecApplyConfiguration) WithMultiModelsClaim(value *v1alpha1.MultiModelsClaimApplyConfiguration) *ServiceSpecApplyConfiguration {
+	b.MultiModelsClaim = value
 	return b
 }
 

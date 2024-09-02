@@ -27,14 +27,9 @@ import (
 // Service controller will maintain multi-flavor of workloads with
 // different accelerators for cost or performance considerations.
 type ServiceSpec struct {
-	// MultiModelsClaims represents multiple modelClaim, which is useful when different
-	// sub-workload has different accelerator requirements, like the state-of-the-art
-	// technology called splitwise, the workload template is shared by both.
-	// Most of the time, one modelClaim is enough.
-	// Note: properties (nodeSelectors, resources, e.g.) of the model flavors
-	// will be applied to the workload if not exist.
-	// +kubebuilder:validation:MinItems=1
-	MultiModelsClaims []coreapi.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
+	// MultiModelsClaim represents claiming for multiple models with different claimModes,
+	// like standard or speculative-decoding to support different inference scenarios.
+	MultiModelsClaim coreapi.MultiModelsClaim `json:"multiModelsClaim,omitempty"`
 	// WorkloadTemplate defines the underlying workload layout and configuration.
 	// Note: the LWS spec might be twisted with various LWS instances to support
 	// accelerator fungibility or other cutting-edge researches.

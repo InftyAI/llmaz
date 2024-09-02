@@ -102,17 +102,25 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	var serviceApplyConfiguration *inferenceclientgo.ServiceApplyConfiguration
 
-	model := &coreapi.OpenModel{}
+	models := []*coreapi.OpenModel{}
 	if playground.Spec.ModelClaim != nil {
-		modelName := playground.Spec.ModelClaim.ModelName
-
-		if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+		model := &coreapi.OpenModel{}
+		if err := r.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName)}, model); err != nil {
 			return ctrl.Result{}, err
 		}
-		serviceApplyConfiguration = buildServiceApplyConfiguration(model, playground)
+		models = append(models, model)
+	} else if playground.Spec.MultiModelsClaim != nil {
+		for _, modelName := range playground.Spec.MultiModelsClaim.ModelNames {
+			model := &coreapi.OpenModel{}
+			if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+				return ctrl.Result{}, err
+			}
+			models = append(models, model)
+		}
 	}
 
-	// TODO: handle MultiModelsClaims in the future.
+	serviceApplyConfiguration = buildServiceApplyConfiguration(models, playground)
+
 	if err := setControllerReferenceForService(playground, serviceApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -182,21 +190,28 @@ func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildServiceApplyConfiguration(model *coreapi.OpenModel, playground *inferenceapi.Playground) *inferenceclientgo.ServiceApplyConfiguration {
+func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inferenceapi.Playground) *inferenceclientgo.ServiceApplyConfiguration {
 	// Build metadata
 	serviceApplyConfiguration := inferenceclientgo.Service(playground.Name, playground.Namespace)
 
 	// Build spec.
 	spec := inferenceclientgo.ServiceSpec()
 
+	claim := &coreclientgo.MultiModelsClaimApplyConfiguration{}
 	if playground.Spec.ModelClaim != nil {
-		claim := coreclientgo.MultiModelsClaim().
+		claim = coreclientgo.MultiModelsClaim().
 			WithModelNames(playground.Spec.ModelClaim.ModelName).
-			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...)
-		spec.WithMultiModelsClaims(claim)
+			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...).
+			WithInferenceMode(coreapi.Standard)
+	} else if playground.Spec.MultiModelsClaim != nil {
+		claim = coreclientgo.MultiModelsClaim().
+			WithModelNames(playground.Spec.MultiModelsClaim.ModelNames...).
+			WithInferenceFlavors(playground.Spec.MultiModelsClaim.InferenceFlavors...).
+			WithInferenceMode(playground.Spec.MultiModelsClaim.InferenceMode)
 	}
 
-	spec.WithWorkloadTemplate(buildWorkloadTemplate(model, playground))
+	spec.WithMultiModelsClaim(claim)
+	spec.WithWorkloadTemplate(buildWorkloadTemplate(models, playground))
 	serviceApplyConfiguration.WithSpec(spec)
 
 	return serviceApplyConfiguration
@@ -208,7 +223,7 @@ func buildServiceApplyConfiguration(model *coreapi.OpenModel, playground *infere
 // to cover both single-host and multi-host cases. There're some shortages for lws like can not force rolling
 // update when one replica failed, we'll fix this in the kubernetes upstream.
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
-func buildWorkloadTemplate(model *coreapi.OpenModel, playground *inferenceapi.Playground) lws.LeaderWorkerSetSpec {
+func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground) lws.LeaderWorkerSetSpec {
 	// TODO: this should be leaderWorkerSetTemplateSpec, we should support in the lws upstream.
 	workload := lws.LeaderWorkerSetSpec{
 		// Use the default policy defined in lws.
@@ -222,12 +237,12 @@ func buildWorkloadTemplate(model *coreapi.OpenModel, playground *inferenceapi.Pl
 
 	// TODO: handle multi-host scenarios, e.g. nvidia.com/gpu: 32, means we'll split into 4 hosts.
 	// Do we need another configuration for playground for multi-host use case? I guess no currently.
-	workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(model, playground)
+	workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground)
 
 	return workload
 }
 
-func buildWorkerTemplate(model *coreapi.OpenModel, playground *inferenceapi.Playground) corev1.PodTemplateSpec {
+func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground) corev1.PodTemplateSpec {
 	backendName := inferenceapi.DefaultBackend
 	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {
 		backendName = *playground.Spec.BackendConfig.Name
@@ -239,7 +254,12 @@ func buildWorkerTemplate(model *coreapi.OpenModel, playground *inferenceapi.Play
 		version = *playground.Spec.BackendConfig.Version
 	}
 
-	args := bkd.DefaultArgs(model)
+	mode := coreapi.Standard
+	if playground.Spec.MultiModelsClaim != nil {
+		mode = playground.Spec.MultiModelsClaim.InferenceMode
+	}
+
+	args := bkd.Args(models, mode)
 
 	var envs []corev1.EnvVar
 	if playground.Spec.BackendConfig != nil {

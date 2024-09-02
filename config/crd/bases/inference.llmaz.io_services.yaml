@@ -65,49 +65,40 @@ spec:
                     format: int32
                     type: integer
                 type: object
-              multiModelsClaims:
+              multiModelsClaim:
                 description: |-
-                  MultiModelsClaims represents multiple modelClaim, which is useful when different
-                  sub-workload has different accelerator requirements, like the state-of-the-art
-                  technology called splitwise, the workload template is shared by both.
-                  Most of the time, one modelClaim is enough.
-                  Note: properties (nodeSelectors, resources, e.g.) of the model flavors
-                  will be applied to the workload if not exist.
-                items:
-                  description: |-
-                    MultiModelsClaim represents the references to multiple models.
-                    It's an advanced and more complicated config comparing to modelClaim.
-                  properties:
-                    inferenceFlavors:
-                      description: |-
-                        InferenceFlavors represents a list of flavors with fungibility supported
-                        to serve the model.
-                        - If not set, always apply with the 0-index model by default.
-                        - If set, will lookup the flavor names following the model orders.
-                      items:
-                        type: string
-                      type: array
-                    modelNames:
-                      description: |-
-                        ModelNames represents a list of models, there maybe multiple models here
-                        to support state-of-the-art technologies like speculative decoding.
-                      items:
-                        type: string
-                      minItems: 1
-                      type: array
-                    rate:
-                      description: |-
-                        Rate works only when multiple claims declared, it represents the replicas rates of
-                        the sub-workload, like when claim1.rate:claim2.rate = 1:2 and 3 replicas defined in
-                        workload, then sub-workload1 will have 1 replica, and sub-workload2 will have 2 replicas.
-                        This is mostly designed for state-of-the-art technology called splitwise, the prefill
-                        and decode phase will be separated and requires different accelerators.
-                        The sum of the rates should be divisible by replicas.
-                      format: int32
-                      type: integer
-                  type: object
-                minItems: 1
-                type: array
+                  MultiModelsClaim represents claiming for multiple models with different claimModes,
+                  like standard or speculative-decoding to support different inference scenarios.
+                properties:
+                  inferenceFlavors:
+                    description: |-
+                      InferenceFlavors represents a list of flavors with fungibility supported
+                      to serve the model.
+                      - If not set, always apply with the 0-index model by default.
+                      - If set, will lookup the flavor names following the model orders.
+                    items:
+                      type: string
+                    type: array
+                  inferenceMode:
+                    default: Standard
+                    description: |-
+                      Mode represents the paradigm to serve the model, whether via a standard way
+                      or via an advanced technique like SpeculativeDecoding.
+                    enum:
+                    - Standard
+                    - SpeculativeDecoding
+                    type: string
+                  modelNames:
+                    description: |-
+                      ModelNames represents a list of models, there maybe multiple models here
+                      to support state-of-the-art technologies like speculative decoding.
+                      If the composedMode is SpeculativeDecoding, the first model is the target model,
+                      and the second model is the draft model.
+                    items:
+                      type: string
+                    minItems: 1
+                    type: array
+                type: object
               workloadTemplate:
                 description: |-
                   WorkloadTemplate defines the underlying workload layout and configuration.

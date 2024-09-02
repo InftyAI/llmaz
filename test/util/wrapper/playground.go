@@ -71,6 +71,27 @@ func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) 
 	return w
 }
 
+func (w *PlaygroundWrapper) MultiModelsClaim(modelNames []string, mode coreapi.InferenceMode, flavorNames ...string) *PlaygroundWrapper {
+	mNames := []coreapi.ModelName{}
+	for _, name := range modelNames {
+		mNames = append(mNames, coreapi.ModelName(name))
+	}
+
+	fNames := []coreapi.FlavorName{}
+	for _, name := range flavorNames {
+		fNames = append(fNames, coreapi.FlavorName(name))
+	}
+	w.Spec.MultiModelsClaim = &coreapi.MultiModelsClaim{
+		InferenceMode: mode,
+		ModelNames:    mNames,
+	}
+
+	if len(fNames) > 0 {
+		w.Spec.ModelClaim.InferenceFlavors = fNames
+	}
+	return w
+}
+
 func (w *PlaygroundWrapper) Backend(name string) *PlaygroundWrapper {
 	if w.Spec.BackendConfig == nil {
 		w.Spec.BackendConfig = &inferenceapi.BackendConfig{}

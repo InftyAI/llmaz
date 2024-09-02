@@ -39,6 +39,7 @@ type BackendConfig struct {
 	// +optional
 	Version *string `json:"version,omitempty"`
 	// Args represents the arguments passed to the backend.
+	// You can add new args or overwrite the default args.
 	// +optional
 	Args []string `json:"args,omitempty"`
 	// Envs represents the environments set to the container.

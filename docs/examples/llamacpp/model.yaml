@@ -1,7 +1,7 @@
 apiVersion: llmaz.io/v1alpha1
 kind: OpenModel
 metadata:
-  name: qwen2-0-5b-gguf
+  name: qwen2-0--5b-gguf
 spec:
   familyName: qwen2
   source:

@@ -92,9 +92,9 @@ type Flavor struct {
 	// the requests here will be covered.
 	// +optional
 	Requests v1.ResourceList `json:"requests,omitempty"`
-	// NodeSelector defines the labels to filter specified nodes, like
-	// cloud-provider.com/accelerator: nvidia-a100.
-	// NodeSelector will be auto injected to the Pods as scheduling primitives.
+	// NodeSelector represents the node candidates for Pod placements, if a node doesn't
+	// meet the nodeSelector, it will be filtered out in the resourceFungibility scheduler plugin.
+	// If nodeSelector is empty, it means every node is a candidate.
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 	// Params stores other useful parameters and will be consumed by the autoscaling components
@@ -107,39 +107,47 @@ type Flavor struct {
 
 type ModelName string
 
-// ModelClaim represents the references to one model.
-// It's a simple config for most of the cases compared to multiModelsClaim.
+// ModelClaim represents claiming for one model, it's the standard claimMode
+// of multiModelsClaim compared to other modes like SpeculativeDecoding.
 type ModelClaim struct {
-	// ModelName represents a list of models, there maybe multiple models here
-	// to support state-of-the-art technologies like speculative decoding.
+	// ModelName represents the name of the Model.
 	ModelName ModelName `json:"modelName,omitempty"`
-	// InferenceFlavors represents a list of flavors with fungibility supports
-	// to serve the model. The flavor names should be a subset of the model
-	// configured flavors. If not set, will use the model configured flavors.
+	// InferenceFlavors represents a list of flavors with fungibility support
+	// to serve the model.
+	// If set, The flavor names should be a subset of the model configured flavors.
+	// If not set, Model configured flavors will be used by default.
 	// +optional
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
 }
 
-// MultiModelsClaim represents the references to multiple models.
-// It's an advanced and more complicated config comparing to modelClaim.
+type InferenceMode string
+
+const (
+	Standard            InferenceMode = "Standard"
+	SpeculativeDecoding InferenceMode = "SpeculativeDecoding"
+)
+
+// MultiModelsClaim represents claiming for multiple models with different claimModes,
+// like standard or speculative-decoding to support different inference scenarios.
 type MultiModelsClaim struct {
 	// ModelNames represents a list of models, there maybe multiple models here
 	// to support state-of-the-art technologies like speculative decoding.
+	// If the composedMode is SpeculativeDecoding, the first model is the target model,
+	// and the second model is the draft model.
 	// +kubebuilder:validation:MinItems=1
 	ModelNames []ModelName `json:"modelNames,omitempty"`
+	// Mode represents the paradigm to serve the model, whether via a standard way
+	// or via an advanced technique like SpeculativeDecoding.
+	// +kubebuilder:default=Standard
+	// +kubebuilder:validation:Enum={Standard,SpeculativeDecoding}
+	// +optional
+	InferenceMode InferenceMode `json:"inferenceMode,omitempty"`
 	// InferenceFlavors represents a list of flavors with fungibility supported
 	// to serve the model.
 	// - If not set, always apply with the 0-index model by default.
 	// - If set, will lookup the flavor names following the model orders.
 	// +optional
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
-	// Rate works only when multiple claims declared, it represents the replicas rates of
-	// the sub-workload, like when claim1.rate:claim2.rate = 1:2 and 3 replicas defined in
-	// workload, then sub-workload1 will have 1 replica, and sub-workload2 will have 2 replicas.
-	// This is mostly designed for state-of-the-art technology called splitwise, the prefill
-	// and decode phase will be separated and requires different accelerators.
-	// The sum of the rates should be divisible by replicas.
-	Rate *int32 `json:"rate,omitempty"`
 }
 
 // ModelSpec defines the desired state of Model
@@ -151,7 +159,8 @@ type ModelSpec struct {
 	// the model such as loading from huggingface, OCI registry, s3, host path and so on.
 	Source ModelSource `json:"source"`
 	// InferenceFlavors represents the accelerator requirements to serve the model.
-	// Flavors are fungible following the priority of slice order.
+	// Flavors are fungible following the priority represented by the slice order.
+	// +kubebuilder:validation:MaxItems=8
 	// +optional
 	InferenceFlavors []Flavor `json:"inferenceFlavors,omitempty"`
 }

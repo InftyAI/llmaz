@@ -1,6 +1,6 @@
-# ModelLoader
+# llmaz
 
-ModelLoader maintains the codes to load model weights with various ways, such as from huggingface or from s3.
+ModelLoader maintains the codes to load model weights with various ways, such as from Huggingface or from object stores.
 
 ## Load Models From ModelHub
 

@@ -24,9 +24,9 @@ import (
 // MultiModelsClaimApplyConfiguration represents an declarative configuration of the MultiModelsClaim type for use
 // with apply.
 type MultiModelsClaimApplyConfiguration struct {
-	ModelNames       []v1alpha1.ModelName  `json:"modelNames,omitempty"`
-	InferenceFlavors []v1alpha1.FlavorName `json:"inferenceFlavors,omitempty"`
-	Rate             *int32                `json:"rate,omitempty"`
+	ModelNames       []v1alpha1.ModelName    `json:"modelNames,omitempty"`
+	InferenceMode    *v1alpha1.InferenceMode `json:"inferenceMode,omitempty"`
+	InferenceFlavors []v1alpha1.FlavorName   `json:"inferenceFlavors,omitempty"`
 }
 
 // MultiModelsClaimApplyConfiguration constructs an declarative configuration of the MultiModelsClaim type for use with
@@ -45,6 +45,14 @@ func (b *MultiModelsClaimApplyConfiguration) WithModelNames(values ...v1alpha1.M
 	return b
 }
 
+// WithInferenceMode sets the InferenceMode field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the InferenceMode field is set to the value of the last call.
+func (b *MultiModelsClaimApplyConfiguration) WithInferenceMode(value v1alpha1.InferenceMode) *MultiModelsClaimApplyConfiguration {
+	b.InferenceMode = &value
+	return b
+}
+
 // WithInferenceFlavors adds the given value to the InferenceFlavors field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the InferenceFlavors field.
@@ -52,13 +60,5 @@ func (b *MultiModelsClaimApplyConfiguration) WithInferenceFlavors(values ...v1al
 	for i := range values {
 		b.InferenceFlavors = append(b.InferenceFlavors, values[i])
 	}
-	return b
-}
-
-// WithRate sets the Rate field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Rate field is set to the value of the last call.
-func (b *MultiModelsClaimApplyConfiguration) WithRate(value int32) *MultiModelsClaimApplyConfiguration {
-	b.Rate = &value
 	return b
 }

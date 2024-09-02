@@ -9,6 +9,7 @@ We provide a set of examples to help you serve large language models, by default
 - [Deploy models from ObjectStore](#deploy-models-from-objectstore)
 - [Deploy models via SGLang](#deploy-models-via-sglang)
 - [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
+- [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
 
 ### Deploy models from Huggingface
 
@@ -34,8 +35,12 @@ In theory, if we want to load the `Qwen2-7B` model, which occupies about 14.2 GB
 
 ### Deploy models via SGLang
 
-By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference backend, however, if you want to use other backends like [SGLang](https://github.com/sgl-project/sglang), see [examples](./sglang/) here.
+By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference backend, however, if you want to use other backends like [SGLang](https://github.com/sgl-project/sglang), see [example](./sglang/) here.
 
 ### Deploy models via llama.cpp
 
-[llama.cpp](https://github.com/ggerganov/llama.cpp) can serve models on a wide variety of hardwares, such as CPU, see [examples](./llamacpp/) here.
+[llama.cpp](https://github.com/ggerganov/llama.cpp) can serve models on a wide variety of hardwares, such as CPU, see [example](./llamacpp/) here.
+
+### Speculative Decoding with vLLM
+
+[Speculative Decoding](https://arxiv.org/abs/2211.17192) can improve inference performance efficiently, see [example](./speculative-decoding/vllm/) here.

@@ -87,9 +87,27 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 			},
 			failed: false,
 		}),
+		ginkgo.Entry("speculativeDecoding with SGLang is not allowed", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).MultiModelsClaim([]string{"llama3-405b", "llama3-8b"}, coreapi.SpeculativeDecoding).Backend(string(inferenceapi.SGLANG)).Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("speculativeDecoding with three models claimed", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).MultiModelsClaim([]string{"llama3-405b", "llama3-8b", "llama3-2b"}, coreapi.SpeculativeDecoding).Obj()
+			},
+			failed: true,
+		}),
 		ginkgo.Entry("unknown backend configured", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).Backend("unknown").Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("unknown inference mode", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).MultiModelsClaim([]string{"llama3-405b", "llama3-8b"}, coreapi.InferenceMode("unknown")).Obj()
 			},
 			failed: true,
 		}),
@@ -113,6 +131,18 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 			},
 			wantPlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).Label(coreapi.ModelNameLabelKey, "llama3-8b").Obj()
+			},
+		}),
+		ginkgo.Entry("defaulting inferenceMode with multiModelsClaim", &testDefaultingCase{
+			playground: func() *inferenceapi.Playground {
+				playground := wrapper.MakePlayground("playground", ns.Name).Replicas(1).Obj()
+				playground.Spec.MultiModelsClaim = &coreapi.MultiModelsClaim{
+					ModelNames: []coreapi.ModelName{"llama3-405b", "llama3-8b"},
+				}
+				return playground
+			},
+			wantPlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).MultiModelsClaim([]string{"llama3-405b", "llama3-8b"}, coreapi.Standard).Replicas(1).Label(coreapi.ModelNameLabelKey, "llama3-405b").Obj()
 			},
 		}),
 	)

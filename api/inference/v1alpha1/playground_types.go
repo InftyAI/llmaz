@@ -28,19 +28,17 @@ type PlaygroundSpec struct {
 	// +kubebuilder:default=1
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
-	// ModelClaim represents one modelClaim, it's a simple configuration
-	// compared to multiModelsClaims only work for one model and one claim.
-	// ModelClaim and multiModelsClaims are exclusive configured.
-	// Note: properties (nodeSelectors, resources, e.g.) of the model flavors
-	// will be applied to the workload if not exist.
+	// ModelClaim represents claiming for one model, it's the standard claimMode
+	// of multiModelsClaim compared to other modes like SpeculativeDecoding.
+	// Most of the time, modelClaim is enough.
+	// ModelClaim and multiModelsClaim are exclusive configured.
 	// +optional
 	ModelClaim *coreapi.ModelClaim `json:"modelClaim,omitempty"`
-	// MultiModelsClaims represents multiple modelClaim, which is useful when different
-	// sub-workload has different accelerator requirements, like the state-of-the-art
-	// technology called splitwise, the workload template is shared by both.
-	// ModelClaim and multiModelsClaims are exclusive configured.
+	// MultiModelsClaim represents claiming for multiple models with different claimModes,
+	// like standard or speculative-decoding to support different inference scenarios.
+	// ModelClaim and multiModelsClaim are exclusive configured.
 	// +optional
-	MultiModelsClaims []coreapi.MultiModelsClaim `json:"multiModelsClaims,omitempty"`
+	MultiModelsClaim *coreapi.MultiModelsClaim `json:"multiModelsClaim,omitempty"`
 	// BackendConfig represents the inference backend configuration
 	// under the hood, e.g. vLLM, which is the default backend.
 	// +optional
