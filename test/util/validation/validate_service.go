@@ -196,8 +196,11 @@ func ValidateServiceStatusEqualTo(ctx context.Context, k8sClient client.Client, 
 		if condition := apimeta.FindStatusCondition(newService.Status.Conditions, conditionType); condition == nil {
 			return errors.New("condition not found")
 		} else {
-			if condition.Reason != reason || condition.Status != status {
-				return errors.New("reason or status not right")
+			if condition.Reason != reason {
+				return fmt.Errorf("reason not right, want %s, got %s", reason, condition.Reason)
+			}
+			if condition.Status != status {
+				return fmt.Errorf("status not right, want %s, got %s", status, string(condition.Status))
 			}
 		}
 		return nil

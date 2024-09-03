@@ -39,8 +39,8 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 	var ns *corev1.Namespace
 
 	type update struct {
-		serviceUpdateFn func(*inferenceapi.Service)
-		checkService    func(context.Context, client.Client, *inferenceapi.Service)
+		updateFunc func(*inferenceapi.Service)
+		checkFunc  func(context.Context, client.Client, *inferenceapi.Service)
 	}
 
 	ginkgo.BeforeEach(func() {
@@ -75,13 +75,13 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 		func(tc *testValidatingCase) {
 			service := tc.makeService()
 			for _, update := range tc.updates {
-				if update.serviceUpdateFn != nil {
-					update.serviceUpdateFn(service)
+				if update.updateFunc != nil {
+					update.updateFunc(service)
 				}
 				newService := &inferenceapi.Service{}
 				gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, newService)).To(gomega.Succeed())
-				if update.checkService != nil {
-					update.checkService(ctx, k8sClient, newService)
+				if update.checkFunc != nil {
+					update.checkFunc(ctx, k8sClient, newService)
 				}
 			}
 		},
@@ -91,16 +91,16 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 			},
 			updates: []*update{
 				{
-					serviceUpdateFn: func(service *inferenceapi.Service) {
+					updateFunc: func(service *inferenceapi.Service) {
 						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
 					},
-					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)
 						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
 					},
 				},
 				{
-					serviceUpdateFn: func(service *inferenceapi.Service) {
+					updateFunc: func(service *inferenceapi.Service) {
 						gomega.Eventually(func() error {
 							updateService := &inferenceapi.Service{}
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, updateService); err != nil {
@@ -118,9 +118,38 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 						gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &newService)).To(gomega.Succeed())
 						gomega.Expect(*newService.Spec.WorkloadTemplate.Replicas).To(gomega.Equal(int32(3)))
 					},
-					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)
 						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						util.UpdateLwsToReady(ctx, k8sClient, service.Name, service.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						util.UpdateLwsToUnReady(ctx, k8sClient, service.Name, service.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceNotReady", metav1.ConditionFalse)
+					},
+				},
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						util.UpdateLwsToReady(ctx, k8sClient, service.Name, service.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -134,12 +163,21 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 			},
 			updates: []*update{
 				{
-					serviceUpdateFn: func(service *inferenceapi.Service) {
+					updateFunc: func(service *inferenceapi.Service) {
 						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
 					},
-					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)
 						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						util.UpdateLwsToReady(ctx, k8sClient, service.Name, service.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -153,12 +191,21 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 			},
 			updates: []*update{
 				{
-					serviceUpdateFn: func(service *inferenceapi.Service) {
+					updateFunc: func(service *inferenceapi.Service) {
 						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
 					},
-					checkService: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)
 						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						util.UpdateLwsToReady(ctx, k8sClient, service.Name, service.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 					},
 				},
 			},

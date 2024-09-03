@@ -18,7 +18,6 @@ package inference
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -43,8 +42,8 @@ var _ = ginkgo.Describe("playground controller test", func() {
 	var draftModel *coreapi.OpenModel
 
 	type update struct {
-		playgroundUpdateFn func(*inferenceapi.Playground)
-		checkPlayground    func(context.Context, client.Client, *inferenceapi.Playground)
+		updateFunc func(*inferenceapi.Playground)
+		checkFunc  func(context.Context, client.Client, *inferenceapi.Playground)
 	}
 
 	ginkgo.BeforeEach(func() {
@@ -75,13 +74,13 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		func(tc *testValidatingCase) {
 			playground := tc.makePlayground()
 			for _, update := range tc.updates {
-				if update.playgroundUpdateFn != nil {
-					update.playgroundUpdateFn(playground)
+				if update.updateFunc != nil {
+					update.updateFunc(playground)
 				}
 				newPlayground := &inferenceapi.Playground{}
 				gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, newPlayground)).To(gomega.Succeed())
-				if update.checkPlayground != nil {
-					update.checkPlayground(ctx, k8sClient, newPlayground)
+				if update.checkFunc != nil {
+					update.checkFunc(ctx, k8sClient, newPlayground)
 				}
 			}
 		},
@@ -91,16 +90,16 @@ var _ = ginkgo.Describe("playground controller test", func() {
 			},
 			updates: []*update{
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
 					},
 				},
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						gomega.Eventually(func() error {
 							updatePlayground := &inferenceapi.Playground{}
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, updatePlayground); err != nil {
@@ -118,9 +117,38 @@ var _ = ginkgo.Describe("playground controller test", func() {
 						gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &newPlayground)).To(gomega.Succeed())
 						gomega.Expect(*newPlayground.Spec.Replicas).To(gomega.Equal(int32(3)))
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToUnReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "PlaygroundInProgress", metav1.ConditionTrue)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundNotReady", metav1.ConditionFalse)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "PlaygroundInProgress", metav1.ConditionTrue)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -133,12 +161,21 @@ var _ = ginkgo.Describe("playground controller test", func() {
 			},
 			updates: []*update{
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -150,12 +187,21 @@ var _ = ginkgo.Describe("playground controller test", func() {
 			},
 			updates: []*update{
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -168,12 +214,21 @@ var _ = ginkgo.Describe("playground controller test", func() {
 			},
 			updates: []*update{
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -184,7 +239,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 			},
 			updates: []*update{
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						// Create a service with the same name as the playground.
 						service := wrapper.MakeService(playground.Name, playground.Namespace).
 							ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
@@ -193,22 +248,31 @@ var _ = ginkgo.Describe("playground controller test", func() {
 						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "AbortProcessing", metav1.ConditionFalse)
 					},
 				},
 				{
 					// Delete the service, playground should be updated to Pending.
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						service := wrapper.MakeService(playground.Name, playground.Namespace).
 							ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
 							WorkerTemplate().
 							Obj()
 						gomega.Expect(k8sClient.Delete(ctx, service)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},
@@ -219,45 +283,42 @@ var _ = ginkgo.Describe("playground controller test", func() {
 			},
 			updates: []*update{
 				{
-					playgroundUpdateFn: func(playground *inferenceapi.Playground) {
+					updateFunc: func(playground *inferenceapi.Playground) {
 						// Delete the pre-provision model before creating playground.
 						gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
 						// To make sure model not exists.
 						gomega.Eventually(func() error {
 							oldModel := &coreapi.OpenModel{}
-							if err := k8sClient.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, oldModel); err != nil {
-								if apierrors.IsNotFound(err) {
-									return nil
-								}
+							if err := k8sClient.Get(ctx, types.NamespacedName{Name: model.Name, Namespace: model.Namespace}, oldModel); err != nil && !apierrors.IsNotFound(err) {
 								return err
 							}
-							return fmt.Errorf("model %s/%s still exists", model.Namespace, model.Name)
+							return nil
 						}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
-						gomega.Consistently(func() error {
-							updatePlayground := inferenceapi.Playground{}
-							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &updatePlayground); err != nil {
-								return err
-							}
-							if len(updatePlayground.Status.Conditions) != 0 {
-								return fmt.Errorf("playground status conditions should be empty, got %v", updatePlayground.Status.Conditions)
-							}
-							return nil
-						}, 3*util.Interval, util.Interval).Should(gomega.Succeed())
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "AbortProcessing", metav1.ConditionFalse)
 					},
 				},
 				{
-					// create the model after playground is created.
-					playgroundUpdateFn: func(_ *inferenceapi.Playground) {
+					// create the model.
+					updateFunc: func(_ *inferenceapi.Playground) {
 						model = util.MockASampleModel()
 						gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 					},
-					checkPlayground: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},

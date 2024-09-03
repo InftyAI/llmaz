@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"slices"
 
 	"github.com/google/go-cmp/cmp"
@@ -147,6 +148,15 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 }
 
 func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground, conditionType string, reason string, status metav1.ConditionStatus) {
+	testType := os.Getenv("TEST_TYPE")
+	timeout := util.IntegrationTimeout
+	interval := util.Interval
+
+	if testType == "E2E" {
+		timeout = util.E2ETimeout
+		interval = util.E2EInterval
+	}
+
 	gomega.Eventually(func() error {
 		newPlayground := inferenceapi.Playground{}
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &newPlayground); err != nil {
@@ -160,5 +170,5 @@ func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Clien
 			}
 		}
 		return nil
-	}, util.E2ETimeout, util.E2EInterval).Should(gomega.Succeed())
+	}, timeout, interval).Should(gomega.Succeed())
 }

@@ -1,11 +1,11 @@
 apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:
-  name: qwen2-0-5b
+  name: qwen2-0--5b
 spec:
   replicas: 1
   modelClaim:
-    modelName: qwen2-0-5b-gguf
+    modelName: qwen2-0--5b-gguf
   backendConfig:
     name: llamacpp
     args:
