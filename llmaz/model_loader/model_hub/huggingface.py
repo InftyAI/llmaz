@@ -25,6 +25,7 @@ from llmaz.model_loader.model_hub.model_hub import (
     MAX_WORKERS,
     ModelHub,
 )
+from llmaz.util.logger import Logger
 
 from typing import Optional
 
@@ -38,7 +39,9 @@ class Huggingface(ModelHub):
     def load_model(
         cls, model_id: str, filename: Optional[str], revision: Optional[str]
     ) -> None:
-        print(f"Start to download model {model_id}")
+        Logger.info(
+            f"Start to download, model_id: {model_id}, filename: {filename}, revision: {revision}"
+        )
 
         if filename:
             hf_hub_download(
@@ -71,4 +74,4 @@ class Huggingface(ModelHub):
 
 def handle_completion(future):
     filename = future.result()
-    print(f"Download completed for {filename}")
+    Logger.info(f"Download completed for {filename}")
