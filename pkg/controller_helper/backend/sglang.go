@@ -60,7 +60,7 @@ func (s *SGLANG) DefaultResources() inferenceapi.ResourceRequirements {
 	}
 }
 
-func (s *SGLANG) DefaultCommands() []string {
+func (s *SGLANG) Command() []string {
 	return []string{"python3", "-m", "sglang.launch_server"}
 }
 

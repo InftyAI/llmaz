@@ -100,6 +100,9 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 	}
 	if playground.Spec.MultiModelsClaim != nil {
 		if playground.Spec.MultiModelsClaim.InferenceMode == coreapi.SpeculativeDecoding {
+			// if playground.Spec.BackendConfig != nil && !(*playground.Spec.BackendConfig.Name == inferenceapi.VLLM || *playground.Spec.BackendConfig.Name == inferenceapi.LLAMACPP) {
+			// allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "inferenceMode"), "only vLLM and llama.cpp supports speculativeDecoding mode"))
+			// }
 			if playground.Spec.BackendConfig != nil && *playground.Spec.BackendConfig.Name != inferenceapi.VLLM {
 				allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "inferenceMode"), "only vLLM supports speculativeDecoding mode"))
 			}

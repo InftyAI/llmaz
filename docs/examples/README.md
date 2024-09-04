@@ -43,4 +43,6 @@ By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference
 
 ### Speculative Decoding with vLLM
 
+> Not supported yet because llama.cpp doesn't support speculative decoding in the server side, see https://github.com/ggerganov/llama.cpp/issues/5877.
+
 [Speculative Decoding](https://arxiv.org/abs/2211.17192) can improve inference performance efficiently, see [example](./speculative-decoding/vllm/) here.

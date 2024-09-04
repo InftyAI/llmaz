@@ -1,7 +1,7 @@
 apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:
-  name: speculator
+  name: vllm-speculator
 spec:
   replicas: 1
   multiModelsClaim:

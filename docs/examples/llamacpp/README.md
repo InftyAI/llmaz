@@ -29,7 +29,7 @@ Once deployed successfully, you can query like this:
 
     ```cmd
     curl --request POST \
-    --url http://localhost:8080/completion \
+    --url http://localhost:8080/v1/completions \
     --header "Content-Type: application/json" \
     --data '{"prompt": "Building a website can be done in 10 simple steps:","n_predict": 128}'
     ```
