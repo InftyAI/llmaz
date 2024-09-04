@@ -15,18 +15,12 @@ limitations under the License.
 """
 
 import os
-import logging
 from datetime import datetime
 
 from llmaz.model_loader.objstore.objstore import model_download
 from llmaz.model_loader.model_hub.hub_factory import HubFactory
 from llmaz.model_loader.model_hub.huggingface import HUGGING_FACE
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
+from llmaz.util.logger import Logger
 
 
 if __name__ == "__main__":
@@ -54,6 +48,6 @@ if __name__ == "__main__":
     else:
         raise EnvironmentError(f"unknown model source type {model_source_type}")
 
-    logger.info(
+    Logger.info(
         f"loading models from {model_source_type} takes {datetime.now() - start_time}s"
     )

@@ -26,6 +26,7 @@ from llmaz.model_loader.model_hub.model_hub import (
     MODEL_SCOPE,
     ModelHub,
 )
+from llmaz.util.logger import Logger
 
 
 class ModelScope(ModelHub):
@@ -38,7 +39,9 @@ class ModelScope(ModelHub):
     def load_model(
         cls, model_id: str, filename: Optional[str], revision: Optional[str]
     ) -> None:
-        print(f"Start to download model {model_id}")
+        Logger.info(
+            f"Start to download, model_id: {model_id}, filename: {filename}, revision: {revision}"
+        )
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
@@ -57,4 +60,4 @@ class ModelScope(ModelHub):
 
 def handle_completion(future):
     filename = future.result()
-    print(f"Download completed for {filename}")
+    Logger.info(f"Download completed for {filename}")
