@@ -34,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -85,11 +84,12 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	service := &inferenceapi.Service{}
 	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err == nil {
-		if !controllerutil.HasControllerReference(service) {
-			err = fmt.Errorf("the Playground %v owns the same name with an exist Service", klog.KObj(playground))
-			if changed := handleUnexpectedCondition(playground, true, false); changed {
+		if !metav1.IsControlledBy(service, playground) {
+			logger.Info("failed to construct inference Service as a Service with the same exists", "Playground", klog.KObj(playground))
+			if changed := handleUnexpectedCondition(playground, true, true); changed {
 				err = r.Client.Status().Update(ctx, playground)
 			}
+			// if update successfully, err will be nil and we'll hanging here until Playground or Service deleted.
 			return ctrl.Result{}, err
 		}
 	}
@@ -100,7 +100,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if playground.Spec.ModelClaim != nil {
 		model := &coreapi.OpenModel{}
 		if err := r.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName)}, model); err != nil {
-			if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, true) {
+			if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
 				return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
 			}
 			return ctrl.Result{}, err
@@ -110,7 +110,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		for _, modelName := range playground.Spec.MultiModelsClaim.ModelNames {
 			model := &coreapi.OpenModel{}
 			if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
-				if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, true) {
+				if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
 					return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
 				}
 				return ctrl.Result{}, err
@@ -303,9 +303,9 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 	return template
 }
 
-func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceHasOwner bool) (changed bool) {
+func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceWithSameNameExists bool) (changed bool) {
 	// Put it in the first place as more serious.
-	if !serviceHasOwner {
+	if serviceWithSameNameExists {
 		condition := metav1.Condition{
 			Type:    inferenceapi.PlaygroundProgressing,
 			Status:  metav1.ConditionFalse,
@@ -334,7 +334,7 @@ func setPlaygroundCondition(playground *inferenceapi.Playground, service *infere
 			Type:    inferenceapi.PlaygroundProgressing,
 			Status:  metav1.ConditionTrue,
 			Reason:  "Pending",
-			Message: "Waiting for inferenceService ready",
+			Message: "Waiting for inference Service ready",
 		}
 		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
 	}
@@ -357,15 +357,16 @@ func setPlaygroundCondition(playground *inferenceapi.Playground, service *infere
 			Type:    inferenceapi.PlaygroundProgressing,
 			Status:  metav1.ConditionTrue,
 			Reason:  "PlaygroundInProgress",
-			Message: "Playground is progressing",
+			Message: "Waiting for inference Service progressing",
 		}
 		changed = apimeta.SetStatusCondition(&playground.Status.Conditions, condition) || changed
 
 		// Set the available to false
 		new_condition := metav1.Condition{
-			Type:   inferenceapi.PlaygroundAvailable,
-			Status: metav1.ConditionFalse,
-			Reason: "PlaygroundNotReady",
+			Type:    inferenceapi.PlaygroundAvailable,
+			Status:  metav1.ConditionFalse,
+			Reason:  "PlaygroundNotReady",
+			Message: "Waiting for inference Service ready",
 		}
 		changed = apimeta.SetStatusCondition(&playground.Status.Conditions, new_condition) || changed
 		return changed
