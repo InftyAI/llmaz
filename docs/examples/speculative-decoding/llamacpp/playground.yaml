@@ -1,0 +1,25 @@
+# This is just an example, because it doesn't make any sense
+# in real world, drafting tokens for the model with similar size.
+
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: llamacpp-speculator
+spec:
+  replicas: 1
+  multiModelsClaim:
+    inferenceMode: SpeculativeDecoding
+    modelNames:
+      - llama2-7b-q8-gguf # the target model, should be the first one
+      - llama2-7b-q2-k-gguf  # the draft model
+  backendConfig:
+    name: llamacpp
+    args:
+      - -fa # use flash attention
+    resources:
+      requests:
+        cpu: 4
+        memory: "8Gi"
+      limits:
+        cpu: 4
+        memory: "8Gi"

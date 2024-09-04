@@ -61,7 +61,7 @@ func (v *VLLM) DefaultResources() inferenceapi.ResourceRequirements {
 	}
 }
 
-func (v *VLLM) DefaultCommands() []string {
+func (v *VLLM) Command() []string {
 	return []string{"python3", "-m", "vllm.entrypoints.openai.api_server"}
 }
 

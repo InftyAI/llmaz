@@ -65,4 +65,32 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
 	})
+	// TODO: add e2e tests.
+	// ginkgo.It("SpeculativeDecoding with llama.cpp", func() {
+	// 	targetModel := wrapper.MakeModel("llama2-7b-q8-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q8_0.gguf").Obj()
+	// 	gomega.Expect(k8sClient.Create(ctx, targetModel)).To(gomega.Succeed())
+	// 	defer func() {
+	// 		gomega.Expect(k8sClient.Delete(ctx, targetModel)).To(gomega.Succeed())
+	// 	}()
+	// 	draftModel := wrapper.MakeModel("llama2-7b-q2-k-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q2_K.gguf").Obj()
+	// 	gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
+	// 	defer func() {
+	// 		gomega.Expect(k8sClient.Delete(ctx, draftModel)).To(gomega.Succeed())
+	// 	}()
+
+	// 	playground := wrapper.MakePlayground("llamacpp-speculator", ns.Name).
+	// 		MultiModelsClaim([]string{"llama2-7b-q8-gguf", "llama2-7b-q2-k-gguf"}, coreapi.SpeculativeDecoding).
+	// 		Backend("llamacpp").BackendLimit("cpu", "4").BackendRequest("memory", "8Gi").
+	// 		Replicas(1).
+	// 		Obj()
+	// 	gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+	// 	validation.ValidatePlayground(ctx, k8sClient, playground)
+	// 	validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+	// 	service := &inferenceapi.Service{}
+	// 	gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+	// 	validation.ValidateService(ctx, k8sClient, service)
+	// 	validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+	// 	validation.ValidateServicePods(ctx, k8sClient, service)
+	// })
 })

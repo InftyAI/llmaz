@@ -1,0 +1,21 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: llama2-7b-q8-gguf
+spec:
+  familyName: llama2
+  source:
+    modelHub:
+      modelID: TheBloke/Llama-2-7B-GGUF
+      filename: llama-2-7b.Q8_0.gguf
+---
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: llama2-7b-q2-k-gguf
+spec:
+  familyName: llama2
+  source:
+    modelHub:
+      modelID: TheBloke/Llama-2-7B-GGUF
+      filename: llama-2-7b.Q2_K.gguf

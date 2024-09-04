@@ -28,6 +28,7 @@ import (
 )
 
 var _ Backend = (*LLAMACPP)(nil)
+var _ SpeculativeBackend = (*LLAMACPP)(nil)
 
 type LLAMACPP struct{}
 
@@ -60,13 +61,16 @@ func (l *LLAMACPP) DefaultResources() inferenceapi.ResourceRequirements {
 	}
 }
 
-func (l *LLAMACPP) DefaultCommands() []string {
+func (l *LLAMACPP) Command() []string {
 	return []string{"./llama-server"}
 }
 
 func (l *LLAMACPP) Args(models []*coreapi.OpenModel, mode coreapi.InferenceMode) []string {
 	if mode == coreapi.Standard {
 		return l.defaultArgs(models[0])
+	}
+	if mode == coreapi.SpeculativeDecoding {
+		return l.speculativeArgs(models)
 	}
 	// We should not reach here.
 	return nil
@@ -76,6 +80,17 @@ func (l *LLAMACPP) defaultArgs(model *coreapi.OpenModel) []string {
 	source := modelSource.NewModelSourceProvider(model)
 	return []string{
 		"-m", source.ModelPath(),
+		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
+		"--host", "0.0.0.0",
+	}
+}
+
+func (l *LLAMACPP) speculativeArgs(models []*coreapi.OpenModel) []string {
+	targetModelSource := modelSource.NewModelSourceProvider(models[0])
+	draftModelSource := modelSource.NewModelSourceProvider(models[1])
+	return []string{
+		"-m", targetModelSource.ModelPath(),
+		"-md", draftModelSource.ModelPath(),
 		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
 		"--host", "0.0.0.0",
 	}

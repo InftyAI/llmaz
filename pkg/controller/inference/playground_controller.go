@@ -285,7 +285,7 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
 					Image:     bkd.Image(version),
 					Resources: resources,
-					Command:   bkd.DefaultCommands(),
+					Command:   bkd.Command(),
 					Args:      args,
 					Env:       envs,
 					Ports: []corev1.ContainerPort{
