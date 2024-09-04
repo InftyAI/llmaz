@@ -219,7 +219,7 @@ func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWork
 			Type:    inferenceapi.ServiceAvailable,
 			Status:  metav1.ConditionTrue,
 			Reason:  "ServiceReady",
-			Message: "InferenceService is ready",
+			Message: "Inference Service is ready",
 		}
 		apimeta.SetStatusCondition(&service.Status.Conditions, condition)
 	} else {
@@ -227,7 +227,7 @@ func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWork
 			Type:    inferenceapi.ServiceProgressing,
 			Status:  metav1.ConditionTrue,
 			Reason:  "ServiceInProgress",
-			Message: "InferenceService is progressing",
+			Message: "Inference Service is progressing",
 		}
 		apimeta.SetStatusCondition(&service.Status.Conditions, condition)
 
@@ -240,7 +240,7 @@ func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWork
 			Type:    inferenceapi.ServiceAvailable,
 			Status:  metav1.ConditionFalse,
 			Reason:  "ServiceNotReady",
-			Message: "InferenceService not ready",
+			Message: "Waiting for leaderWorkerSet ready",
 		}
 		apimeta.SetStatusCondition(&service.Status.Conditions, new_condition)
 	}

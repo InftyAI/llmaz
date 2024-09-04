@@ -17,6 +17,7 @@ package e2e
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 
@@ -81,6 +82,7 @@ var _ = BeforeSuite(func() {
 	Expect(k8sClient).NotTo(BeNil())
 
 	readyForTesting(k8sClient)
+	Expect(os.Setenv("TEST_TYPE", "E2E")).Should(Succeed())
 })
 
 var _ = AfterSuite(func() {

@@ -22,6 +22,7 @@ import (
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -33,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -84,19 +84,13 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	service := &inferenceapi.Service{}
 	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err == nil {
-		if !controllerutil.HasControllerReference(service) {
-			condition := metav1.Condition{
-				Type:    inferenceapi.PlaygroundProgressing,
-				Status:  metav1.ConditionFalse,
-				Reason:  "AbortProcessing",
-				Message: "Playground owns the same name with an existing Service",
+		if !metav1.IsControlledBy(service, playground) {
+			logger.Info("failed to construct inference Service as a Service with the same exists", "Playground", klog.KObj(playground))
+			if changed := handleUnexpectedCondition(playground, true, true); changed {
+				err = r.Client.Status().Update(ctx, playground)
 			}
-			apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
-			if err := r.Client.Status().Update(ctx, playground); err != nil {
-				return ctrl.Result{}, err
-			}
-			// No need to requeue. Once the Service is deleted, the Playground will be reconciled.
-			return ctrl.Result{}, nil
+			// if update successfully, err will be nil and we'll hanging here until Playground or Service deleted.
+			return ctrl.Result{}, err
 		}
 	}
 
@@ -106,6 +100,9 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if playground.Spec.ModelClaim != nil {
 		model := &coreapi.OpenModel{}
 		if err := r.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName)}, model); err != nil {
+			if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
+				return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
+			}
 			return ctrl.Result{}, err
 		}
 		models = append(models, model)
@@ -113,6 +110,9 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		for _, modelName := range playground.Spec.MultiModelsClaim.ModelNames {
 			model := &coreapi.OpenModel{}
 			if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+				if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
+					return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
+				}
 				return ctrl.Result{}, err
 			}
 			models = append(models, model)
@@ -130,11 +130,6 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Handle status.
-	service = &inferenceapi.Service{}
-	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err != nil {
-		return ctrl.Result{}, err
-	}
-
 	setPlaygroundCondition(playground, service)
 	if err := r.Client.Status().Update(ctx, playground); err != nil {
 		return ctrl.Result{}, err
@@ -308,17 +303,40 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 	return template
 }
 
-func setPlaygroundCondition(playground *inferenceapi.Playground, service *inferenceapi.Service) {
-	// For the start up.
-	if len(playground.Status.Conditions) == 0 || !apimeta.IsStatusConditionTrue(service.Status.Conditions, inferenceapi.PlaygroundProgressing) {
+func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceWithSameNameExists bool) (changed bool) {
+	// Put it in the first place as more serious.
+	if serviceWithSameNameExists {
+		condition := metav1.Condition{
+			Type:    inferenceapi.PlaygroundProgressing,
+			Status:  metav1.ConditionFalse,
+			Reason:  "AbortProcessing",
+			Message: "Playground owns the same name with an existing Service",
+		}
+		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+	}
+
+	if !modelExists {
+		condition := metav1.Condition{
+			Type:    inferenceapi.PlaygroundProgressing,
+			Status:  metav1.ConditionFalse,
+			Reason:  "AbortProcessing",
+			Message: "Waiting for model creation",
+		}
+		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+	}
+	return false
+}
+
+func setPlaygroundCondition(playground *inferenceapi.Playground, service *inferenceapi.Service) (changed bool) {
+	// For the start up or Playground is recovered from AbortProcessing.
+	if len(playground.Status.Conditions) == 0 || apimeta.IsStatusConditionFalse(playground.Status.Conditions, inferenceapi.PlaygroundProgressing) {
 		condition := metav1.Condition{
 			Type:    inferenceapi.PlaygroundProgressing,
 			Status:  metav1.ConditionTrue,
 			Reason:  "Pending",
-			Message: "Waiting for inferenceService ready",
+			Message: "Waiting for inference Service ready",
 		}
-		apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
-		return
+		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
 	}
 
 	if apimeta.IsStatusConditionTrue(service.Status.Conditions, inferenceapi.ServiceAvailable) {
@@ -328,27 +346,30 @@ func setPlaygroundCondition(playground *inferenceapi.Playground, service *infere
 			Reason:  "PlaygroundReady",
 			Message: "Playground is ready",
 		}
-		apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
 	} else {
 		// Still in starting up, no need to populate the condition.
 		if apimeta.FindStatusCondition(playground.Status.Conditions, inferenceapi.PlaygroundAvailable) == nil {
-			return
+			return false
 		}
 
 		condition := metav1.Condition{
 			Type:    inferenceapi.PlaygroundProgressing,
 			Status:  metav1.ConditionTrue,
 			Reason:  "PlaygroundInProgress",
-			Message: "Playground is progressing",
+			Message: "Waiting for inference Service progressing",
 		}
-		apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+		changed = apimeta.SetStatusCondition(&playground.Status.Conditions, condition) || changed
 
 		// Set the available to false
 		new_condition := metav1.Condition{
-			Type:   inferenceapi.PlaygroundAvailable,
-			Status: metav1.ConditionFalse,
+			Type:    inferenceapi.PlaygroundAvailable,
+			Status:  metav1.ConditionFalse,
+			Reason:  "PlaygroundNotReady",
+			Message: "Waiting for inference Service ready",
 		}
-		apimeta.SetStatusCondition(&playground.Status.Conditions, new_condition)
+		changed = apimeta.SetStatusCondition(&playground.Status.Conditions, new_condition) || changed
+		return changed
 	}
 }
 
