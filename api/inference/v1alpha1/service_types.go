@@ -27,9 +27,8 @@ import (
 // Service controller will maintain multi-flavor of workloads with
 // different accelerators for cost or performance considerations.
 type ServiceSpec struct {
-	// MultiModelsClaim represents claiming for multiple models with different claimModes,
-	// like standard or speculative-decoding to support different inference scenarios.
-	MultiModelsClaim coreapi.MultiModelsClaim `json:"multiModelsClaim,omitempty"`
+	// ModelClaims represents multiple claims for different models.
+	ModelClaims coreapi.ModelClaims `json:"modelClaims,omitempty"`
 	// WorkloadTemplate defines the underlying workload layout and configuration.
 	// Note: the LWS spec might be twisted with various LWS instances to support
 	// accelerator fungibility or other cutting-edge researches.

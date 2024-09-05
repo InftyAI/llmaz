@@ -28,7 +28,6 @@ import (
 )
 
 var _ Backend = (*VLLM)(nil)
-var _ SpeculativeBackend = (*VLLM)(nil)
 
 type VLLM struct{}
 
@@ -61,37 +60,26 @@ func (v *VLLM) DefaultResources() inferenceapi.ResourceRequirements {
 	}
 }
 
-func (v *VLLM) Command() []string {
+func (v *VLLM) DefaultCommand() []string {
 	return []string{"python3", "-m", "vllm.entrypoints.openai.api_server"}
 }
 
-func (v *VLLM) Args(models []*coreapi.OpenModel, mode coreapi.InferenceMode) []string {
-	if mode == coreapi.Standard {
-		return v.defaultArgs(models[0])
-	}
-	if mode == coreapi.SpeculativeDecoding {
-		return v.speculativeArgs(models)
-	}
-	// We should not reach here.
-	return nil
-}
-
-func (v *VLLM) defaultArgs(model *coreapi.OpenModel) []string {
-	source := modelSource.NewModelSourceProvider(model)
-	return []string{
-		"--model", source.ModelPath(),
-		"--served-model-name", source.ModelName(),
-		"--host", "0.0.0.0",
-		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
-	}
-}
-
-func (v *VLLM) speculativeArgs(models []*coreapi.OpenModel) []string {
+func (v *VLLM) Args(models []*coreapi.OpenModel, involvedRole coreapi.ModelRole) []string {
 	targetModelSource := modelSource.NewModelSourceProvider(models[0])
-	draftModelSource := modelSource.NewModelSourceProvider(models[1])
+
+	if involvedRole == coreapi.DraftRole {
+		draftModelSource := modelSource.NewModelSourceProvider(models[1])
+		return []string{
+			"--model", targetModelSource.ModelPath(),
+			"--speculative_model", draftModelSource.ModelPath(),
+			"--served-model-name", targetModelSource.ModelName(),
+			"--host", "0.0.0.0",
+			"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
+		}
+	}
+
 	return []string{
 		"--model", targetModelSource.ModelPath(),
-		"--speculative_model", draftModelSource.ModelPath(),
 		"--served-model-name", targetModelSource.ModelName(),
 		"--host", "0.0.0.0",
 		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),

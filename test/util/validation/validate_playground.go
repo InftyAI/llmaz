@@ -46,21 +46,18 @@ func validateModelClaim(ctx context.Context, k8sClient client.Client, playground
 			return errors.New("failed to get model")
 		}
 
-		if playground.Spec.ModelClaim.ModelName != service.Spec.MultiModelsClaim.ModelNames[0] {
-			return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.MultiModelsClaim.ModelNames[0])
+		if playground.Spec.ModelClaim.ModelName != service.Spec.ModelClaims.Models[0].Name {
+			return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.ModelClaims.Models[0].Name)
 		}
-		if diff := cmp.Diff(playground.Spec.ModelClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors); diff != "" {
-			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors)
+		if diff := cmp.Diff(playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors); diff != "" {
+			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors)
 		}
-	} else if playground.Spec.MultiModelsClaim != nil {
-		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.MultiModelsClaim.ModelNames[0]), Namespace: playground.Namespace}, &model); err != nil {
+	} else if playground.Spec.ModelClaims != nil {
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaims.Models[0].Name), Namespace: playground.Namespace}, &model); err != nil {
 			return errors.New("failed to get model")
 		}
-		if diff := cmp.Diff(playground.Spec.MultiModelsClaim.ModelNames, service.Spec.MultiModelsClaim.ModelNames); diff != "" {
-			return fmt.Errorf("expected modelNames, want %s, got %s", playground.Spec.MultiModelsClaim.ModelNames, service.Spec.MultiModelsClaim.ModelNames)
-		}
-		if diff := cmp.Diff(playground.Spec.MultiModelsClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors); diff != "" {
-			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.MultiModelsClaim.InferenceFlavors, service.Spec.MultiModelsClaim.InferenceFlavors)
+		if diff := cmp.Diff(*playground.Spec.ModelClaims, service.Spec.ModelClaims); diff != "" {
+			return fmt.Errorf("expected modelClaims, want %v, got %v", *playground.Spec.ModelClaims, service.Spec.ModelClaims)
 		}
 	}
 
@@ -95,7 +92,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
 		}
-		if diff := cmp.Diff(bkd.Command(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+		if diff := cmp.Diff(bkd.DefaultCommand(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
 			return errors.New("command not right")
 		}
 		if playground.Spec.BackendConfig != nil {

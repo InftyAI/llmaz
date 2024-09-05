@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo.png">
-    <img alt="llmaz" src="./docs/assets/logo.png" width=55%>
+    <img alt="llmaz" src="https://github.com/InftyAI/llmaz/blob/main/docs/assets/logo.png" width=55%>
   </picture>
 </p>
 

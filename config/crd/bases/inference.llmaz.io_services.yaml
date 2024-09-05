@@ -65,10 +65,9 @@ spec:
                     format: int32
                     type: integer
                 type: object
-              multiModelsClaim:
-                description: |-
-                  MultiModelsClaim represents claiming for multiple models with different claimModes,
-                  like standard or speculative-decoding to support different inference scenarios.
+              modelClaims:
+                description: ModelClaims represents multiple claims for different
+                  models.
                 properties:
                   inferenceFlavors:
                     description: |-
@@ -79,23 +78,28 @@ spec:
                     items:
                       type: string
                     type: array
-                  inferenceMode:
-                    default: Standard
+                  models:
                     description: |-
-                      Mode represents the paradigm to serve the model, whether via a standard way
-                      or via an advanced technique like SpeculativeDecoding.
-                    enum:
-                    - Standard
-                    - SpeculativeDecoding
-                    type: string
-                  modelNames:
-                    description: |-
-                      ModelNames represents a list of models, there maybe multiple models here
-                      to support state-of-the-art technologies like speculative decoding.
-                      If the composedMode is SpeculativeDecoding, the first model is the target model,
-                      and the second model is the draft model.
+                      Models represents a list of models with roles specified, there maybe
+                      multiple models here to support state-of-the-art technologies like
+                      speculative decoding, then one model is main(target) model, another one
+                      is draft model.
                     items:
-                      type: string
+                      properties:
+                        name:
+                          description: Name represents the model name.
+                          type: string
+                        role:
+                          default: main
+                          description: Role represents the model role once more than
+                            one model is required.
+                          enum:
+                          - main
+                          - draft
+                          type: string
+                      required:
+                      - name
+                      type: object
                     minItems: 1
                     type: array
                 type: object

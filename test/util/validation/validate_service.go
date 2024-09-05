@@ -51,10 +51,9 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		// TODO: multi-host
 
 		models := []*coreapi.OpenModel{}
-		modelNames := service.Spec.MultiModelsClaim.ModelNames
-		for _, modelName := range modelNames {
+		for _, mr := range service.Spec.ModelClaims.Models {
 			model := &coreapi.OpenModel{}
-			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
 				return errors.New("failed to get model")
 			}
 			models = append(models, model)

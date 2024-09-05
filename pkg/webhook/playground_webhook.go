@@ -52,9 +52,12 @@ func (w *PlaygroundWebhook) Default(ctx context.Context, obj runtime.Object) err
 	var modelName string
 	if playground.Spec.ModelClaim != nil {
 		modelName = string(playground.Spec.ModelClaim.ModelName)
-	} else if playground.Spec.MultiModelsClaim != nil {
-		// We choose the first model as the main model.
-		modelName = string(playground.Spec.MultiModelsClaim.ModelNames[0])
+	} else if playground.Spec.ModelClaims != nil {
+		for _, model := range playground.Spec.ModelClaims.Models {
+			if model.Role == nil || *model.Role == coreapi.MainRole {
+				modelName = string(model.Name)
+			}
+		}
 	}
 
 	if playground.Labels == nil {
@@ -95,22 +98,34 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 	specPath := field.NewPath("spec")
 
 	var allErrs field.ErrorList
-	if playground.Spec.ModelClaim == nil && playground.Spec.MultiModelsClaim == nil {
-		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and multiModelsClaim couldn't be both nil"))
+	if playground.Spec.ModelClaim == nil && playground.Spec.ModelClaims == nil {
+		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and modelClaims couldn't be both nil"))
 	}
-	if playground.Spec.MultiModelsClaim != nil {
-		if playground.Spec.MultiModelsClaim.InferenceMode == coreapi.SpeculativeDecoding {
-			// if playground.Spec.BackendConfig != nil && !(*playground.Spec.BackendConfig.Name == inferenceapi.VLLM || *playground.Spec.BackendConfig.Name == inferenceapi.LLAMACPP) {
-			// allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "inferenceMode"), "only vLLM and llama.cpp supports speculativeDecoding mode"))
-			// }
-			if playground.Spec.BackendConfig != nil && *playground.Spec.BackendConfig.Name != inferenceapi.VLLM {
-				allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "inferenceMode"), "only vLLM supports speculativeDecoding mode"))
+	if playground.Spec.ModelClaims != nil {
+		mainModelCount := 0
+		var speculativeDecoding bool
+
+		for _, model := range playground.Spec.ModelClaims.Models {
+			if model.Name == coreapi.ModelName(coreapi.MainRole) {
+				mainModelCount += 1
 			}
-			if len(playground.Spec.MultiModelsClaim.ModelNames) != 2 {
-				allErrs = append(allErrs, field.Forbidden(specPath.Child("multiModelsClaim", "modelNames"), "only two models are allowed in speculativeDecoding mode"))
+			if *model.Role == coreapi.DraftRole {
+				speculativeDecoding = true
 			}
 		}
 
+		if speculativeDecoding {
+			if len(playground.Spec.ModelClaims.Models) != 2 {
+				allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))
+			}
+			if playground.Spec.BackendConfig != nil && *playground.Spec.BackendConfig.Name != inferenceapi.VLLM {
+				allErrs = append(allErrs, field.Forbidden(specPath.Child("backendConfig", "name"), "only vLLM supports speculativeDecoding mode"))
+			}
+		}
+
+		if mainModelCount > 1 {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only one main model is allowed"))
+		}
 	}
 	return allErrs
 }

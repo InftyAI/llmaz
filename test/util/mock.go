@@ -35,7 +35,7 @@ func MockASamplePlayground(ns string) *inferenceapi.Playground {
 
 func MockASampleService(ns string) *inferenceapi.Service {
 	return wrapper.MakeService("service-llama3-8b", ns).
-		ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
+		ModelClaims([]string{"llama3-8b"}, []string{"main"}).
 		WorkerTemplate().
 		Obj()
 }

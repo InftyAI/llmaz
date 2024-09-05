@@ -157,7 +157,7 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 		ginkgo.Entry("service created with URI configured Model", &testValidatingCase{
 			makeService: func() *inferenceapi.Service {
 				return wrapper.MakeService("service-llama3-8b", ns.Name).
-					ModelsClaim([]string{"model-with-uri"}, coreapi.Standard, nil).
+					ModelClaims([]string{"model-with-uri"}, []string{"main"}).
 					WorkerTemplate().
 					Obj()
 			},
@@ -185,7 +185,7 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 		ginkgo.Entry("service created with speculativeDecoding mode", &testValidatingCase{
 			makeService: func() *inferenceapi.Service {
 				return wrapper.MakeService("service-llama3-8b", ns.Name).
-					ModelsClaim([]string{"llama3-8b", "model-with-uri"}, coreapi.SpeculativeDecoding, nil).
+					ModelClaims([]string{"llama3-8b", "model-with-uri"}, []string{"main", "draft"}).
 					WorkerTemplate().
 					Obj()
 			},

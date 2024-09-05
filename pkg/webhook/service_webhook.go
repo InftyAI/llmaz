@@ -26,6 +26,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
+	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 )
@@ -56,7 +57,7 @@ var _ webhook.CustomValidator = &ServiceWebhook{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (w *ServiceWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	allErrs := field.ErrorList{}
+	allErrs := w.generateValidate(obj)
 	service := obj.(*inferenceapi.Service)
 	for _, err := range validation.IsDNS1123Label(service.Name) {
 		allErrs = append(allErrs, field.Invalid(field.NewPath("metadata.name"), service.Name, err))
@@ -78,10 +79,38 @@ func (w *ServiceWebhook) ValidateCreate(ctx context.Context, obj runtime.Object)
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (w *ServiceWebhook) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	return nil, nil
+	allErrs := w.generateValidate(newObj)
+	return nil, allErrs.ToAggregate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (w *ServiceWebhook) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
 	return nil, nil
+}
+
+func (w *ServiceWebhook) generateValidate(obj runtime.Object) field.ErrorList {
+	service := obj.(*inferenceapi.Service)
+	specPath := field.NewPath("spec")
+	var allErrs field.ErrorList
+
+	mainModelCount := 0
+	var speculativeDecoding bool
+	for _, model := range service.Spec.ModelClaims.Models {
+		if model.Role == nil || *model.Role == coreapi.MainRole {
+			mainModelCount += 1
+		}
+		if model.Role != nil && *model.Role == coreapi.DraftRole {
+			speculativeDecoding = true
+		}
+	}
+
+	if speculativeDecoding {
+		if len(service.Spec.ModelClaims.Models) != 2 {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))
+		}
+		if mainModelCount != 1 {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "main model is required"))
+		}
+	}
+	return allErrs
 }

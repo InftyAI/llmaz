@@ -182,7 +182,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		}),
 		ginkgo.Entry("Playground with speculativeDecoding", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).MultiModelsClaim([]string{model.Name, draftModel.Name}, coreapi.SpeculativeDecoding).Label(coreapi.ModelNameLabelKey, model.Name).
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaims([]string{model.Name, draftModel.Name}, []string{"main", "draft"}).Label(coreapi.ModelNameLabelKey, model.Name).
 					Obj()
 			},
 			updates: []*update{
@@ -242,7 +242,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 					updateFunc: func(playground *inferenceapi.Playground) {
 						// Create a service with the same name as the playground.
 						service := wrapper.MakeService(playground.Name, playground.Namespace).
-							ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
+							ModelClaims([]string{"llama3-8b"}, []string{"main"}).
 							WorkerTemplate().
 							Obj()
 						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
@@ -256,7 +256,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 					// Delete the service, playground should be updated to Pending.
 					updateFunc: func(playground *inferenceapi.Playground) {
 						service := wrapper.MakeService(playground.Name, playground.Namespace).
-							ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
+							ModelClaims([]string{"llama3-8b"}, []string{"main"}).
 							WorkerTemplate().
 							Obj()
 						gomega.Expect(k8sClient.Delete(ctx, service)).To(gomega.Succeed())

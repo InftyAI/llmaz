@@ -25,9 +25,9 @@ import (
 // ServiceSpecApplyConfiguration represents an declarative configuration of the ServiceSpec type for use
 // with apply.
 type ServiceSpecApplyConfiguration struct {
-	MultiModelsClaim *v1alpha1.MultiModelsClaimApplyConfiguration `json:"multiModelsClaim,omitempty"`
-	WorkloadTemplate *v1.LeaderWorkerSetSpec                      `json:"workloadTemplate,omitempty"`
-	ElasticConfig    *ElasticConfigApplyConfiguration             `json:"elasticConfig,omitempty"`
+	ModelClaims      *v1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
+	WorkloadTemplate *v1.LeaderWorkerSetSpec                 `json:"workloadTemplate,omitempty"`
+	ElasticConfig    *ElasticConfigApplyConfiguration        `json:"elasticConfig,omitempty"`
 }
 
 // ServiceSpecApplyConfiguration constructs an declarative configuration of the ServiceSpec type for use with
@@ -36,11 +36,11 @@ func ServiceSpec() *ServiceSpecApplyConfiguration {
 	return &ServiceSpecApplyConfiguration{}
 }
 
-// WithMultiModelsClaim sets the MultiModelsClaim field in the declarative configuration to the given value
+// WithModelClaims sets the ModelClaims field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the MultiModelsClaim field is set to the value of the last call.
-func (b *ServiceSpecApplyConfiguration) WithMultiModelsClaim(value *v1alpha1.MultiModelsClaimApplyConfiguration) *ServiceSpecApplyConfiguration {
-	b.MultiModelsClaim = value
+// If called multiple times, the ModelClaims field is set to the value of the last call.
+func (b *ServiceSpecApplyConfiguration) WithModelClaims(value *v1alpha1.ModelClaimsApplyConfiguration) *ServiceSpecApplyConfiguration {
+	b.ModelClaims = value
 	return b
 }
 

@@ -120,28 +120,35 @@ type ModelClaim struct {
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
 }
 
-type InferenceMode string
+type ModelRole string
 
 const (
-	Standard            InferenceMode = "Standard"
-	SpeculativeDecoding InferenceMode = "SpeculativeDecoding"
+	// Main represents the main model, if only one model is required,
+	// it must be the main model. Only one main model is allowed.
+	MainRole ModelRole = "main"
+	// Draft represents the draft model in speculative decoding,
+	// the main model is the target model then.
+	DraftRole ModelRole = "draft"
 )
 
-// MultiModelsClaim represents claiming for multiple models with different claimModes,
-// like standard or speculative-decoding to support different inference scenarios.
-type MultiModelsClaim struct {
-	// ModelNames represents a list of models, there maybe multiple models here
-	// to support state-of-the-art technologies like speculative decoding.
-	// If the composedMode is SpeculativeDecoding, the first model is the target model,
-	// and the second model is the draft model.
-	// +kubebuilder:validation:MinItems=1
-	ModelNames []ModelName `json:"modelNames,omitempty"`
-	// Mode represents the paradigm to serve the model, whether via a standard way
-	// or via an advanced technique like SpeculativeDecoding.
-	// +kubebuilder:default=Standard
-	// +kubebuilder:validation:Enum={Standard,SpeculativeDecoding}
+type ModelRepresentative struct {
+	// Name represents the model name.
+	Name ModelName `json:"name"`
+	// Role represents the model role once more than one model is required.
+	// +kubebuilder:validation:Enum={main,draft}
+	// +kubebuilder:default=main
 	// +optional
-	InferenceMode InferenceMode `json:"inferenceMode,omitempty"`
+	Role *ModelRole `json:"role,omitempty"`
+}
+
+// ModelClaims represents multiple claims for different models.
+type ModelClaims struct {
+	// Models represents a list of models with roles specified, there maybe
+	// multiple models here to support state-of-the-art technologies like
+	// speculative decoding, then one model is main(target) model, another one
+	// is draft model.
+	// +kubebuilder:validation:MinItems=1
+	Models []ModelRepresentative `json:"models,omitempty"`
 	// InferenceFlavors represents a list of flavors with fungibility supported
 	// to serve the model.
 	// - If not set, always apply with the 0-index model by default.

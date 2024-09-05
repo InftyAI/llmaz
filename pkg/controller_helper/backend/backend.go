@@ -36,13 +36,11 @@ type Backend interface {
 	DefaultVersion() string
 	// DefaultResources returns the default resources set for the container.
 	DefaultResources() inferenceapi.ResourceRequirements
-	// Command returns the command to start the inference backend.
-	Command() []string
+	// DefaultCommand returns the command to start the inference backend.
+	DefaultCommand() []string
 	// Args returns the bootstrap arguments to start the backend.
-	Args([]*coreapi.OpenModel, coreapi.InferenceMode) []string
-
-	// defaultArgs returns the bootstrap arguments when inferenceMode is standard.
-	defaultArgs(*coreapi.OpenModel) []string
+	// The second parameter represents which particular modelRole involved, like draft.
+	Args([]*coreapi.OpenModel, coreapi.ModelRole) []string
 }
 
 // SpeculativeBackend represents backend supports speculativeDecoding inferenceMode.
