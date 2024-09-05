@@ -13,5 +13,11 @@ spec:
   backendConfig:
     args:
       - --use-v2-block-manager
-      - --num_speculative_tokens 5
-      - -tp 1
+      - --num_speculative_tokens
+      - "5"
+      - -tp
+      - "1"
+    resources:
+      limits:
+        cpu: 8
+        memory: "16Gi"
