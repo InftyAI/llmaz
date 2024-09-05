@@ -26,6 +26,7 @@ from llmaz.model_loader.model_hub.model_hub import (
     ModelHub,
 )
 from llmaz.util.logger import Logger
+from llmaz.model_loader.model_hub.util import get_folder_total_size
 
 from typing import Optional
 
@@ -50,14 +51,18 @@ class Huggingface(ModelHub):
                 local_dir=MODEL_LOCAL_DIR,
                 revision=revision,
             )
+            file_size = os.path.getsize(MODEL_LOCAL_DIR + filename) / (1024**3)
+            Logger.info(
+                f"The total size of {MODEL_LOCAL_DIR + filename} is {file_size: .2f} GB"
+            )
             return
+
+        local_dir = os.path.join(
+            MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+        )
 
         # # TODO: Should we verify the download is finished?
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            local_dir = os.path.join(
-                MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
-            )
-
             futures = []
             for file in list_repo_files(repo_id=model_id):
                 # TODO: support version management, right now we didn't distinguish with them.
@@ -70,6 +75,9 @@ class Huggingface(ModelHub):
                         revision=revision,
                     ).add_done_callback(handle_completion)
                 )
+
+        total_size = get_folder_total_size(local_dir)
+        Logger.info(f"The total size of {local_dir} is {total_size: .2f} GB")
 
 
 def handle_completion(future):

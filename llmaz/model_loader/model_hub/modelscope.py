@@ -27,6 +27,7 @@ from llmaz.model_loader.model_hub.model_hub import (
     ModelHub,
 )
 from llmaz.util.logger import Logger
+from llmaz.model_loader.model_hub.util import get_folder_total_size
 
 
 class ModelScope(ModelHub):
@@ -43,11 +44,12 @@ class ModelScope(ModelHub):
             f"Start to download, model_id: {model_id}, filename: {filename}, revision: {revision}"
         )
 
+        local_dir = os.path.join(
+            MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+        )
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
             futures = []
-            local_dir = os.path.join(
-                MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
-            )
             futures.append(
                 executor.submit(
                     snapshot_download,
@@ -56,6 +58,9 @@ class ModelScope(ModelHub):
                     revision=revision,
                 ).add_done_callback(handle_completion)
             )
+
+        total_size = get_folder_total_size(local_dir)
+        Logger.info(f"The total size of {local_dir} is {total_size:.2f} GB")
 
 
 def handle_completion(future):
