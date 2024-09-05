@@ -89,13 +89,13 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 		}),
 		ginkgo.Entry("speculativeDecoding with SGLang is not allowed", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).MultiModelsClaim([]string{"llama3-405b", "llama3-8b"}, coreapi.SpeculativeDecoding).Backend(string(inferenceapi.SGLANG)).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-405b", "llama3-8b"}, []string{"main", "draft"}).Backend(string(inferenceapi.SGLANG)).Obj()
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("speculativeDecoding with three models claimed", &testValidatingCase{
+		ginkgo.Entry("speculativeDecoding with three models is not allowed", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).MultiModelsClaim([]string{"llama3-405b", "llama3-8b", "llama3-2b"}, coreapi.SpeculativeDecoding).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-405b", "llama3-8b", "llama3-2b"}, []string{"main", "draft", "draft"}).Obj()
 			},
 			failed: true,
 		}),
@@ -105,9 +105,9 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("unknown inference mode", &testValidatingCase{
+		ginkgo.Entry("no main model", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).MultiModelsClaim([]string{"llama3-405b", "llama3-8b"}, coreapi.InferenceMode("unknown")).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-8b"}, []string{"draft"}).Obj()
 			},
 			failed: true,
 		}),
@@ -133,16 +133,25 @@ var _ = ginkgo.Describe("playground default and validation", func() {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).Label(coreapi.ModelNameLabelKey, "llama3-8b").Obj()
 			},
 		}),
-		ginkgo.Entry("defaulting inferenceMode with multiModelsClaim", &testDefaultingCase{
+		ginkgo.Entry("defaulting model role with modelClaims", &testDefaultingCase{
 			playground: func() *inferenceapi.Playground {
 				playground := wrapper.MakePlayground("playground", ns.Name).Replicas(1).Obj()
-				playground.Spec.MultiModelsClaim = &coreapi.MultiModelsClaim{
-					ModelNames: []coreapi.ModelName{"llama3-405b", "llama3-8b"},
+				draftRole := coreapi.DraftRole
+				playground.Spec.ModelClaims = &coreapi.ModelClaims{
+					Models: []coreapi.ModelRepresentative{
+						{
+							Name: "llama3-405b",
+						},
+						{
+							Name: "llama3-8b",
+							Role: &draftRole,
+						},
+					},
 				}
 				return playground
 			},
 			wantPlayground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).MultiModelsClaim([]string{"llama3-405b", "llama3-8b"}, coreapi.Standard).Replicas(1).Label(coreapi.ModelNameLabelKey, "llama3-405b").Obj()
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaims([]string{"llama3-405b", "llama3-8b"}, []string{"main", "draft"}).Replicas(1).Label(coreapi.ModelNameLabelKey, "llama3-405b").Obj()
 			},
 		}),
 	)

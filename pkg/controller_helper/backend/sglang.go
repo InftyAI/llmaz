@@ -60,23 +60,21 @@ func (s *SGLANG) DefaultResources() inferenceapi.ResourceRequirements {
 	}
 }
 
-func (s *SGLANG) Command() []string {
+func (s *SGLANG) DefaultCommand() []string {
 	return []string{"python3", "-m", "sglang.launch_server"}
 }
 
-func (s *SGLANG) Args(models []*coreapi.OpenModel, mode coreapi.InferenceMode) []string {
-	if mode == coreapi.Standard {
-		return s.defaultArgs(models[0])
-	}
-	// We should not reach here.
-	return nil
-}
+func (s *SGLANG) Args(models []*coreapi.OpenModel, involvedRole coreapi.ModelRole) []string {
+	targetModelSource := modelSource.NewModelSourceProvider(models[0])
 
-func (s *SGLANG) defaultArgs(model *coreapi.OpenModel) []string {
-	source := modelSource.NewModelSourceProvider(model)
+	if involvedRole == coreapi.DraftRole {
+		// TODO: support speculative decoding
+		return nil
+	}
+
 	return []string{
-		"--model-path", source.ModelPath(),
-		"--served-model-name", source.ModelName(),
+		"--model-path", targetModelSource.ModelPath(),
+		"--served-model-name", targetModelSource.ModelName(),
 		"--host", "0.0.0.0",
 		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
 	}

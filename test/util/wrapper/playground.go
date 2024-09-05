@@ -71,23 +71,22 @@ func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) 
 	return w
 }
 
-func (w *PlaygroundWrapper) MultiModelsClaim(modelNames []string, mode coreapi.InferenceMode, flavorNames ...string) *PlaygroundWrapper {
-	mNames := []coreapi.ModelName{}
-	for _, name := range modelNames {
-		mNames = append(mNames, coreapi.ModelName(name))
+func (w *PlaygroundWrapper) ModelClaims(modelNames []string, roles []string, flavorNames ...string) *PlaygroundWrapper {
+	models := []coreapi.ModelRepresentative{}
+	for i, name := range modelNames {
+		models = append(models, coreapi.ModelRepresentative{Name: coreapi.ModelName(name), Role: (*coreapi.ModelRole)(&roles[i])})
+	}
+	w.Spec.ModelClaims = &coreapi.ModelClaims{
+		Models: models,
 	}
 
 	fNames := []coreapi.FlavorName{}
 	for _, name := range flavorNames {
 		fNames = append(fNames, coreapi.FlavorName(name))
 	}
-	w.Spec.MultiModelsClaim = &coreapi.MultiModelsClaim{
-		InferenceMode: mode,
-		ModelNames:    mNames,
-	}
 
 	if len(fNames) > 0 {
-		w.Spec.ModelClaim.InferenceFlavors = fNames
+		w.Spec.ModelClaims.InferenceFlavors = fNames
 	}
 	return w
 }

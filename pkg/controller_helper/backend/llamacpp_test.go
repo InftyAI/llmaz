@@ -57,41 +57,41 @@ func Test_llamacpp(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name        string
-		mode        coreapi.InferenceMode
-		wantCommand []string
-		wantArgs    []string
+		name         string
+		involvedRole coreapi.ModelRole
+		wantCommand  []string
+		wantArgs     []string
 	}{
 		{
-			name:        "standard mode",
-			mode:        coreapi.Standard,
-			wantCommand: []string{"./llama-server"},
+			name:         "one main model",
+			involvedRole: coreapi.MainRole,
+			wantCommand:  []string{"./llama-server"},
 			wantArgs: []string{
 				"-m", "/workspace/models/models--hub--model-1",
-				"--port", "8080",
 				"--host", "0.0.0.0",
+				"--port", "8080",
 			},
 		},
 		{
-			name:        "speculative decoding",
-			mode:        coreapi.SpeculativeDecoding,
-			wantCommand: []string{"./llama-server"},
+			name:         "speculative decoding",
+			involvedRole: coreapi.DraftRole,
+			wantCommand:  []string{"./llama-server"},
 			wantArgs: []string{
 				"-m", "/workspace/models/models--hub--model-1",
 				"-md", "/workspace/models/models--hub--model-2",
-				"--port", "8080",
 				"--host", "0.0.0.0",
+				"--port", "8080",
 			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if diff := cmp.Diff(backend.Command(), tc.wantCommand); diff != "" {
-				t.Fatalf("unexpected command, want %v, got %v", tc.wantCommand, backend.Command())
+			if diff := cmp.Diff(backend.DefaultCommand(), tc.wantCommand); diff != "" {
+				t.Fatalf("unexpected command, want %v, got %v", tc.wantCommand, backend.DefaultCommand())
 			}
-			if diff := cmp.Diff(backend.Args(models, tc.mode), tc.wantArgs); diff != "" {
-				t.Fatalf("unexpected args, want %v, got %v", tc.wantArgs, backend.Args(models, tc.mode))
+			if diff := cmp.Diff(backend.Args(models, tc.involvedRole), tc.wantArgs); diff != "" {
+				t.Fatalf("unexpected args, want %v, got %v", tc.wantArgs, backend.Args(models, tc.involvedRole))
 			}
 		})
 	}

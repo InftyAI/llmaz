@@ -22,7 +22,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/wrapper"
@@ -73,9 +72,39 @@ var _ = ginkgo.Describe("service default and validation", func() {
 		ginkgo.Entry("model-runner container doesn't exist", &testValidatingCase{
 			service: func() *inferenceapi.Service {
 				return wrapper.MakeService("service-llama3-8b", ns.Name).
-					ModelsClaim([]string{"llama3-8b"}, coreapi.Standard, nil).
+					ModelClaims([]string{"llama3-8b"}, []string{"main"}).
 					WorkerTemplate().
 					ContainerName("model-runner-fake").
+					Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("speculative-decoding with three models", &testValidatingCase{
+			service: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelClaims([]string{"llama3-405b", "llama3-8b", "llama3-2b"}, []string{"main", "draft", "draft"}).
+					WorkerTemplate().
+					Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("modelClaims with nil role", &testValidatingCase{
+			service: func() *inferenceapi.Service {
+				service := wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelClaims([]string{"llama3-405b", "llama3-8b"}, []string{"main", "draft"}).
+					WorkerTemplate().
+					Obj()
+				// Set the role to nil
+				service.Spec.ModelClaims.Models[0].Role = nil
+				return service
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("no main model", &testValidatingCase{
+			service: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelClaims([]string{"llama3-8b"}, []string{"draft"}).
+					WorkerTemplate().
 					Obj()
 			},
 			failed: true,

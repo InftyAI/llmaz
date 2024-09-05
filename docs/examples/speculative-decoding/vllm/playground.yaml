@@ -4,15 +4,14 @@ metadata:
   name: vllm-speculator
 spec:
   replicas: 1
-  multiModelsClaim:
-    inferenceMode: SpeculativeDecoding
-    modelNames:
-      - opt-6--7b # the target model, should be the first one
-      - opt-125m  # the draft model
+  modelClaims:
+    models:
+      - name: opt-6--7b # the target model
+        role: main
+      - name: opt-125m  # the draft model
+        role: draft
   backendConfig:
     args:
       - --use-v2-block-manager
-      - -tp
-      - 1
-      - --num_speculative_tokens
-      - 5
+      - --num_speculative_tokens 5
+      - -tp 1

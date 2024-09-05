@@ -28,17 +28,16 @@ type PlaygroundSpec struct {
 	// +kubebuilder:default=1
 	// +optional
 	Replicas *int32 `json:"replicas,omitempty"`
-	// ModelClaim represents claiming for one model, it's the standard claimMode
-	// of multiModelsClaim compared to other modes like SpeculativeDecoding.
-	// Most of the time, modelClaim is enough.
-	// ModelClaim and multiModelsClaim are exclusive configured.
+	// ModelClaim represents claiming for one model, it's a simplified use case
+	// of modelClaims. Most of the time, modelClaim is enough.
+	// ModelClaim and modelClaims are exclusive configured.
 	// +optional
 	ModelClaim *coreapi.ModelClaim `json:"modelClaim,omitempty"`
-	// MultiModelsClaim represents claiming for multiple models with different claimModes,
-	// like standard or speculative-decoding to support different inference scenarios.
-	// ModelClaim and multiModelsClaim are exclusive configured.
+	// ModelClaims represents claiming for multiple models for more complicated
+	// use cases like speculative-decoding.
+	// ModelClaims and modelClaim are exclusive configured.
 	// +optional
-	MultiModelsClaim *coreapi.MultiModelsClaim `json:"multiModelsClaim,omitempty"`
+	ModelClaims *coreapi.ModelClaims `json:"modelClaims,omitempty"`
 	// BackendConfig represents the inference backend configuration
 	// under the hood, e.g. vLLM, which is the default backend.
 	// +optional

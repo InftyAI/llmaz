@@ -81,9 +81,9 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	logger.V(10).Info("reconcile Service", "Playground", klog.KObj(service))
 
 	models := []*coreapi.OpenModel{}
-	for _, modelName := range service.Spec.MultiModelsClaim.ModelNames {
+	for _, mr := range service.Spec.ModelClaims.Models {
 		model := &coreapi.OpenModel{}
-		if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+		if err := r.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
 			return ctrl.Result{}, err
 		}
 		models = append(models, model)
@@ -153,7 +153,7 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 	}
 
 	// We treat the 0-index model as the main model, we only consider the main model's requirements,
-	// like label, flavor.
+	// like label, flavor. Note: this may change in the future, let's see.
 	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(models[0]))
 	injectModelFlavor(template, models[0])
 }

@@ -24,10 +24,10 @@ import (
 // PlaygroundSpecApplyConfiguration represents an declarative configuration of the PlaygroundSpec type for use
 // with apply.
 type PlaygroundSpecApplyConfiguration struct {
-	Replicas         *int32                                       `json:"replicas,omitempty"`
-	ModelClaim       *v1alpha1.ModelClaimApplyConfiguration       `json:"modelClaim,omitempty"`
-	MultiModelsClaim *v1alpha1.MultiModelsClaimApplyConfiguration `json:"multiModelsClaim,omitempty"`
-	BackendConfig    *BackendConfigApplyConfiguration             `json:"backendConfig,omitempty"`
+	Replicas      *int32                                  `json:"replicas,omitempty"`
+	ModelClaim    *v1alpha1.ModelClaimApplyConfiguration  `json:"modelClaim,omitempty"`
+	ModelClaims   *v1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
+	BackendConfig *BackendConfigApplyConfiguration        `json:"backendConfig,omitempty"`
 }
 
 // PlaygroundSpecApplyConfiguration constructs an declarative configuration of the PlaygroundSpec type for use with
@@ -52,11 +52,11 @@ func (b *PlaygroundSpecApplyConfiguration) WithModelClaim(value *v1alpha1.ModelC
 	return b
 }
 
-// WithMultiModelsClaim sets the MultiModelsClaim field in the declarative configuration to the given value
+// WithModelClaims sets the ModelClaims field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the MultiModelsClaim field is set to the value of the last call.
-func (b *PlaygroundSpecApplyConfiguration) WithMultiModelsClaim(value *v1alpha1.MultiModelsClaimApplyConfiguration) *PlaygroundSpecApplyConfiguration {
-	b.MultiModelsClaim = value
+// If called multiple times, the ModelClaims field is set to the value of the last call.
+func (b *PlaygroundSpecApplyConfiguration) WithModelClaims(value *v1alpha1.ModelClaimsApplyConfiguration) *PlaygroundSpecApplyConfiguration {
+	b.ModelClaims = value
 	return b
 }
 

@@ -106,10 +106,10 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			return ctrl.Result{}, err
 		}
 		models = append(models, model)
-	} else if playground.Spec.MultiModelsClaim != nil {
-		for _, modelName := range playground.Spec.MultiModelsClaim.ModelNames {
+	} else if playground.Spec.ModelClaims != nil {
+		for _, mr := range playground.Spec.ModelClaims.Models {
 			model := &coreapi.OpenModel{}
-			if err := r.Get(ctx, types.NamespacedName{Name: string(modelName)}, model); err != nil {
+			if err := r.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
 				if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
 					return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
 				}
@@ -192,20 +192,28 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	// Build spec.
 	spec := inferenceclientgo.ServiceSpec()
 
-	claim := &coreclientgo.MultiModelsClaimApplyConfiguration{}
+	claim := &coreclientgo.ModelClaimsApplyConfiguration{}
 	if playground.Spec.ModelClaim != nil {
-		claim = coreclientgo.MultiModelsClaim().
-			WithModelNames(playground.Spec.ModelClaim.ModelName).
-			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...).
-			WithInferenceMode(coreapi.Standard)
-	} else if playground.Spec.MultiModelsClaim != nil {
-		claim = coreclientgo.MultiModelsClaim().
-			WithModelNames(playground.Spec.MultiModelsClaim.ModelNames...).
-			WithInferenceFlavors(playground.Spec.MultiModelsClaim.InferenceFlavors...).
-			WithInferenceMode(playground.Spec.MultiModelsClaim.InferenceMode)
+		claim = coreclientgo.ModelClaims().
+			WithModels(coreclientgo.ModelRepresentative().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
+			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...)
+	} else if playground.Spec.ModelClaims != nil {
+		mrs := []*coreclientgo.ModelRepresentativeApplyConfiguration{}
+		for _, model := range playground.Spec.ModelClaims.Models {
+			role := coreapi.MainRole
+			if model.Role != nil {
+				role = *model.Role
+			}
+			mr := coreclientgo.ModelRepresentative().WithName(model.Name).WithRole(role)
+			mrs = append(mrs, mr)
+		}
+
+		claim = coreclientgo.ModelClaims().
+			WithModels(mrs...).
+			WithInferenceFlavors(playground.Spec.ModelClaims.InferenceFlavors...)
 	}
 
-	spec.WithMultiModelsClaim(claim)
+	spec.WithModelClaims(claim)
 	spec.WithWorkloadTemplate(buildWorkloadTemplate(models, playground))
 	serviceApplyConfiguration.WithSpec(spec)
 
@@ -237,6 +245,20 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 	return workload
 }
 
+func involveRole(playground *inferenceapi.Playground) coreapi.ModelRole {
+	if playground.Spec.ModelClaim != nil {
+		return coreapi.MainRole
+	} else if playground.Spec.ModelClaims != nil {
+		for _, mr := range playground.Spec.ModelClaims.Models {
+			if *mr.Role != coreapi.MainRole {
+				return *mr.Role
+			}
+		}
+	}
+
+	return coreapi.MainRole
+}
+
 func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground) corev1.PodTemplateSpec {
 	backendName := inferenceapi.DefaultBackend
 	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {
@@ -249,12 +271,7 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 		version = *playground.Spec.BackendConfig.Version
 	}
 
-	mode := coreapi.Standard
-	if playground.Spec.MultiModelsClaim != nil {
-		mode = playground.Spec.MultiModelsClaim.InferenceMode
-	}
-
-	args := bkd.Args(models, mode)
+	args := bkd.Args(models, involveRole(playground))
 
 	var envs []corev1.EnvVar
 	if playground.Spec.BackendConfig != nil {
@@ -285,7 +302,7 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
 					Image:     bkd.Image(version),
 					Resources: resources,
-					Command:   bkd.Command(),
+					Command:   bkd.DefaultCommand(),
 					Args:      args,
 					Env:       envs,
 					Ports: []corev1.ContainerPort{

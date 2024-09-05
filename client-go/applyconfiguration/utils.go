@@ -54,16 +54,18 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationcorev1alpha1.FlavorApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelClaim"):
 		return &applyconfigurationcorev1alpha1.ModelClaimApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("ModelClaims"):
+		return &applyconfigurationcorev1alpha1.ModelClaimsApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelHub"):
 		return &applyconfigurationcorev1alpha1.ModelHubApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("ModelRepresentative"):
+		return &applyconfigurationcorev1alpha1.ModelRepresentativeApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSource"):
 		return &applyconfigurationcorev1alpha1.ModelSourceApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSpec"):
 		return &applyconfigurationcorev1alpha1.ModelSpecApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelStatus"):
 		return &applyconfigurationcorev1alpha1.ModelStatusApplyConfiguration{}
-	case corev1alpha1.SchemeGroupVersion.WithKind("MultiModelsClaim"):
-		return &applyconfigurationcorev1alpha1.MultiModelsClaimApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("OpenModel"):
 		return &applyconfigurationcorev1alpha1.OpenModelApplyConfiguration{}
 

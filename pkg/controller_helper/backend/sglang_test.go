@@ -57,15 +57,15 @@ func Test_SGLANG(t *testing.T) {
 	}
 
 	testCases := []struct {
-		name        string
-		mode        coreapi.InferenceMode
-		wantCommand []string
-		wantArgs    []string
+		name         string
+		involvedRole coreapi.ModelRole
+		wantCommand  []string
+		wantArgs     []string
 	}{
 		{
-			name:        "standard mode",
-			mode:        coreapi.Standard,
-			wantCommand: []string{"python3", "-m", "sglang.launch_server"},
+			name:         "one main model",
+			involvedRole: coreapi.MainRole,
+			wantCommand:  []string{"python3", "-m", "sglang.launch_server"},
 			wantArgs: []string{
 				"--model-path", "/workspace/models/models--hub--model-1",
 				"--served-model-name", "model-1",
@@ -74,20 +74,20 @@ func Test_SGLANG(t *testing.T) {
 			},
 		},
 		{
-			name:        "speculative decoding",
-			mode:        coreapi.SpeculativeDecoding,
-			wantCommand: []string{"python3", "-m", "sglang.launch_server"},
-			wantArgs:    nil,
+			name:         "speculative decoding",
+			involvedRole: coreapi.DraftRole,
+			wantCommand:  []string{"python3", "-m", "sglang.launch_server"},
+			wantArgs:     nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if diff := cmp.Diff(backend.Command(), tc.wantCommand); diff != "" {
-				t.Fatalf("unexpected command, want %v, got %v", tc.wantCommand, backend.Command())
+			if diff := cmp.Diff(backend.DefaultCommand(), tc.wantCommand); diff != "" {
+				t.Fatalf("unexpected command, want %v, got %v", tc.wantCommand, backend.DefaultCommand())
 			}
-			if diff := cmp.Diff(backend.Args(models, tc.mode), tc.wantArgs); diff != "" {
-				t.Fatalf("unexpected args, want %v, got %v", tc.wantArgs, backend.Args(models, tc.mode))
+			if diff := cmp.Diff(backend.Args(models, tc.involvedRole), tc.wantArgs); diff != "" {
+				t.Fatalf("unexpected args, want %v, got %v", tc.wantArgs, backend.Args(models, tc.involvedRole))
 			}
 		})
 	}
