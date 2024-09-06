@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo.png">
-    <img alt="llmaz" src="https://github.com/InftyAI/llmaz/blob/main/docs/assets/logo.png" width=55%>
+    <img alt="llmaz" src="./docs/assets/logo.png" width=55%>
   </picture>
 </p>
 
@@ -20,11 +20,11 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 > 🌱 llmaz is alpha now, so API may change before graduating to Beta.
 
-## Concept
+## Architecture
 
-![image](./docs/assets/overview.png)
+![image](./docs/assets/arch.png)
 
-## Feature Overview
+## Features Overview
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
 - **Broad Backend Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
@@ -42,7 +42,7 @@ Read the [Installation](./docs/installation.md) for guidance.
 
 ### Deploy
 
-Here's a simplest sample for deploying `facebook/opt-125m`, all you need to do
+Here's a toy sample for deploying `facebook/opt-125m`, all you need to do
 is to apply a `Model` and a `Playground`.
 
 Please refer to **[examples](/docs/examples/README.md)** to learn more.
@@ -107,6 +107,10 @@ curl http://localhost:8080/v1/completions \
 }'
 ```
 
+### More than QuickStart
+
+If you want to learn more about this project, please refer to [develop.md](./docs/develop.md).
+
 ## Roadmap
 
 - Gateway support for traffic routing
@@ -115,17 +119,12 @@ curl http://localhost:8080/v1/completions \
 - CLI tool support
 - Model training, fine tuning in the long-term
 
-## Project Structures
-
-```structure
-llmaz # root
-├── llmaz # where the model loader logic locates
-├── pkg # where the main logic for Kubernetes controllers locates
-```
 
 ## Contributions
 
-🚀 All kinds of contributions are welcomed ! Please follow [Contributing](./CONTRIBUTING.md). Thanks to all these contributors.
+🚀 All kinds of contributions are welcomed ! Please follow [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+**🎉 Thanks to all these contributors !**
 
 <a href="https://github.com/inftyai/llmaz/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=inftyai/llmaz" />
