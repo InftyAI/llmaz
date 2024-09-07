@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo.png">
-    <img alt="llmaz" src="./docs/assets/logo.png" width=55%>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/logo.png">
+    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/logo.png" width=55%>
   </picture>
 </p>
 
@@ -107,7 +107,7 @@ curl http://localhost:8080/v1/completions \
 }'
 ```
 
-### More than QuickStart
+### More than quick-start
 
 If you want to learn more about this project, please refer to [develop.md](./docs/develop.md).
 
