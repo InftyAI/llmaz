@@ -291,6 +291,15 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 			Limits:   limits,
 			Requests: requests,
 		}
+
+		// Make sure the limits are always greater than requests.
+		for k, v := range resources.Limits {
+			if k == corev1.ResourceCPU || k == corev1.ResourceMemory {
+				if v.Cmp(requests[k]) == -1 {
+					resources.Limits[k] = requests[k]
+				}
+			}
+		}
 	}
 
 	template := corev1.PodTemplateSpec{

@@ -86,7 +86,14 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		if err := r.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
 			return ctrl.Result{}, err
 		}
-		models = append(models, model)
+		// Make sure the main model is always the 0-index model.
+		// We only have one main model right now, if this changes,
+		// the logic may also change here.
+		if *mr.Role == coreapi.MainRole {
+			models = append([]*coreapi.OpenModel{model}, models...)
+		} else {
+			models = append(models, model)
+		}
 	}
 
 	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
@@ -152,8 +159,7 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 		source.InjectModelLoader(template.WorkerTemplate, i)
 	}
 
-	// We treat the 0-index model as the main model, we only consider the main model's requirements,
-	// like label, flavor. Note: this may change in the future, let's see.
+	// We only consider the main model's requirements for now.
 	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(models[0]))
 	injectModelFlavor(template, models[0])
 }
