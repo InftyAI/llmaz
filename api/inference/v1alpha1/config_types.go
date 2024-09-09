@@ -38,7 +38,7 @@ type BackendConfig struct {
 	// from the default version.
 	// +optional
 	Version *string `json:"version,omitempty"`
-	// Args represents the arguments passed to the backend.
+	// Args represents the arguments appended to the backend.
 	// You can add new args or overwrite the default args.
 	// +optional
 	Args []string `json:"args,omitempty"`
@@ -46,9 +46,8 @@ type BackendConfig struct {
 	// +optional
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
 	// Resources represents the resource requirements for backend, like cpu/mem,
-	// accelerators like GPU should not be defined here, but at the Model flavors,
-	// or the same accelerator requirements defined there will be covered and
-	// the workload will lose the fungibility capacity.
+	// accelerators like GPU should not be defined here, but at the model flavors,
+	// or the values here will be covered.
 	Resources *ResourceRequirements `json:"resources,omitempty"`
 }
 

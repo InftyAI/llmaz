@@ -18,6 +18,7 @@ package inference
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -319,6 +320,34 @@ var _ = ginkgo.Describe("playground controller test", func() {
 					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("Playground with backendConfig's resource requests greater than limits", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
+					BackendRequest("cpu", "10").
+					Obj()
+			},
+			updates: []*update{
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						gomega.Eventually(func() error {
+							service := inferenceapi.Service{}
+							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &service); err != nil {
+								return err
+							}
+							if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits.Cpu().CmpInt64(10) != 0 {
+								return fmt.Errorf("unexpected Cpu limit value, want %d, got %d", 10, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits.Cpu().Size())
+							}
+							return nil
+						}).Should(gomega.Succeed())
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
 					},
 				},
 			},
