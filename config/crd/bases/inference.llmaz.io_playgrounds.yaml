@@ -188,7 +188,7 @@ spec:
                     description: |-
                       Resources represents the resource requirements for backend, like cpu/mem,
                       accelerators like GPU should not be defined here, but at the model flavors,
-                      or the values here will be covered.
+                      or the values here will be overwritten.
                     properties:
                       limits:
                         additionalProperties:

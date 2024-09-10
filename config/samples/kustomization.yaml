@@ -3,4 +3,5 @@ resources:
 - inference_v1alpha1_service.yaml
 - inference_v1alpha1_playground.yaml
 - _v1alpha1_model.yaml
+- inference_v1alpha1_backendruntime.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

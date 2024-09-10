@@ -39,4 +39,13 @@ resources:
     defaulting: true
     validation: true
     webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: llmaz.io
+  group: inference
+  kind: BackendRuntime
+  path: inftyai.com/llmaz/api/inference/v1alpha1
+  version: v1alpha1
 version: "3"

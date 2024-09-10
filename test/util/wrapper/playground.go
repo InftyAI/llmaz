@@ -131,11 +131,13 @@ func (w *PlaygroundWrapper) BackendRequest(r, v string) *PlaygroundWrapper {
 	if w.Spec.BackendConfig == nil {
 		w = w.Backend("vllm")
 	}
-	w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{
-		Requests: v1.ResourceList{
-			v1.ResourceName(r): resource.MustParse(v),
-		},
+	if w.Spec.BackendConfig.Resources == nil {
+		w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{}
 	}
+	if w.Spec.BackendConfig.Resources.Requests == nil {
+		w.Spec.BackendConfig.Resources.Requests = v1.ResourceList{}
+	}
+	w.Spec.BackendConfig.Resources.Requests[v1.ResourceName(r)] = resource.MustParse(v)
 	return w
 }
 
@@ -143,10 +145,12 @@ func (w *PlaygroundWrapper) BackendLimit(r, v string) *PlaygroundWrapper {
 	if w.Spec.BackendConfig == nil {
 		w = w.Backend("vllm")
 	}
-	w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{
-		Limits: v1.ResourceList{
-			v1.ResourceName(r): resource.MustParse(v),
-		},
+	if w.Spec.BackendConfig.Resources == nil {
+		w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{}
 	}
+	if w.Spec.BackendConfig.Resources.Limits == nil {
+		w.Spec.BackendConfig.Resources.Limits = v1.ResourceList{}
+	}
+	w.Spec.BackendConfig.Resources.Limits[v1.ResourceName(r)] = resource.MustParse(v)
 	return w
 }

@@ -47,7 +47,7 @@ type BackendConfig struct {
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
 	// Resources represents the resource requirements for backend, like cpu/mem,
 	// accelerators like GPU should not be defined here, but at the model flavors,
-	// or the values here will be covered.
+	// or the values here will be overwritten.
 	Resources *ResourceRequirements `json:"resources,omitempty"`
 }
 
