@@ -28,7 +28,7 @@ import (
 	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
-var _ = ginkgo.Describe("playground default and validation", func() {
+var _ = ginkgo.Describe("Playground default and validation", func() {
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
 

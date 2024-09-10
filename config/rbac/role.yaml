@@ -34,6 +34,32 @@ rules:
 - apiGroups:
   - inference.llmaz.io
   resources:
+  - backends
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - backends/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - backends/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
   - playgrounds
   verbs:
   - create

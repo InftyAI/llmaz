@@ -118,8 +118,8 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 			if len(playground.Spec.ModelClaims.Models) != 2 {
 				allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))
 			}
-			if playground.Spec.BackendConfig != nil && *playground.Spec.BackendConfig.Name != inferenceapi.VLLM {
-				allErrs = append(allErrs, field.Forbidden(specPath.Child("backendConfig", "name"), "only vLLM supports speculativeDecoding mode"))
+			if playground.Spec.BackendRuntimeConfig != nil && *playground.Spec.BackendRuntimeConfig.Name != inferenceapi.VLLM {
+				allErrs = append(allErrs, field.Forbidden(specPath.Child("backendRuntimeConfig", "name"), "only vLLM supports speculativeDecoding mode"))
 			}
 		}
 

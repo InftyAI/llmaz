@@ -30,8 +30,8 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=inference.llmaz.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("BackendConfig"):
-		return &inferencev1alpha1.BackendConfigApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("BackendRuntimeConfig"):
+		return &inferencev1alpha1.BackendRuntimeConfigApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ElasticConfig"):
 		return &inferencev1alpha1.ElasticConfigApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Playground"):

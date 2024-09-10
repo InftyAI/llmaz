@@ -22,9 +22,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// BackendConfigApplyConfiguration represents an declarative configuration of the BackendConfig type for use
+// BackendRuntimeConfigApplyConfiguration represents an declarative configuration of the BackendRuntimeConfig type for use
 // with apply.
-type BackendConfigApplyConfiguration struct {
+type BackendRuntimeConfigApplyConfiguration struct {
 	Name      *v1alpha1.BackendName                   `json:"name,omitempty"`
 	Version   *string                                 `json:"version,omitempty"`
 	Args      []string                                `json:"args,omitempty"`
@@ -32,16 +32,16 @@ type BackendConfigApplyConfiguration struct {
 	Resources *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 }
 
-// BackendConfigApplyConfiguration constructs an declarative configuration of the BackendConfig type for use with
+// BackendRuntimeConfigApplyConfiguration constructs an declarative configuration of the BackendRuntimeConfig type for use with
 // apply.
-func BackendConfig() *BackendConfigApplyConfiguration {
-	return &BackendConfigApplyConfiguration{}
+func BackendRuntimeConfig() *BackendRuntimeConfigApplyConfiguration {
+	return &BackendRuntimeConfigApplyConfiguration{}
 }
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *BackendConfigApplyConfiguration) WithName(value v1alpha1.BackendName) *BackendConfigApplyConfiguration {
+func (b *BackendRuntimeConfigApplyConfiguration) WithName(value v1alpha1.BackendName) *BackendRuntimeConfigApplyConfiguration {
 	b.Name = &value
 	return b
 }
@@ -49,7 +49,7 @@ func (b *BackendConfigApplyConfiguration) WithName(value v1alpha1.BackendName) *
 // WithVersion sets the Version field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Version field is set to the value of the last call.
-func (b *BackendConfigApplyConfiguration) WithVersion(value string) *BackendConfigApplyConfiguration {
+func (b *BackendRuntimeConfigApplyConfiguration) WithVersion(value string) *BackendRuntimeConfigApplyConfiguration {
 	b.Version = &value
 	return b
 }
@@ -57,7 +57,7 @@ func (b *BackendConfigApplyConfiguration) WithVersion(value string) *BackendConf
 // WithArgs adds the given value to the Args field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Args field.
-func (b *BackendConfigApplyConfiguration) WithArgs(values ...string) *BackendConfigApplyConfiguration {
+func (b *BackendRuntimeConfigApplyConfiguration) WithArgs(values ...string) *BackendRuntimeConfigApplyConfiguration {
 	for i := range values {
 		b.Args = append(b.Args, values[i])
 	}
@@ -67,7 +67,7 @@ func (b *BackendConfigApplyConfiguration) WithArgs(values ...string) *BackendCon
 // WithEnvs adds the given value to the Envs field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Envs field.
-func (b *BackendConfigApplyConfiguration) WithEnvs(values ...v1.EnvVar) *BackendConfigApplyConfiguration {
+func (b *BackendRuntimeConfigApplyConfiguration) WithEnvs(values ...v1.EnvVar) *BackendRuntimeConfigApplyConfiguration {
 	for i := range values {
 		b.Envs = append(b.Envs, values[i])
 	}
@@ -77,7 +77,7 @@ func (b *BackendConfigApplyConfiguration) WithEnvs(values ...v1.EnvVar) *Backend
 // WithResources sets the Resources field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Resources field is set to the value of the last call.
-func (b *BackendConfigApplyConfiguration) WithResources(value *ResourceRequirementsApplyConfiguration) *BackendConfigApplyConfiguration {
+func (b *BackendRuntimeConfigApplyConfiguration) WithResources(value *ResourceRequirementsApplyConfiguration) *BackendRuntimeConfigApplyConfiguration {
 	b.Resources = value
 	return b
 }

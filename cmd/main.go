@@ -34,7 +34,7 @@ import (
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
 	corev1 "github.com/inftyai/llmaz/api/core/v1alpha1"
-	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/cert"
 	"github.com/inftyai/llmaz/pkg/controller"
 	inferencecontroller "github.com/inftyai/llmaz/pkg/controller/inference"
@@ -50,7 +50,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(inferencev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(inferenceapi.AddToScheme(scheme))
 	utilruntime.Must(corev1.AddToScheme(scheme))
 	// Add support for lws.
 	utilruntime.Must(lws.AddToScheme(scheme))
@@ -155,6 +155,13 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 		setupLog.Error(err, "unable to create controller", "controller", "Service")
 		os.Exit(1)
 	}
+	if err := (&inferencecontroller.BackendRuntimeReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "BackendRuntime")
+		os.Exit(1)
+	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err := webhook.SetupOpenModelWebhook(mgr); err != nil {
@@ -167,6 +174,10 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 		}
 		if err := webhook.SetupServiceWebhook(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Service")
+			os.Exit(1)
+		}
+		if err := webhook.SetupBackendRuntimeWebhook(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "BackendRuntime")
 			os.Exit(1)
 		}
 	}
