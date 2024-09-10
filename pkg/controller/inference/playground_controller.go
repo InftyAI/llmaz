@@ -261,31 +261,31 @@ func involveRole(playground *inferenceapi.Playground) coreapi.ModelRole {
 
 func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground) corev1.PodTemplateSpec {
 	backendName := inferenceapi.DefaultBackend
-	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {
-		backendName = *playground.Spec.BackendConfig.Name
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
+		backendName = *playground.Spec.BackendRuntimeConfig.Name
 	}
 	bkd := backend.SwitchBackend(backendName)
 
 	version := bkd.DefaultVersion()
-	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Version != nil {
-		version = *playground.Spec.BackendConfig.Version
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
+		version = *playground.Spec.BackendRuntimeConfig.Version
 	}
 
 	args := bkd.Args(models, involveRole(playground))
 
 	var envs []corev1.EnvVar
-	if playground.Spec.BackendConfig != nil {
-		args = append(args, playground.Spec.BackendConfig.Args...)
-		envs = playground.Spec.BackendConfig.Envs
+	if playground.Spec.BackendRuntimeConfig != nil {
+		args = append(args, playground.Spec.BackendRuntimeConfig.Args...)
+		envs = playground.Spec.BackendRuntimeConfig.Envs
 	}
 
 	resources := corev1.ResourceRequirements{
 		Limits:   bkd.DefaultResources().Limits,
 		Requests: bkd.DefaultResources().Requests,
 	}
-	if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Resources != nil {
-		limits := util.MergeResources(playground.Spec.BackendConfig.Resources.Limits, resources.Limits)
-		requests := util.MergeResources(playground.Spec.BackendConfig.Resources.Requests, resources.Requests)
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
+		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, resources.Limits)
+		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, resources.Requests)
 
 		resources = corev1.ResourceRequirements{
 			Limits:   limits,

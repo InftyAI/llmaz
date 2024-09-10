@@ -92,35 +92,35 @@ func (w *PlaygroundWrapper) ModelClaims(modelNames []string, roles []string, fla
 }
 
 func (w *PlaygroundWrapper) Backend(name string) *PlaygroundWrapper {
-	if w.Spec.BackendConfig == nil {
-		w.Spec.BackendConfig = &inferenceapi.BackendConfig{}
+	if w.Spec.BackendRuntimeConfig == nil {
+		w.Spec.BackendRuntimeConfig = &inferenceapi.BackendRuntimeConfig{}
 	}
 	backendName := inferenceapi.BackendName(name)
-	w.Spec.BackendConfig.Name = &backendName
+	w.Spec.BackendRuntimeConfig.Name = &backendName
 	return w
 }
 
 func (w *PlaygroundWrapper) BackendVersion(version string) *PlaygroundWrapper {
-	if w.Spec.BackendConfig == nil {
+	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.Backend("vllm")
 	}
-	w.Spec.BackendConfig.Version = &version
+	w.Spec.BackendRuntimeConfig.Version = &version
 	return w
 }
 
 func (w *PlaygroundWrapper) BackendArgs(args []string) *PlaygroundWrapper {
-	if w.Spec.BackendConfig == nil {
+	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.Backend("vllm")
 	}
-	w.Spec.BackendConfig.Args = args
+	w.Spec.BackendRuntimeConfig.Args = args
 	return w
 }
 
 func (w *PlaygroundWrapper) BackendEnv(k, v string) *PlaygroundWrapper {
-	if w.Spec.BackendConfig == nil {
+	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.Backend("vllm")
 	}
-	w.Spec.BackendConfig.Envs = append(w.Spec.BackendConfig.Envs, v1.EnvVar{
+	w.Spec.BackendRuntimeConfig.Envs = append(w.Spec.BackendRuntimeConfig.Envs, v1.EnvVar{
 		Name:  k,
 		Value: v,
 	})
@@ -128,29 +128,29 @@ func (w *PlaygroundWrapper) BackendEnv(k, v string) *PlaygroundWrapper {
 }
 
 func (w *PlaygroundWrapper) BackendRequest(r, v string) *PlaygroundWrapper {
-	if w.Spec.BackendConfig == nil {
+	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.Backend("vllm")
 	}
-	if w.Spec.BackendConfig.Resources == nil {
-		w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{}
+	if w.Spec.BackendRuntimeConfig.Resources == nil {
+		w.Spec.BackendRuntimeConfig.Resources = &inferenceapi.ResourceRequirements{}
 	}
-	if w.Spec.BackendConfig.Resources.Requests == nil {
-		w.Spec.BackendConfig.Resources.Requests = v1.ResourceList{}
+	if w.Spec.BackendRuntimeConfig.Resources.Requests == nil {
+		w.Spec.BackendRuntimeConfig.Resources.Requests = v1.ResourceList{}
 	}
-	w.Spec.BackendConfig.Resources.Requests[v1.ResourceName(r)] = resource.MustParse(v)
+	w.Spec.BackendRuntimeConfig.Resources.Requests[v1.ResourceName(r)] = resource.MustParse(v)
 	return w
 }
 
 func (w *PlaygroundWrapper) BackendLimit(r, v string) *PlaygroundWrapper {
-	if w.Spec.BackendConfig == nil {
+	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.Backend("vllm")
 	}
-	if w.Spec.BackendConfig.Resources == nil {
-		w.Spec.BackendConfig.Resources = &inferenceapi.ResourceRequirements{}
+	if w.Spec.BackendRuntimeConfig.Resources == nil {
+		w.Spec.BackendRuntimeConfig.Resources = &inferenceapi.ResourceRequirements{}
 	}
-	if w.Spec.BackendConfig.Resources.Limits == nil {
-		w.Spec.BackendConfig.Resources.Limits = v1.ResourceList{}
+	if w.Spec.BackendRuntimeConfig.Resources.Limits == nil {
+		w.Spec.BackendRuntimeConfig.Resources.Limits = v1.ResourceList{}
 	}
-	w.Spec.BackendConfig.Resources.Limits[v1.ResourceName(r)] = resource.MustParse(v)
+	w.Spec.BackendRuntimeConfig.Resources.Limits[v1.ResourceName(r)] = resource.MustParse(v)
 	return w
 }

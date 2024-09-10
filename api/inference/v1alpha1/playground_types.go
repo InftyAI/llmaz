@@ -38,10 +38,10 @@ type PlaygroundSpec struct {
 	// ModelClaims and modelClaim are exclusive configured.
 	// +optional
 	ModelClaims *coreapi.ModelClaims `json:"modelClaims,omitempty"`
-	// BackendConfig represents the inference backend configuration
-	// under the hood, e.g. vLLM, which is the default backend.
+	// BackendRuntimeConfig represents the inference backendRuntime configuration
+	// under the hood, e.g. vLLM, which is the default backendRuntime.
 	// +optional
-	BackendConfig *BackendConfig `json:"backendConfig,omitempty"`
+	BackendRuntimeConfig *BackendRuntimeConfig `json:"backendRuntimeConfig,omitempty"`
 }
 
 const (

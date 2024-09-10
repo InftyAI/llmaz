@@ -28,7 +28,7 @@ const (
 	DefaultBackend BackendName = VLLM
 )
 
-type BackendConfig struct {
+type BackendRuntimeConfig struct {
 	// Name represents the inference backend under the hood, e.g. vLLM.
 	// +kubebuilder:validation:Enum={vllm,sglang,llamacpp}
 	// +kubebuilder:default=vllm

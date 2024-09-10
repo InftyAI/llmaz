@@ -39,10 +39,10 @@ spec:
           spec:
             description: PlaygroundSpec defines the desired state of Playground
             properties:
-              backendConfig:
+              backendRuntimeConfig:
                 description: |-
-                  BackendConfig represents the inference backend configuration
-                  under the hood, e.g. vLLM, which is the default backend.
+                  BackendRuntimeConfig represents the inference backendRuntime configuration
+                  under the hood, e.g. vLLM, which is the default backendRuntime.
                 properties:
                   args:
                     description: |-

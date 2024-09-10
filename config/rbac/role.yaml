@@ -34,7 +34,7 @@ rules:
 - apiGroups:
   - inference.llmaz.io
   resources:
-  - backendruntimes
+  - backends
   verbs:
   - create
   - delete
@@ -46,13 +46,13 @@ rules:
 - apiGroups:
   - inference.llmaz.io
   resources:
-  - backendruntimes/finalizers
+  - backends/finalizers
   verbs:
   - update
 - apiGroups:
   - inference.llmaz.io
   resources:
-  - backendruntimes/status
+  - backends/status
   verbs:
   - get
   - patch

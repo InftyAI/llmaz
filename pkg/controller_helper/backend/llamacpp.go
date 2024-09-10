@@ -17,7 +17,6 @@ limitations under the License.
 package backend
 
 import (
-	"fmt"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -79,7 +78,7 @@ func (l *LLAMACPP) Args(models []*coreapi.OpenModel, involvedRole coreapi.ModelR
 	}
 
 	return []string{
-		fmt.Sprintf("-m %s", targetModelSource.ModelPath()),
+		"-m", targetModelSource.ModelPath(),
 		"--host", "0.0.0.0",
 		"--port", strconv.Itoa(DEFAULT_BACKEND_PORT),
 	}

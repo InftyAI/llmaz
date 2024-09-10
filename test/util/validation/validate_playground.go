@@ -84,8 +84,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		}
 
 		backendName := inferenceapi.DefaultBackend
-		if playground.Spec.BackendConfig != nil && playground.Spec.BackendConfig.Name != nil {
-			backendName = *playground.Spec.BackendConfig.Name
+		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
+			backendName = *playground.Spec.BackendRuntimeConfig.Name
 		}
 		bkd := backend.SwitchBackend(backendName)
 
@@ -95,31 +95,31 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		if diff := cmp.Diff(bkd.DefaultCommand(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
 			return errors.New("command not right")
 		}
-		if playground.Spec.BackendConfig != nil {
-			if playground.Spec.BackendConfig.Version != nil {
-				if bkd.Image(*playground.Spec.BackendConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
-					return fmt.Errorf("expected container image %s, got %s", bkd.Image(*playground.Spec.BackendConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
+		if playground.Spec.BackendRuntimeConfig != nil {
+			if playground.Spec.BackendRuntimeConfig.Version != nil {
+				if bkd.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
+					return fmt.Errorf("expected container image %s, got %s", bkd.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
 			} else {
 				if bkd.Image(bkd.DefaultVersion()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 					return fmt.Errorf("expected container image %s, got %s", bkd.Image(bkd.DefaultVersion()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
 			}
-			for _, arg := range playground.Spec.BackendConfig.Args {
+			for _, arg := range playground.Spec.BackendRuntimeConfig.Args {
 				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
 					return fmt.Errorf("didn't contain arg: %s", arg)
 				}
 			}
-			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendConfig.Envs); diff != "" {
+			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
 				return fmt.Errorf("unexpected envs")
 			}
-			if playground.Spec.BackendConfig.Resources != nil {
-				for k, v := range playground.Spec.BackendConfig.Resources.Limits {
+			if playground.Spec.BackendRuntimeConfig.Resources != nil {
+				for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Limits {
 					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
 						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
 					}
 				}
-				for k, v := range playground.Spec.BackendConfig.Resources.Requests {
+				for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Requests {
 					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
 						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 					}
