@@ -185,7 +185,7 @@ image-build:
 		--build-arg CGO_ENABLED=$(CGO_ENABLED) \
 		$(IMAGE_BUILD_EXTRA_OPTS) ./
 image-load: IMAGE_BUILD_EXTRA_OPTS=--load
-image-load: image-load
+image-load: image-build
 image-push: IMAGE_BUILD_EXTRA_OPTS=--push
 image-push: image-build
 
@@ -285,3 +285,19 @@ artifacts: kustomize
 	mkdir -p artifacts
 	$(KUSTOMIZE) build config/default -o artifacts/manifests.yaml
 	@$(call clean-manifests)
+
+HELMIFY ?= $(LOCALBIN)/helmify
+
+.PHONY: helmify
+helmify: $(HELMIFY) ## Download helmify locally if necessary.
+$(HELMIFY): $(LOCALBIN)
+	test -s $(LOCALBIN)/helmify || GOBIN=$(LOCALBIN) go install github.com/arttor/helmify/cmd/helmify@latest
+
+.PHONY: helm
+helm: manifests kustomize helmify
+	$(KUBECTL) create namespace llmaz-system --dry-run=client -o yaml | $(KUBECTL) apply -f -
+	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir
+
+.PHONY: helm-install
+helm-install: helm
+	helm upgrade --install llmaz ./chart --namespace llmaz-system -f ./chart/values.global.yaml
