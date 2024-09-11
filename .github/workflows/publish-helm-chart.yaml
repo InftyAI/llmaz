@@ -5,7 +5,7 @@ on:
 
 jobs:
   publish:
-    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-helm-chart@main
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-helm-chart.yaml@main
     secrets:
       AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
     with:
