@@ -11,6 +11,8 @@ spec:
     kind: Playground
     listKind: PlaygroundList
     plural: playgrounds
+    shortNames:
+    - pl
     singular: playground
   scope: Namespaced
   versions:
@@ -179,10 +181,6 @@ spec:
                     default: vllm
                     description: Name represents the inference backend under the hood,
                       e.g. vLLM.
-                    enum:
-                    - vllm
-                    - sglang
-                    - llamacpp
                     type: string
                   resources:
                     description: |-

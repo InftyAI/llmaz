@@ -61,6 +61,7 @@ type PlaygroundStatus struct {
 //+genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+//+kubebuilder:resource:shortName={pl}
 
 // Playground is the Schema for the playgrounds API
 type Playground struct {

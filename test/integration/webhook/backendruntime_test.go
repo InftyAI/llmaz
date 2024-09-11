@@ -20,44 +20,61 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 
-	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
 )
 
 var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 	type testValidatingCase struct {
-		backendRuntime func() *inferenceapi.BackendRuntime
-		failed         bool
+		creationFunc func() error
+		failed       bool
 	}
 	ginkgo.DescribeTable("test validating",
 		func(tc *testValidatingCase) {
 			if tc.failed {
-				gomega.Expect(k8sClient.Create(ctx, tc.backendRuntime())).To(gomega.HaveOccurred())
+				gomega.Expect(tc.creationFunc()).To(gomega.HaveOccurred())
 			} else {
-				gomega.Expect(k8sClient.Create(ctx, tc.backendRuntime())).To(gomega.Succeed())
+				gomega.Expect(tc.creationFunc()).To(gomega.Succeed())
 			}
 		},
 		ginkgo.Entry("normal BackendRuntime creation", &testValidatingCase{
-			backendRuntime: func() *inferenceapi.BackendRuntime {
-				return util.MockASampleBackendRuntime().Obj()
+			creationFunc: func() error {
+				runtime := util.MockASampleBackendRuntime().Obj()
+				return k8sClient.Create(ctx, runtime)
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("BackendRuntime creation with no image", &testValidatingCase{
-			backendRuntime: func() *inferenceapi.BackendRuntime {
-				return util.MockASampleBackendRuntime().Image("").Obj()
+			creationFunc: func() error {
+				runtime := util.MockASampleBackendRuntime().Image("").Obj()
+				return k8sClient.Create(ctx, runtime)
 			},
 			failed: true,
 		}),
 		ginkgo.Entry("BackendRuntime creation with limits less than requests", &testValidatingCase{
-			backendRuntime: func() *inferenceapi.BackendRuntime {
-				return util.MockASampleBackendRuntime().Limit("cpu", "1").Obj()
+			creationFunc: func() error {
+				runtime := util.MockASampleBackendRuntime().Limit("cpu", "1").Obj()
+				return k8sClient.Create(ctx, runtime)
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("BackendRuntime creation with unsupported inferenceOption", &testValidatingCase{
-			backendRuntime: func() *inferenceapi.BackendRuntime {
-				return util.MockASampleBackendRuntime().Arg("unknown", []string{"foo", "bar"}).Obj()
+		ginkgo.Entry("BackendRuntime creation with unsupported inferenceMode", &testValidatingCase{
+			creationFunc: func() error {
+				runtime := util.MockASampleBackendRuntime().Arg("unknown", []string{"foo", "bar"}).Obj()
+				return k8sClient.Create(ctx, runtime)
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("BackendRuntime creation with duplicated inferenceMode", &testValidatingCase{
+			creationFunc: func() error {
+				runtime := util.MockASampleBackendRuntime().Obj()
+				if err := k8sClient.Create(ctx, runtime); err != nil {
+					return err
+				}
+				anotherRuntime := util.MockASampleBackendRuntime().Name("another-vllm").Obj()
+				if err := k8sClient.Create(ctx, anotherRuntime); err != nil {
+					return err
+				}
+				return nil
 			},
 			failed: true,
 		}),

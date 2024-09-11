@@ -10,13 +10,7 @@ spec:
         role: main
       - name: opt-125m  # the draft model
         role: draft
-  backendConfig:
-    args:
-      - --use-v2-block-manager
-      - --num_speculative_tokens
-      - "5"
-      - -tp
-      - "1"
+  backendRuntimeConfig:
     resources:
       limits:
         cpu: 8

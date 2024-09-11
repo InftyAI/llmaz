@@ -91,7 +91,7 @@ func (w *PlaygroundWrapper) ModelClaims(modelNames []string, roles []string, fla
 	return w
 }
 
-func (w *PlaygroundWrapper) Backend(name string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntime(name string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
 		w.Spec.BackendRuntimeConfig = &inferenceapi.BackendRuntimeConfig{}
 	}
@@ -100,25 +100,25 @@ func (w *PlaygroundWrapper) Backend(name string) *PlaygroundWrapper {
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendVersion(version string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeVersion(version string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
-		w = w.Backend("vllm")
+		w = w.BackendRuntime("vllm")
 	}
 	w.Spec.BackendRuntimeConfig.Version = &version
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendArgs(args []string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeArgs(args []string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
-		w = w.Backend("vllm")
+		w = w.BackendRuntime("vllm")
 	}
 	w.Spec.BackendRuntimeConfig.Args = args
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendEnv(k, v string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeEnv(k, v string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
-		w = w.Backend("vllm")
+		w = w.BackendRuntime("vllm")
 	}
 	w.Spec.BackendRuntimeConfig.Envs = append(w.Spec.BackendRuntimeConfig.Envs, v1.EnvVar{
 		Name:  k,
@@ -127,9 +127,9 @@ func (w *PlaygroundWrapper) BackendEnv(k, v string) *PlaygroundWrapper {
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendRequest(r, v string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeRequest(r, v string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
-		w = w.Backend("vllm")
+		w = w.BackendRuntime("vllm")
 	}
 	if w.Spec.BackendRuntimeConfig.Resources == nil {
 		w.Spec.BackendRuntimeConfig.Resources = &inferenceapi.ResourceRequirements{}
@@ -141,9 +141,9 @@ func (w *PlaygroundWrapper) BackendRequest(r, v string) *PlaygroundWrapper {
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendLimit(r, v string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeLimit(r, v string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
-		w = w.Backend("vllm")
+		w = w.BackendRuntime("vllm")
 	}
 	if w.Spec.BackendRuntimeConfig.Resources == nil {
 		w.Spec.BackendRuntimeConfig.Resources = &inferenceapi.ResourceRequirements{}

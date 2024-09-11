@@ -42,8 +42,8 @@ func MockASampleService(ns string) *inferenceapi.Service {
 
 func MockASampleBackendRuntime() *wrapper.BackendRuntimeWrapper {
 	return wrapper.MakeBackendRuntime("vllm").
-		Image("vllm").Version("v0.6.0").
+		Image("vllm/vllm-openai").Version("v0.6.0").
 		Command([]string{"python3", "-m", "vllm.entrypoints.openai.api_server"}).
-		Arg("default", []string{"--model", "{{.ModelPath}}", "--served-model-name", "{{.ModelName}}", "--host", "0.0.0.0", "--port", "8080"}).
+		Arg("Default", []string{"--model", "{{.ModelPath}}", "--served-model-name", "{{.ModelName}}", "--host", "0.0.0.0", "--port", "8080"}).
 		Request("cpu", "4").Limit("cpu", "4")
 }

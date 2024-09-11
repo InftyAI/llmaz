@@ -32,20 +32,15 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
-	"github.com/inftyai/llmaz/pkg/controller_helper/backend"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/format"
 )
 
-func validateModelClaim(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground, service inferenceapi.Service) error {
-	model := coreapi.OpenModel{}
-
+func validateModelClaim(models []*coreapi.OpenModel, playground *inferenceapi.Playground, service inferenceapi.Service) error {
+	// Make sure the first model is the main model, or the test may fail.
 	if playground.Spec.ModelClaim != nil {
-		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName), Namespace: playground.Namespace}, &model); err != nil {
-			return errors.New("failed to get model")
-		}
-
 		if playground.Spec.ModelClaim.ModelName != service.Spec.ModelClaims.Models[0].Name {
 			return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.ModelClaims.Models[0].Name)
 		}
@@ -53,16 +48,16 @@ func validateModelClaim(ctx context.Context, k8sClient client.Client, playground
 			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors)
 		}
 	} else if playground.Spec.ModelClaims != nil {
-		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaims.Models[0].Name), Namespace: playground.Namespace}, &model); err != nil {
-			return errors.New("failed to get model")
-		}
 		if diff := cmp.Diff(*playground.Spec.ModelClaims, service.Spec.ModelClaims); diff != "" {
 			return fmt.Errorf("expected modelClaims, want %v, got %v", *playground.Spec.ModelClaims, service.Spec.ModelClaims)
 		}
+		if diff := cmp.Diff(playground.Spec.ModelClaims.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors); diff != "" {
+			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors)
+		}
 	}
 
-	if playground.Labels[coreapi.ModelNameLabelKey] != model.Name {
-		return fmt.Errorf("unexpected Playground label value, want %v, got %v", model.Name, playground.Labels[coreapi.ModelNameLabelKey])
+	if playground.Labels[coreapi.ModelNameLabelKey] != models[0].Name {
+		return fmt.Errorf("unexpected Playground label value, want %v, got %v", models[0].Name, playground.Labels[coreapi.ModelNameLabelKey])
 	}
 
 	return nil
@@ -75,7 +70,12 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			return errors.New("failed to get inferenceService")
 		}
 
-		if err := validateModelClaim(ctx, k8sClient, playground, service); err != nil {
+		models, err := helper.FetchModelsByPlayground(ctx, k8sClient, playground)
+		if err != nil {
+			return err
+		}
+
+		if err := validateModelClaim(models, playground, service); err != nil {
 			return err
 		}
 
@@ -83,26 +83,31 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			return fmt.Errorf("expected replicas: %d, got %d", *playground.Spec.Replicas, *service.Spec.WorkloadTemplate.Replicas)
 		}
 
-		backendName := inferenceapi.DefaultBackend
+		backendRuntimeName := inferenceapi.DefaultBackend
 		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
-			backendName = *playground.Spec.BackendRuntimeConfig.Name
+			backendRuntimeName = *playground.Spec.BackendRuntimeConfig.Name
 		}
-		bkd := backend.SwitchBackend(backendName)
+		backendRuntime := inferenceapi.BackendRuntime{}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(backendRuntimeName)}, &backendRuntime); err != nil {
+			return errors.New("failed to get backendRuntime")
+		}
+
+		parser := helper.NewBackendRuntimeParser(&backendRuntime)
 
 		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
 		}
-		if diff := cmp.Diff(bkd.DefaultCommand(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+		if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
 			return errors.New("command not right")
 		}
 		if playground.Spec.BackendRuntimeConfig != nil {
 			if playground.Spec.BackendRuntimeConfig.Version != nil {
-				if bkd.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
-					return fmt.Errorf("expected container image %s, got %s", bkd.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
+				if parser.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
+					return fmt.Errorf("expected container image %s, got %s", parser.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
 			} else {
-				if bkd.Image(bkd.DefaultVersion()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
-					return fmt.Errorf("expected container image %s, got %s", bkd.Image(bkd.DefaultVersion()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
+				if parser.Image(parser.Version()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
+					return fmt.Errorf("expected container image %s, got %s", parser.Image(parser.Version()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
 			}
 			for _, arg := range playground.Spec.BackendRuntimeConfig.Args {
@@ -113,28 +118,28 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
 				return fmt.Errorf("unexpected envs")
 			}
-			if playground.Spec.BackendRuntimeConfig.Resources != nil {
-				for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Limits {
-					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
-						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
-					}
+		}
+		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
+			for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Limits {
+				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+					return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
 				}
-				for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Requests {
-					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
-						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
-					}
+			}
+			for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Requests {
+				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+					return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 				}
-			} else {
-				// Validate default resources requirements.
-				for k, v := range bkd.DefaultResources().Limits {
-					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
-						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
-					}
+			}
+		} else {
+			// Validate default resources requirements.
+			for k, v := range parser.Resources().Limits {
+				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+					return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
 				}
-				for k, v := range bkd.DefaultResources().Requests {
-					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
-						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
-					}
+			}
+			for k, v := range parser.Resources().Requests {
+				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+					return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 				}
 			}
 		}

@@ -6,7 +6,7 @@ spec:
   replicas: 1
   modelClaim:
     modelName: qwen2-0--5b-gguf
-  backendConfig:
+  backendRuntimeConfig:
     name: llamacpp
     args:
       - -fa # use flash attention

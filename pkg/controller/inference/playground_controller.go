@@ -44,7 +44,7 @@ import (
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	coreclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	inferenceclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
-	"github.com/inftyai/llmaz/pkg/controller_helper/backend"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 	"github.com/inftyai/llmaz/pkg/util"
 )
@@ -94,32 +94,27 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
-	var serviceApplyConfiguration *inferenceclientgo.ServiceApplyConfiguration
-
-	models := []*coreapi.OpenModel{}
-	if playground.Spec.ModelClaim != nil {
-		model := &coreapi.OpenModel{}
-		if err := r.Get(ctx, types.NamespacedName{Name: string(playground.Spec.ModelClaim.ModelName)}, model); err != nil {
-			if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
-				return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
-			}
-			return ctrl.Result{}, err
+	models, err := helper.FetchModelsByPlayground(ctx, r.Client, playground)
+	if err != nil {
+		if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
+			return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
 		}
-		models = append(models, model)
-	} else if playground.Spec.ModelClaims != nil {
-		for _, mr := range playground.Spec.ModelClaims.Models {
-			model := &coreapi.OpenModel{}
-			if err := r.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
-				if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
-					return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
-				}
-				return ctrl.Result{}, err
-			}
-			models = append(models, model)
-		}
+		return ctrl.Result{}, err
 	}
 
-	serviceApplyConfiguration = buildServiceApplyConfiguration(models, playground)
+	backendRuntimeName := inferenceapi.VLLM
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
+		backendRuntimeName = *playground.Spec.BackendRuntimeConfig.Name
+	}
+	backendRuntime := &inferenceapi.BackendRuntime{}
+	if err := r.Get(ctx, types.NamespacedName{Name: string(backendRuntimeName)}, backendRuntime); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	serviceApplyConfiguration, err := buildServiceApplyConfiguration(models, playground, backendRuntime)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
 	if err := setControllerReferenceForService(playground, serviceApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
@@ -185,19 +180,19 @@ func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inferenceapi.Playground) *inferenceclientgo.ServiceApplyConfiguration {
+func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (*inferenceclientgo.ServiceApplyConfiguration, error) {
 	// Build metadata
 	serviceApplyConfiguration := inferenceclientgo.Service(playground.Name, playground.Namespace)
 
 	// Build spec.
 	spec := inferenceclientgo.ServiceSpec()
 
-	claim := &coreclientgo.ModelClaimsApplyConfiguration{}
+	var claim *coreclientgo.ModelClaimsApplyConfiguration
 	if playground.Spec.ModelClaim != nil {
 		claim = coreclientgo.ModelClaims().
 			WithModels(coreclientgo.ModelRepresentative().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
 			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...)
-	} else if playground.Spec.ModelClaims != nil {
+	} else {
 		mrs := []*coreclientgo.ModelRepresentativeApplyConfiguration{}
 		for _, model := range playground.Spec.ModelClaims.Models {
 			role := coreapi.MainRole
@@ -214,10 +209,15 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	}
 
 	spec.WithModelClaims(claim)
-	spec.WithWorkloadTemplate(buildWorkloadTemplate(models, playground))
+	template, err := buildWorkloadTemplate(models, playground, backendRuntime)
+	if err != nil {
+		return nil, err
+	}
+
+	spec.WithWorkloadTemplate(template)
 	serviceApplyConfiguration.WithSpec(spec)
 
-	return serviceApplyConfiguration
+	return serviceApplyConfiguration, nil
 
 	// TODO: handle MultiModelsClaims in the future.
 }
@@ -226,7 +226,7 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 // to cover both single-host and multi-host cases. There're some shortages for lws like can not force rolling
 // update when one replica failed, we'll fix this in the kubernetes upstream.
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
-func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground) lws.LeaderWorkerSetSpec {
+func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (lws.LeaderWorkerSetSpec, error) {
 	// TODO: this should be leaderWorkerSetTemplateSpec, we should support in the lws upstream.
 	workload := lws.LeaderWorkerSetSpec{
 		// Use the default policy defined in lws.
@@ -240,52 +240,36 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	// TODO: handle multi-host scenarios, e.g. nvidia.com/gpu: 32, means we'll split into 4 hosts.
 	// Do we need another configuration for playground for multi-host use case? I guess no currently.
-	workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground)
+	template, err := buildWorkerTemplate(models, playground, backendRuntime)
+	if err != nil {
+		return lws.LeaderWorkerSetSpec{}, err
+	}
+	workload.LeaderWorkerTemplate.WorkerTemplate = template
 
-	return workload
+	return workload, nil
 }
 
-func involveRole(playground *inferenceapi.Playground) coreapi.ModelRole {
-	if playground.Spec.ModelClaim != nil {
-		return coreapi.MainRole
-	} else if playground.Spec.ModelClaims != nil {
-		for _, mr := range playground.Spec.ModelClaims.Models {
-			if *mr.Role != coreapi.MainRole {
-				return *mr.Role
-			}
-		}
+func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (corev1.PodTemplateSpec, error) {
+	parser := helper.NewBackendRuntimeParser(backendRuntime)
+
+	args, err := parser.Args(helper.InferenceMode(playground), models)
+	if err != nil {
+		return corev1.PodTemplateSpec{}, err
 	}
+	envs := parser.Envs()
 
-	return coreapi.MainRole
-}
-
-func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground) corev1.PodTemplateSpec {
-	backendName := inferenceapi.DefaultBackend
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
-		backendName = *playground.Spec.BackendRuntimeConfig.Name
-	}
-	bkd := backend.SwitchBackend(backendName)
-
-	version := bkd.DefaultVersion()
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
-		version = *playground.Spec.BackendRuntimeConfig.Version
-	}
-
-	args := bkd.Args(models, involveRole(playground))
-
-	var envs []corev1.EnvVar
 	if playground.Spec.BackendRuntimeConfig != nil {
 		args = append(args, playground.Spec.BackendRuntimeConfig.Args...)
-		envs = playground.Spec.BackendRuntimeConfig.Envs
+		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
 	}
 
 	resources := corev1.ResourceRequirements{
-		Limits:   bkd.DefaultResources().Limits,
-		Requests: bkd.DefaultResources().Requests,
+		Requests: parser.Resources().Requests,
+		Limits:   parser.Resources().Limits,
 	}
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
-		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, resources.Limits)
-		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, resources.Requests)
+		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, parser.Resources().Limits)
+		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, parser.Resources().Requests)
 
 		resources = corev1.ResourceRequirements{
 			Limits:   limits,
@@ -302,6 +286,11 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 		}
 	}
 
+	version := parser.Version()
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
+		version = *playground.Spec.BackendRuntimeConfig.Version
+	}
+
 	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
 			// TODO: should we support image pull secret here?
@@ -309,9 +298,9 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 			Containers: []corev1.Container{
 				{
 					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
-					Image:     bkd.Image(version),
+					Image:     parser.Image(version),
 					Resources: resources,
-					Command:   bkd.DefaultCommand(),
+					Command:   parser.Commands(),
 					Args:      args,
 					Env:       envs,
 					Ports: []corev1.ContainerPort{
@@ -326,7 +315,7 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 		},
 	}
 
-	return template
+	return template, nil
 }
 
 func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceWithSameNameExists bool) (changed bool) {

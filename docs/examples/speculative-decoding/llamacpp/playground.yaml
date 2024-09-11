@@ -13,7 +13,7 @@ spec:
         role: main
       - name: llama2-7b-q2-k-gguf  # the draft model
         role: draft
-  backendConfig:
+  backendRuntimeConfig:
     name: llamacpp
     args:
       - -fa # use flash attention

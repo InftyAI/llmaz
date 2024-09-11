@@ -11,6 +11,8 @@ spec:
     kind: OpenModel
     listKind: OpenModelList
     plural: openmodels
+    shortNames:
+    - om
     singular: openmodel
   scope: Cluster
   versions:
