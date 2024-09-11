@@ -108,25 +108,30 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 	backendRuntime := &inferenceapi.BackendRuntime{}
 	if err := r.Get(ctx, types.NamespacedName{Name: string(backendRuntimeName)}, backendRuntime); err != nil {
+		logger.Error(err, "failed to get backendRuntime", "BackendRuntime", backendRuntimeName)
 		return ctrl.Result{}, err
 	}
 
 	serviceApplyConfiguration, err := buildServiceApplyConfiguration(models, playground, backendRuntime)
 	if err != nil {
+		logger.Error(err, "failed to get build inference Service")
 		return ctrl.Result{}, err
 	}
 
 	if err := setControllerReferenceForService(playground, serviceApplyConfiguration, r.Scheme); err != nil {
+		logger.Error(err, "failed to set OwnerReference for Service", "Service", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name))
 		return ctrl.Result{}, err
 	}
 
 	if err := util.Patch(ctx, r.Client, serviceApplyConfiguration); err != nil {
+		logger.Error(err, "failed to patch Service", "Service", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name))
 		return ctrl.Result{}, err
 	}
 
 	// Handle status.
 	setPlaygroundCondition(playground, service)
 	if err := r.Client.Status().Update(ctx, playground); err != nil {
+		logger.Error(err, "failed to update Playground status", "Playground", klog.KObj(playground))
 		return ctrl.Result{}, err
 	}
 
