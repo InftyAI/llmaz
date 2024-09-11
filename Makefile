@@ -304,4 +304,12 @@ helm-install: helm
 
 .PHONY: helm-package
 helm-package:
+	# Make sure will alwasy start with a new line.
+	printf "\n" >> ./chart/values.yaml
+	cat ./chart/values.global.yaml >> ./chart/values.yaml
+
 	helm package ./chart
+	helm repo index --url https://inftyai.github.io/llmaz --merge index.yaml .
+
+	# To recover values.yaml
+	make helm
