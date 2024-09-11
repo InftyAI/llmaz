@@ -32,4 +32,3 @@ __pycache__
 *.pyc
 .pytest_cache
 *.tgz
-index.yaml
