@@ -301,3 +301,7 @@ helm: manifests kustomize helmify
 .PHONY: helm-install
 helm-install: helm
 	helm upgrade --install llmaz ./chart --namespace llmaz-system -f ./chart/values.global.yaml
+
+.PHONY: helm-package
+helm-package:
+	helm package ./chart

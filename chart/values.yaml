@@ -31,8 +31,8 @@ controllerManager:
         drop:
         - ALL
     image:
-      repository: inftyai/llmaz-test
-      tag: 0912-02
+      repository: inftyai/llmaz
+      tag: v0.0.7
     resources:
       limits:
         cpu: 500m
