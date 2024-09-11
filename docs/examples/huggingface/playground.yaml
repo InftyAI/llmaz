@@ -1,8 +1,0 @@
-apiVersion: inference.llmaz.io/v1alpha1
-kind: Playground
-metadata:
-  name: opt-125m
-spec:
-  replicas: 1
-  modelClaim:
-    modelName: opt-125m

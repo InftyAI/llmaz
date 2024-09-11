@@ -1,8 +1,0 @@
-apiVersion: inference.llmaz.io/v1alpha1
-kind: Playground
-metadata:
-  name: qwen2-7b
-spec:
-  replicas: 1
-  modelClaim:
-    modelName: qwen2-7b

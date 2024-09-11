@@ -1,4 +1,0 @@
-fullnameOverride: "llmaz"
-
-backendRuntime:
-  enabled: true
