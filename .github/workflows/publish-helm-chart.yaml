@@ -1,0 +1,12 @@
+name: Publish Helm Chart
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-helm-chart.yaml@main
+    secrets:
+      AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
+    with:
+        repo_url: "https://inftyai.github.io/llmaz"
