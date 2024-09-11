@@ -181,7 +181,7 @@ type ModelStatus struct {
 //+genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:resource:scope=Cluster
+//+kubebuilder:resource:shortName=om,scope=Cluster
 
 // OpenModel is the Schema for the open models API
 type OpenModel struct {

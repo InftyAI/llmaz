@@ -75,21 +75,21 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("sglang backend supporeted", &testValidatingCase{
+		ginkgo.Entry("sglang backendruntime supporeted", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").Backend(string(inferenceapi.SGLANG)).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime(string(inferenceapi.SGLANG)).Obj()
 			},
 			failed: false,
 		}),
-		ginkgo.Entry("llamacpp backend supporeted", &testValidatingCase{
+		ginkgo.Entry("llamacpp backendruntime supporeted", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").Backend(string(inferenceapi.LLAMACPP)).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime(string(inferenceapi.LLAMACPP)).Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("speculativeDecoding with SGLang is not allowed", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-405b", "llama3-8b"}, []string{"main", "draft"}).Backend(string(inferenceapi.SGLANG)).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-405b", "llama3-8b"}, []string{"main", "draft"}).BackendRuntime(string(inferenceapi.SGLANG)).Obj()
 			},
 			failed: true,
 		}),
@@ -99,11 +99,11 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("unknown backend configured", &testValidatingCase{
+		ginkgo.Entry("unknown backendRuntime configured", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).Backend("unknown").Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime("unknown").Obj()
 			},
-			failed: true,
+			failed: false,
 		}),
 		ginkgo.Entry("no main model", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {

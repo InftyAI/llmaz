@@ -42,6 +42,7 @@ import (
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/controller"
 	inferencecontroller "github.com/inftyai/llmaz/pkg/controller/inference"
+	"github.com/inftyai/llmaz/test/util"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
@@ -115,6 +116,8 @@ var _ = BeforeSuite(func() {
 	Expect(playgroundController.SetupWithManager(mgr)).NotTo(HaveOccurred())
 	serviceController := inferencecontroller.NewServiceReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("service"))
 	Expect(serviceController.SetupWithManager(mgr)).NotTo(HaveOccurred())
+
+	Expect(util.Setup(ctx, k8sClient, "../../../config/backends")).To(Succeed())
 
 	go func() {
 		defer GinkgoRecover()

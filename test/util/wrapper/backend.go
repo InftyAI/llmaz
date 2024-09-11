@@ -42,6 +42,11 @@ func (w *BackendRuntimeWrapper) Obj() *inferenceapi.BackendRuntime {
 	return &w.BackendRuntime
 }
 
+func (w *BackendRuntimeWrapper) Name(name string) *BackendRuntimeWrapper {
+	w.ObjectMeta.Name = name
+	return w
+}
+
 func (w *BackendRuntimeWrapper) Image(image string) *BackendRuntimeWrapper {
 	w.Spec.Image = image
 	return w

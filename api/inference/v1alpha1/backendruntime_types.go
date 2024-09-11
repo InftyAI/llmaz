@@ -24,8 +24,8 @@ import (
 type InferenceMode string
 
 const (
-	DefaultInferenceMode             InferenceMode = "default"
-	SpeculativeDecodingInferenceMode InferenceMode = "speculative-decoding"
+	DefaultInferenceMode             InferenceMode = "Default"
+	SpeculativeDecodingInferenceMode InferenceMode = "SpeculativeDecoding"
 )
 
 type BackendRuntimeArg struct {
@@ -47,6 +47,7 @@ type BackendRuntimeSpec struct {
 	// They can be appended or overwritten by the Playground args.
 	// The key is the inference option, like default one or advanced
 	// speculativeDecoding, the values are the corresponding args.
+	// Flag around with {{ .XXX }} is a flag waiting for render.
 	Args []BackendRuntimeArg `json:"args,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional
@@ -65,7 +66,7 @@ type BackendRuntimeStatus struct {
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
-//+kubebuilder:resource:scope=Cluster
+//+kubebuilder:resource:shortName=br,scope=Cluster
 
 // BackendRuntime is the Schema for the backendRuntime API
 type BackendRuntime struct {

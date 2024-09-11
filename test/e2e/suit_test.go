@@ -83,6 +83,8 @@ var _ = BeforeSuite(func() {
 
 	readyForTesting(k8sClient)
 	Expect(os.Setenv("TEST_TYPE", "E2E")).Should(Succeed())
+
+	Expect(util.Setup(ctx, k8sClient, "../config/backends")).To(Succeed())
 })
 
 var _ = AfterSuite(func() {

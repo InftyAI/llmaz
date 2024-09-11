@@ -46,3 +46,13 @@ func MergeKVs(toMerge map[string]string, toBeMerged map[string]string) map[strin
 	}
 	return toMerge
 }
+
+// TODO: add unit tests.
+func In(strings []string, s string) bool {
+	for _, str := range strings {
+		if str == s {
+			return true
+		}
+	}
+	return false
+}

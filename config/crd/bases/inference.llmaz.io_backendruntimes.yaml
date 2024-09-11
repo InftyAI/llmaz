@@ -11,6 +11,8 @@ spec:
     kind: BackendRuntime
     listKind: BackendRuntimeList
     plural: backendruntimes
+    shortNames:
+    - br
     singular: backendruntime
   scope: Cluster
   versions:
@@ -45,6 +47,7 @@ spec:
                   They can be appended or overwritten by the Playground args.
                   The key is the inference option, like default one or advanced
                   speculativeDecoding, the values are the corresponding args.
+                  Flag around with {{ .XXX }} is a flag waiting for render.
                 items:
                   properties:
                     flags:

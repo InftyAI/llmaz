@@ -157,7 +157,8 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with sglang", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					Backend("sglang").BackendVersion("main").BackendArgs([]string{"--foo", "bar"}).BackendEnv("FOO", "BAR").BackendRequest("cpu", "1").BackendLimit("cpu", "10").
+					BackendRuntime("sglang").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
 			updates: []*update{
@@ -210,7 +211,8 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with llamacpp", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					Backend("llamacpp").BackendVersion("main").BackendArgs([]string{"--foo", "bar"}).BackendEnv("FOO", "BAR").BackendRequest("cpu", "1").BackendLimit("cpu", "10").
+					BackendRuntime("llamacpp").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
 			updates: []*update{
@@ -324,10 +326,10 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
-		ginkgo.Entry("Playground with backendConfig's resource requests greater than limits", &testValidatingCase{
+		ginkgo.Entry("Playground with backendRuntimeConfig's resource requests greater than limits", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRequest("cpu", "10").
+					BackendRuntimeRequest("cpu", "10").
 					Obj()
 			},
 			updates: []*update{

@@ -6,5 +6,5 @@ spec:
   replicas: 1
   modelClaim:
     modelName: qwen2-05b
-  backendConfig:
+  backendRuntimeConfig:
     name: sglang

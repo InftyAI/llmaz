@@ -27,6 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/pkg/util"
 )
 
 type BackendRuntimeWebhook struct{}
@@ -70,6 +71,7 @@ func (w *BackendRuntimeWebhook) ValidateDelete(ctx context.Context, obj runtime.
 	return nil, nil
 }
 
+// TODO: the mode name should not be duplicated.
 func (w *BackendRuntimeWebhook) generateValidate(obj runtime.Object) field.ErrorList {
 	backend := obj.(*inferenceapi.BackendRuntime)
 	specPath := field.NewPath("spec")
@@ -85,10 +87,18 @@ func (w *BackendRuntimeWebhook) generateValidate(obj runtime.Object) field.Error
 		}
 	}
 
+	modes := []string{}
+
 	for _, arg := range backend.Spec.Args {
+		if util.In(modes, string(arg.Mode)) {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("args", "mode"), fmt.Sprintf("duplicated mode %s", arg.Mode)))
+		}
+		// TODO: this may change in the future if user wants to customized there flags for easy usage.
+		// See https://github.com/InftyAI/llmaz/issues/140
 		if !(arg.Mode == inferenceapi.DefaultInferenceMode || arg.Mode == inferenceapi.SpeculativeDecodingInferenceMode) {
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("args", "mode"), fmt.Sprintf("inferenceMode of %s is forbidden", arg.Mode)))
 		}
+		modes = append(modes, string(arg.Mode))
 	}
 	return allErrs
 }

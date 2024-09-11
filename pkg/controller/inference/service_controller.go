@@ -43,6 +43,7 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
 	"github.com/inftyai/llmaz/pkg/util"
 )
@@ -80,20 +81,9 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	logger.V(10).Info("reconcile Service", "Playground", klog.KObj(service))
 
-	models := []*coreapi.OpenModel{}
-	for _, mr := range service.Spec.ModelClaims.Models {
-		model := &coreapi.OpenModel{}
-		if err := r.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
-			return ctrl.Result{}, err
-		}
-		// Make sure the main model is always the 0-index model.
-		// We only have one main model right now, if this changes,
-		// the logic may also change here.
-		if *mr.Role == coreapi.MainRole {
-			models = append([]*coreapi.OpenModel{model}, models...)
-		} else {
-			models = append(models, model)
-		}
+	models, err := helper.FetchModelsByService(ctx, r.Client, service)
+	if err != nil {
+		return ctrl.Result{}, err
 	}
 
 	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
