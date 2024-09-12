@@ -131,10 +131,14 @@ const (
 	DraftRole ModelRole = "draft"
 )
 
-type ModelRepresentative struct {
+// ModelRefer refers to a created Model with it's role.
+type ModelRefer struct {
 	// Name represents the model name.
 	Name ModelName `json:"name"`
 	// Role represents the model role once more than one model is required.
+	// Such as a draft role, which means running with SpeculativeDecoding,
+	// and default arguments for backend will be searched in backendRuntime
+	// with the name of speculative-decoding.
 	// +kubebuilder:validation:Enum={main,draft}
 	// +kubebuilder:default=main
 	// +optional
@@ -148,7 +152,7 @@ type ModelClaims struct {
 	// speculative decoding, then one model is main(target) model, another one
 	// is draft model.
 	// +kubebuilder:validation:MinItems=1
-	Models []ModelRepresentative `json:"models,omitempty"`
+	Models []ModelRefer `json:"models,omitempty"`
 	// InferenceFlavors represents a list of flavors with fungibility supported
 	// to serve the model.
 	// - If not set, always apply with the 0-index model by default.

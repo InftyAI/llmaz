@@ -14,7 +14,7 @@ spec:
   image: lmsysorg/sglang
   version: v0.2.10-cu121
   args:
-    - mode: Default
+    - name: default
       flags:
         - --model-path
         - "{{ .ModelPath }}"

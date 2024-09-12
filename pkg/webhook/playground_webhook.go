@@ -28,6 +28,7 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 )
 
 type PlaygroundWebhook struct{}
@@ -103,23 +104,17 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 	}
 	if playground.Spec.ModelClaims != nil {
 		mainModelCount := 0
-		var speculativeDecoding bool
 
 		for _, model := range playground.Spec.ModelClaims.Models {
 			if model.Name == coreapi.ModelName(coreapi.MainRole) {
 				mainModelCount += 1
 			}
-			if *model.Role == coreapi.DraftRole {
-				speculativeDecoding = true
-			}
 		}
 
-		if speculativeDecoding {
+		mode := helper.PlaygroundInferenceMode(playground)
+		if mode == helper.SpeculativeDecodingInferenceMode {
 			if len(playground.Spec.ModelClaims.Models) != 2 {
 				allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))
-			}
-			if playground.Spec.BackendRuntimeConfig != nil && *playground.Spec.BackendRuntimeConfig.Name != inferenceapi.VLLM {
-				allErrs = append(allErrs, field.Forbidden(specPath.Child("backendRuntimeConfig", "name"), "only vLLM supports speculativeDecoding mode"))
 			}
 		}
 

@@ -42,21 +42,27 @@ spec:
             properties:
               args:
                 description: |-
-                  Args represents the args of the backendRuntime.
-                  They can be appended or overwritten by the Playground args.
-                  The key is the inference option, like default one or advanced
-                  speculativeDecoding, the values are the corresponding args.
-                  Flag around with {{ .XXX }} is a flag waiting for render.
+                  Args represents the preset arguments of the backendRuntime.
+                  They can be appended or overwritten by the Playground backendRuntimeConfig.
                 items:
+                  description: |-
+                    BackendRuntimeArg is preset arguments for easy to use.
+                    Do not edit the preset names unless set the argument name explicitly
+                    in Playground backendRuntimeConfig.
                   properties:
                     flags:
+                      description: |-
+                        Flags represents all the preset configurations.
+                        Flag around with {{ .CONFIG }} is a configuration waiting for render.
                       items:
                         type: string
                       type: array
-                    mode:
+                    name:
+                      description: Name represents the identifier of the backendRuntime
+                        argument.
                       type: string
                   required:
-                  - mode
+                  - name
                   type: object
                 type: array
               commands:

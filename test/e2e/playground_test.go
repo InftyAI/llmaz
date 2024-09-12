@@ -69,7 +69,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		backendRuntime := wrapper.MakeBackendRuntime("llmaz-llamacpp").
 			Image("ghcr.io/ggerganov/llama.cpp").Version("server").
 			Command([]string{"./llama-server"}).
-			Arg("Default", []string{"-m", "{{.ModelPath}}", "--host", "0.0.0.0", "--port", "8080"}).
+			Arg("default", []string{"-m", "{{.ModelPath}}", "--host", "0.0.0.0", "--port", "8080"}).
 			Request("cpu", "2").Request("memory", "4Gi").Limit("cpu", "4").Limit("memory", "4Gi").Obj()
 		gomega.Expect(k8sClient.Create(ctx, backendRuntime)).To(gomega.Succeed())
 

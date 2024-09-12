@@ -14,8 +14,10 @@ spec:
     - sglang.launch_server
   image: lmsysorg/sglang
   version: v0.2.10-cu121
+  # Do not edit the preset argument name unless you know what you're doing.
+  # Free to add more arguments with your requirements.
   args:
-    - mode: Default
+    - name: default
       flags:
         - --model-path
         - "{{`{{ .ModelPath }}`}}"

@@ -22,7 +22,8 @@ helm uninstall llmaz
 kubectl delete ns llmaz-system
 ```
 
-If you want to delete the CRDs as well, run (ignore the error)
+If you want to delete the CRDs as well, run
+
 ```cmd
 kubectl delete crd \
     openmodels.llmaz.io \
@@ -47,7 +48,8 @@ helm uninstall llmaz
 kubectl delete ns llmaz-system
 ```
 
-If you want to delete the CRDs as well, run (ignore the error)
+If you want to delete the CRDs as well, run
+
 ```cmd
 kubectl delete crd \
     openmodels.llmaz.io \

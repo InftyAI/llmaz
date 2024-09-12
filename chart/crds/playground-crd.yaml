@@ -259,14 +259,19 @@ spec:
                       speculative decoding, then one model is main(target) model, another one
                       is draft model.
                     items:
+                      description: ModelRefer refers to a created Model with it's
+                        role.
                       properties:
                         name:
                           description: Name represents the model name.
                           type: string
                         role:
                           default: main
-                          description: Role represents the model role once more than
-                            one model is required.
+                          description: |-
+                            Role represents the model role once more than one model is required.
+                            Such as a draft role, which means running with SpeculativeDecoding,
+                            and default arguments for backend will be searched in backendRuntime
+                            with the name of speculative-decoding.
                           enum:
                           - main
                           - draft

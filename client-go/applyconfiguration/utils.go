@@ -58,8 +58,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationcorev1alpha1.ModelClaimsApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelHub"):
 		return &applyconfigurationcorev1alpha1.ModelHubApplyConfiguration{}
-	case corev1alpha1.SchemeGroupVersion.WithKind("ModelRepresentative"):
-		return &applyconfigurationcorev1alpha1.ModelRepresentativeApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("ModelRefer"):
+		return &applyconfigurationcorev1alpha1.ModelReferApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSource"):
 		return &applyconfigurationcorev1alpha1.ModelSourceApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSpec"):

@@ -295,7 +295,6 @@ $(HELMIFY): $(LOCALBIN)
 
 .PHONY: helm
 helm: manifests kustomize helmify
-	$(KUBECTL) create namespace llmaz-system --dry-run=client -o yaml | $(KUBECTL) apply -f -
 	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir
 
 .PHONY: helm-install
@@ -303,7 +302,7 @@ helm-install: helm
 	helm upgrade --install llmaz ./chart --namespace llmaz-system --create-namespace -f ./chart/values.global.yaml
 
 .PHONY: helm-package
-helm-package:
+helm-package: helm
 	# Make sure will alwasy start with a new line.
 	printf "\n" >> ./chart/values.yaml
 	cat ./chart/values.global.yaml >> ./chart/values.yaml

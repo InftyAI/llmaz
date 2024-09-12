@@ -14,7 +14,7 @@ spec:
   image: vllm/vllm-openai
   version: v0.6.0
   args:
-    - mode: Default
+    - name: default
       flags:
         - --model
         - "{{ .ModelPath }}"
@@ -24,7 +24,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
-    - mode: SpeculativeDecoding
+    - name: speculative-decoding
       flags:
         - --model
         - "{{ .ModelPath }}"

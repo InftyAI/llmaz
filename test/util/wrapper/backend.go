@@ -62,9 +62,9 @@ func (w *BackendRuntimeWrapper) Command(commands []string) *BackendRuntimeWrappe
 	return w
 }
 
-func (w *BackendRuntimeWrapper) Arg(mode string, flags []string) *BackendRuntimeWrapper {
+func (w *BackendRuntimeWrapper) Arg(name string, flags []string) *BackendRuntimeWrapper {
 	w.Spec.Args = append(w.Spec.Args, inferenceapi.BackendRuntimeArg{
-		Mode:  inferenceapi.InferenceMode(mode),
+		Name:  name,
 		Flags: flags,
 	})
 	return w

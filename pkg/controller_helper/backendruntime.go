@@ -44,14 +44,14 @@ func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 	return p.backendRuntime.Spec.Envs
 }
 
-func (p *BackendRuntimeParser) Args(mode inferenceapi.InferenceMode, models []*coreapi.OpenModel) ([]string, error) {
-	if mode == inferenceapi.SpeculativeDecodingInferenceMode && len(models) != 2 {
+func (p *BackendRuntimeParser) Args(mode InferenceMode, models []*coreapi.OpenModel) ([]string, error) {
+	if mode == SpeculativeDecodingInferenceMode && len(models) != 2 {
 		return nil, fmt.Errorf("models number not right, want 2, got %d", len(models))
 	}
 
 	modelInfo := map[string]string{}
 
-	if mode == inferenceapi.DefaultInferenceMode {
+	if mode == DefaultInferenceMode {
 		source := modelSource.NewModelSourceProvider(models[0])
 		modelInfo = map[string]string{
 			"ModelPath": source.ModelPath(),
@@ -59,7 +59,7 @@ func (p *BackendRuntimeParser) Args(mode inferenceapi.InferenceMode, models []*c
 		}
 	}
 
-	if mode == inferenceapi.SpeculativeDecodingInferenceMode {
+	if mode == SpeculativeDecodingInferenceMode {
 		targetSource := modelSource.NewModelSourceProvider(models[0])
 		draftSource := modelSource.NewModelSourceProvider(models[1])
 		modelInfo = map[string]string{
@@ -70,12 +70,13 @@ func (p *BackendRuntimeParser) Args(mode inferenceapi.InferenceMode, models []*c
 	}
 
 	for _, arg := range p.backendRuntime.Spec.Args {
-		if arg.Mode == mode {
+		if InferenceMode(arg.Name) == mode {
 			return renderFlags(arg.Flags, modelInfo)
 		}
 	}
+
 	// We should not reach here.
-	return nil, fmt.Errorf("backendRuntime %s not supported", p.backendRuntime.Name)
+	return nil, fmt.Errorf("failed to parse backendRuntime %s", p.backendRuntime.Name)
 }
 
 func (p *BackendRuntimeParser) Image(version string) string {

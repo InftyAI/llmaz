@@ -25,21 +25,31 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func InferenceMode(playground *inferenceapi.Playground) inferenceapi.InferenceMode {
+type InferenceMode string
+
+// These two modes are preset.
+const (
+	DefaultInferenceMode             InferenceMode = "default"
+	SpeculativeDecodingInferenceMode InferenceMode = "speculative-decoding"
+)
+
+// PlaygroundInferenceMode gets the mode of inference process, supports default
+// or speculative-decoding for now, which is aligned with backendRuntime.
+func PlaygroundInferenceMode(playground *inferenceapi.Playground) InferenceMode {
 	if playground.Spec.ModelClaim != nil {
-		return inferenceapi.DefaultInferenceMode
+		return DefaultInferenceMode
 	}
 
 	if playground.Spec.ModelClaims != nil {
 		for _, mr := range playground.Spec.ModelClaims.Models {
 			if *mr.Role == coreapi.DraftRole {
-				return inferenceapi.SpeculativeDecodingInferenceMode
+				return SpeculativeDecodingInferenceMode
 			}
 		}
 	}
 
 	// We should not reach here.
-	return inferenceapi.DefaultInferenceMode
+	return DefaultInferenceMode
 }
 
 func FetchModelsByService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) (models []*coreapi.OpenModel, err error) {
@@ -48,10 +58,10 @@ func FetchModelsByService(ctx context.Context, k8sClient client.Client, service 
 
 func FetchModelsByPlayground(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) (models []*coreapi.OpenModel, err error) {
 	mainRole := coreapi.MainRole
-	mrs := []coreapi.ModelRepresentative{}
+	mrs := []coreapi.ModelRefer{}
 
 	if playground.Spec.ModelClaim != nil {
-		mrs = append(mrs, coreapi.ModelRepresentative{Name: playground.Spec.ModelClaim.ModelName, Role: &mainRole})
+		mrs = append(mrs, coreapi.ModelRefer{Name: playground.Spec.ModelClaim.ModelName, Role: &mainRole})
 	} else {
 		mrs = playground.Spec.ModelClaims.Models
 	}
@@ -59,7 +69,7 @@ func FetchModelsByPlayground(ctx context.Context, k8sClient client.Client, playg
 	return fetchModels(ctx, k8sClient, mrs)
 }
 
-func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.ModelRepresentative) (models []*coreapi.OpenModel, err error) {
+func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.ModelRefer) (models []*coreapi.OpenModel, err error) {
 	for _, mr := range mrs {
 		model := &coreapi.OpenModel{}
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {

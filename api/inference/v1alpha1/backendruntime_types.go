@@ -21,16 +21,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type InferenceMode string
-
-const (
-	DefaultInferenceMode             InferenceMode = "Default"
-	SpeculativeDecodingInferenceMode InferenceMode = "SpeculativeDecoding"
-)
-
+// BackendRuntimeArg is preset arguments for easy to use.
+// Do not edit the preset names unless set the argument name explicitly
+// in Playground backendRuntimeConfig.
 type BackendRuntimeArg struct {
-	Mode  InferenceMode `json:"mode"`
-	Flags []string      `json:"flags,omitempty"`
+	// Name represents the identifier of the backendRuntime argument.
+	Name string `json:"name"`
+	// Flags represents all the preset configurations.
+	// Flag around with {{ .CONFIG }} is a configuration waiting for render.
+	Flags []string `json:"flags,omitempty"`
 }
 
 // BackendRuntimeSpec defines the desired state of BackendRuntime
@@ -43,11 +42,8 @@ type BackendRuntimeSpec struct {
 	// Version represents the default version of the backendRuntime.
 	// It will be appended to the image as a tag.
 	Version string `json:"version"`
-	// Args represents the args of the backendRuntime.
-	// They can be appended or overwritten by the Playground args.
-	// The key is the inference option, like default one or advanced
-	// speculativeDecoding, the values are the corresponding args.
-	// Flag around with {{ .XXX }} is a flag waiting for render.
+	// Args represents the preset arguments of the backendRuntime.
+	// They can be appended or overwritten by the Playground backendRuntimeConfig.
 	Args []BackendRuntimeArg `json:"args,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional
