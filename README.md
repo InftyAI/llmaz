@@ -22,7 +22,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 ## Architecture
 
-![image](./docs/assets/arch.png)
+![image](https://github.com/InftyAI/llmaz/blob/main/docs/assets/arch.png?raw=true)
 
 ## Features Overview
 
@@ -48,7 +48,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 ```cmd
 helm repo add inftyai https://inftyai.github.io/llmaz
 helm repo update
-helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.2
+helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.3
 ```
 
 #### Uninstall
