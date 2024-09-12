@@ -87,12 +87,6 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: false,
 		}),
-		ginkgo.Entry("speculativeDecoding with SGLang is not allowed", &testValidatingCase{
-			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-405b", "llama3-8b"}, []string{"main", "draft"}).BackendRuntime(string(inferenceapi.SGLANG)).Obj()
-			},
-			failed: true,
-		}),
 		ginkgo.Entry("speculativeDecoding with three models is not allowed", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaims([]string{"llama3-405b", "llama3-8b", "llama3-2b"}, []string{"main", "draft", "draft"}).Obj()
@@ -138,7 +132,7 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 				playground := wrapper.MakePlayground("playground", ns.Name).Replicas(1).Obj()
 				draftRole := coreapi.DraftRole
 				playground.Spec.ModelClaims = &coreapi.ModelClaims{
-					Models: []coreapi.ModelRepresentative{
+					Models: []coreapi.ModelRefer{
 						{
 							Name: "llama3-405b",
 						},

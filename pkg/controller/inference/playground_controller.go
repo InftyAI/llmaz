@@ -114,7 +114,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	serviceApplyConfiguration, err := buildServiceApplyConfiguration(models, playground, backendRuntime)
 	if err != nil {
-		logger.Error(err, "failed to get build inference Service")
+		logger.Error(err, "failed to build inference Service")
 		return ctrl.Result{}, err
 	}
 
@@ -195,16 +195,16 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	var claim *coreclientgo.ModelClaimsApplyConfiguration
 	if playground.Spec.ModelClaim != nil {
 		claim = coreclientgo.ModelClaims().
-			WithModels(coreclientgo.ModelRepresentative().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
+			WithModels(coreclientgo.ModelRefer().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
 			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...)
 	} else {
-		mrs := []*coreclientgo.ModelRepresentativeApplyConfiguration{}
+		mrs := []*coreclientgo.ModelReferApplyConfiguration{}
 		for _, model := range playground.Spec.ModelClaims.Models {
 			role := coreapi.MainRole
 			if model.Role != nil {
 				role = *model.Role
 			}
-			mr := coreclientgo.ModelRepresentative().WithName(model.Name).WithRole(role)
+			mr := coreclientgo.ModelRefer().WithName(model.Name).WithRole(role)
 			mrs = append(mrs, mr)
 		}
 
@@ -257,7 +257,7 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (corev1.PodTemplateSpec, error) {
 	parser := helper.NewBackendRuntimeParser(backendRuntime)
 
-	args, err := parser.Args(helper.InferenceMode(playground), models)
+	args, err := parser.Args(helper.PlaygroundInferenceMode(playground), models)
 	if err != nil {
 		return corev1.PodTemplateSpec{}, err
 	}

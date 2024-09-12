@@ -21,23 +21,23 @@ import (
 	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
-// ModelRepresentativeApplyConfiguration represents an declarative configuration of the ModelRepresentative type for use
+// ModelReferApplyConfiguration represents an declarative configuration of the ModelRefer type for use
 // with apply.
-type ModelRepresentativeApplyConfiguration struct {
+type ModelReferApplyConfiguration struct {
 	Name *v1alpha1.ModelName `json:"name,omitempty"`
 	Role *v1alpha1.ModelRole `json:"role,omitempty"`
 }
 
-// ModelRepresentativeApplyConfiguration constructs an declarative configuration of the ModelRepresentative type for use with
+// ModelReferApplyConfiguration constructs an declarative configuration of the ModelRefer type for use with
 // apply.
-func ModelRepresentative() *ModelRepresentativeApplyConfiguration {
-	return &ModelRepresentativeApplyConfiguration{}
+func ModelRefer() *ModelReferApplyConfiguration {
+	return &ModelReferApplyConfiguration{}
 }
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *ModelRepresentativeApplyConfiguration) WithName(value v1alpha1.ModelName) *ModelRepresentativeApplyConfiguration {
+func (b *ModelReferApplyConfiguration) WithName(value v1alpha1.ModelName) *ModelReferApplyConfiguration {
 	b.Name = &value
 	return b
 }
@@ -45,7 +45,7 @@ func (b *ModelRepresentativeApplyConfiguration) WithName(value v1alpha1.ModelNam
 // WithRole sets the Role field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Role field is set to the value of the last call.
-func (b *ModelRepresentativeApplyConfiguration) WithRole(value v1alpha1.ModelRole) *ModelRepresentativeApplyConfiguration {
+func (b *ModelReferApplyConfiguration) WithRole(value v1alpha1.ModelRole) *ModelReferApplyConfiguration {
 	b.Role = &value
 	return b
 }

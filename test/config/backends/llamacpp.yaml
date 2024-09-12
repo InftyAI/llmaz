@@ -12,7 +12,7 @@ spec:
   image: ghcr.io/ggerganov/llama.cpp
   version: server
   args:
-    - mode: Default
+    - name: default
       flags:
         - -m
         - "{{ .ModelPath }}"
@@ -20,7 +20,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
-    - mode: SpeculativeDecoding
+    - name: speculative-decoding
       flags:
         - -m
         - "{{ .ModelPath }}"

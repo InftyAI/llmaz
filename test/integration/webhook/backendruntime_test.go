@@ -20,10 +20,22 @@ import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 
+	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
 )
 
 var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
+
+	// Delete all backendRuntimes for each case.
+	ginkgo.AfterEach(func() {
+		var runtimes inferenceapi.BackendRuntimeList
+		gomega.Expect(k8sClient.List(ctx, &runtimes)).To(gomega.Succeed())
+
+		for _, runtime := range runtimes.Items {
+			gomega.Expect(k8sClient.Delete(ctx, &runtime)).To(gomega.Succeed())
+		}
+	})
+
 	type testValidatingCase struct {
 		creationFunc func() error
 		failed       bool
@@ -43,13 +55,6 @@ var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 			},
 			failed: false,
 		}),
-		ginkgo.Entry("BackendRuntime creation with no image", &testValidatingCase{
-			creationFunc: func() error {
-				runtime := util.MockASampleBackendRuntime().Image("").Obj()
-				return k8sClient.Create(ctx, runtime)
-			},
-			failed: true,
-		}),
 		ginkgo.Entry("BackendRuntime creation with limits less than requests", &testValidatingCase{
 			creationFunc: func() error {
 				runtime := util.MockASampleBackendRuntime().Limit("cpu", "1").Obj()
@@ -57,24 +62,17 @@ var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("BackendRuntime creation with unsupported inferenceMode", &testValidatingCase{
+		ginkgo.Entry("BackendRuntime creation with unknown argument name", &testValidatingCase{
 			creationFunc: func() error {
 				runtime := util.MockASampleBackendRuntime().Arg("unknown", []string{"foo", "bar"}).Obj()
 				return k8sClient.Create(ctx, runtime)
 			},
-			failed: true,
+			failed: false,
 		}),
-		ginkgo.Entry("BackendRuntime creation with duplicated inferenceMode", &testValidatingCase{
+		ginkgo.Entry("BackendRuntime creation with duplicated argument name", &testValidatingCase{
 			creationFunc: func() error {
-				runtime := util.MockASampleBackendRuntime().Obj()
-				if err := k8sClient.Create(ctx, runtime); err != nil {
-					return err
-				}
-				anotherRuntime := util.MockASampleBackendRuntime().Name("another-vllm").Obj()
-				if err := k8sClient.Create(ctx, anotherRuntime); err != nil {
-					return err
-				}
-				return nil
+				runtime := util.MockASampleBackendRuntime().Arg("default", []string{"foo", "bar"}).Obj()
+				return k8sClient.Create(ctx, runtime)
 			},
 			failed: true,
 		}),

@@ -12,8 +12,10 @@ spec:
     - ./llama-server
   image: ghcr.io/ggerganov/llama.cpp
   version: server
+  # Do not edit the preset argument name unless you know what you're doing.
+  # Free to add more arguments with your requirements.
   args:
-    - mode: Default
+    - name: default
       flags:
         - -m
         - "{{`{{ .ModelPath }}`}}"
@@ -21,7 +23,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
-    - mode: SpeculativeDecoding
+    - name: speculative-decoding
       flags:
         - -m
         - "{{`{{ .ModelPath }}`}}"
