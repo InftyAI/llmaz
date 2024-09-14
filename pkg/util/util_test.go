@@ -113,3 +113,32 @@ func TestMergeKVs(t *testing.T) {
 		})
 	}
 }
+
+func TestIn(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []string
+		search   string
+		expected bool
+	}{
+		{
+			name:     "search for 'name1' in a list containing it",
+			input:    []string{"name1", "name2", "name3"},
+			search:   "name1",
+			expected: true,
+		},
+		{
+			name:     "search for 'name1' in a list without it",
+			input:    []string{"name2", "name3", "name4"},
+			search:   "name1",
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		result := In(test.input, test.search)
+		if result != test.expected {
+			t.Fatalf("Test '%s' failed: For input %v and search %s, expected %t but got %t", test.name, test.input, test.search, test.expected, result)
+		}
+	}
+}
