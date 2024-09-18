@@ -16,7 +16,11 @@ limitations under the License.
 
 package util
 
-import "testing"
+import (
+	"errors"
+	"reflect"
+	"testing"
+)
 
 func TestParseOSS(t *testing.T) {
 	testCases := []struct {
@@ -62,5 +66,53 @@ func TestParseOSS(t *testing.T) {
 				t.Fatal("unexpected result")
 			}
 		})
+	}
+}
+
+func TestParseURI(t *testing.T) {
+	tests := []struct {
+		name          string
+		uri           string
+		expectedProto string
+		expectedAddr  string
+		expectedErr   error
+	}{
+		{
+			name:          "valid uri with http",
+			uri:           "http://example.com",
+			expectedProto: "HTTP",
+			expectedAddr:  "example.com",
+			expectedErr:   nil,
+		},
+		{
+			name:          "invalid URI",
+			uri:           "invalid_uri",
+			expectedProto: "",
+			expectedAddr:  "",
+			expectedErr:   errors.New("uri format error"),
+		},
+		{
+			name:          "uri with incorrect format",
+			uri:           "missing-protocol",
+			expectedProto: "",
+			expectedAddr:  "",
+			expectedErr:   errors.New("uri format error"),
+		},
+	}
+
+	for _, test := range tests {
+		proto, addr, err := ParseURI(test.uri)
+
+		if proto != test.expectedProto {
+			t.Errorf("Test '%s' failed: Expected protocol %s, but got %s", test.name, test.expectedProto, proto)
+		}
+
+		if addr != test.expectedAddr {
+			t.Errorf("Test '%s' failed: Expected address %s, but got %s", test.name, test.expectedAddr, addr)
+		}
+
+		if !reflect.DeepEqual(err, test.expectedErr) {
+			t.Errorf("Test '%s' failed: Expected error %v, but got %v", test.name, test.expectedErr, err)
+		}
 	}
 }

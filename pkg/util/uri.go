@@ -30,7 +30,7 @@ func ParseURI(uri string) (protocol string, address string, err error) {
 	return strings.ToUpper(parsers[0]), parsers[1], nil
 }
 
-// OSS address looks like: <bucket>.<endpoint>/<modelPath>
+// ParseOSS address looks like: <bucket>.<endpoint>/<modelPath>
 func ParseOSS(address string) (endpoint, bucket, modelPath string, err error) {
 	splits := strings.SplitN(address, ".", 2)
 	if len(splits) != 2 {

@@ -47,7 +47,7 @@ func MergeKVs(toMerge map[string]string, toBeMerged map[string]string) map[strin
 	return toMerge
 }
 
-// TODO: add unit tests.
+// In checks if a string is in a slice.
 func In(strings []string, s string) bool {
 	for _, str := range strings {
 		if str == s {
