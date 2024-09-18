@@ -21,14 +21,14 @@ import (
 	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
-// ModelSourceApplyConfiguration represents an declarative configuration of the ModelSource type for use
+// ModelSourceApplyConfiguration represents a declarative configuration of the ModelSource type for use
 // with apply.
 type ModelSourceApplyConfiguration struct {
 	ModelHub *ModelHubApplyConfiguration `json:"modelHub,omitempty"`
 	URI      *corev1alpha1.URIProtocol   `json:"uri,omitempty"`
 }
 
-// ModelSourceApplyConfiguration constructs an declarative configuration of the ModelSource type for use with
+// ModelSourceApplyConfiguration constructs a declarative configuration of the ModelSource type for use with
 // apply.
 func ModelSource() *ModelSourceApplyConfiguration {
 	return &ModelSourceApplyConfiguration{}

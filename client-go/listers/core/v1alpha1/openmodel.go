@@ -19,8 +19,8 @@ package v1alpha1
 
 import (
 	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/listers"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -37,25 +37,17 @@ type OpenModelLister interface {
 
 // openModelLister implements the OpenModelLister interface.
 type openModelLister struct {
-	indexer cache.Indexer
+	listers.ResourceIndexer[*v1alpha1.OpenModel]
 }
 
 // NewOpenModelLister returns a new OpenModelLister.
 func NewOpenModelLister(indexer cache.Indexer) OpenModelLister {
-	return &openModelLister{indexer: indexer}
-}
-
-// List lists all OpenModels in the indexer.
-func (s *openModelLister) List(selector labels.Selector) (ret []*v1alpha1.OpenModel, err error) {
-	err = cache.ListAll(s.indexer, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.OpenModel))
-	})
-	return ret, err
+	return &openModelLister{listers.New[*v1alpha1.OpenModel](indexer, v1alpha1.Resource("openmodel"))}
 }
 
 // OpenModels returns an object that can list and get OpenModels.
 func (s *openModelLister) OpenModels(namespace string) OpenModelNamespaceLister {
-	return openModelNamespaceLister{indexer: s.indexer, namespace: namespace}
+	return openModelNamespaceLister{listers.NewNamespaced[*v1alpha1.OpenModel](s.ResourceIndexer, namespace)}
 }
 
 // OpenModelNamespaceLister helps list and get OpenModels.
@@ -73,26 +65,5 @@ type OpenModelNamespaceLister interface {
 // openModelNamespaceLister implements the OpenModelNamespaceLister
 // interface.
 type openModelNamespaceLister struct {
-	indexer   cache.Indexer
-	namespace string
-}
-
-// List lists all OpenModels in the indexer for a given namespace.
-func (s openModelNamespaceLister) List(selector labels.Selector) (ret []*v1alpha1.OpenModel, err error) {
-	err = cache.ListAllByNamespace(s.indexer, s.namespace, selector, func(m interface{}) {
-		ret = append(ret, m.(*v1alpha1.OpenModel))
-	})
-	return ret, err
-}
-
-// Get retrieves the OpenModel from the indexer for a given namespace and name.
-func (s openModelNamespaceLister) Get(name string) (*v1alpha1.OpenModel, error) {
-	obj, exists, err := s.indexer.GetByKey(s.namespace + "/" + name)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, errors.NewNotFound(v1alpha1.Resource("openmodel"), name)
-	}
-	return obj.(*v1alpha1.OpenModel), nil
+	listers.ResourceIndexer[*v1alpha1.OpenModel]
 }

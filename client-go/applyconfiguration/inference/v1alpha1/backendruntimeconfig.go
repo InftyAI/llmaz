@@ -22,7 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// BackendRuntimeConfigApplyConfiguration represents an declarative configuration of the BackendRuntimeConfig type for use
+// BackendRuntimeConfigApplyConfiguration represents a declarative configuration of the BackendRuntimeConfig type for use
 // with apply.
 type BackendRuntimeConfigApplyConfiguration struct {
 	Name      *v1alpha1.BackendName                   `json:"name,omitempty"`
@@ -32,7 +32,7 @@ type BackendRuntimeConfigApplyConfiguration struct {
 	Resources *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 }
 
-// BackendRuntimeConfigApplyConfiguration constructs an declarative configuration of the BackendRuntimeConfig type for use with
+// BackendRuntimeConfigApplyConfiguration constructs a declarative configuration of the BackendRuntimeConfig type for use with
 // apply.
 func BackendRuntimeConfig() *BackendRuntimeConfigApplyConfiguration {
 	return &BackendRuntimeConfigApplyConfiguration{}

@@ -21,13 +21,13 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// ModelStatusApplyConfiguration represents an declarative configuration of the ModelStatus type for use
+// ModelStatusApplyConfiguration represents a declarative configuration of the ModelStatus type for use
 // with apply.
 type ModelStatusApplyConfiguration struct {
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// ModelStatusApplyConfiguration constructs an declarative configuration of the ModelStatus type for use with
+// ModelStatusApplyConfiguration constructs a declarative configuration of the ModelStatus type for use with
 // apply.
 func ModelStatus() *ModelStatusApplyConfiguration {
 	return &ModelStatusApplyConfiguration{}

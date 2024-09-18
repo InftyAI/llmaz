@@ -21,13 +21,13 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// PlaygroundStatusApplyConfiguration represents an declarative configuration of the PlaygroundStatus type for use
+// PlaygroundStatusApplyConfiguration represents a declarative configuration of the PlaygroundStatus type for use
 // with apply.
 type PlaygroundStatusApplyConfiguration struct {
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
 }
 
-// PlaygroundStatusApplyConfiguration constructs an declarative configuration of the PlaygroundStatus type for use with
+// PlaygroundStatusApplyConfiguration constructs a declarative configuration of the PlaygroundStatus type for use with
 // apply.
 func PlaygroundStatus() *PlaygroundStatusApplyConfiguration {
 	return &PlaygroundStatusApplyConfiguration{}

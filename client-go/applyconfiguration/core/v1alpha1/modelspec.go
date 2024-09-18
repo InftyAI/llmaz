@@ -21,7 +21,7 @@ import (
 	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
-// ModelSpecApplyConfiguration represents an declarative configuration of the ModelSpec type for use
+// ModelSpecApplyConfiguration represents a declarative configuration of the ModelSpec type for use
 // with apply.
 type ModelSpecApplyConfiguration struct {
 	FamilyName       *v1alpha1.ModelName            `json:"familyName,omitempty"`
@@ -29,7 +29,7 @@ type ModelSpecApplyConfiguration struct {
 	InferenceFlavors []FlavorApplyConfiguration     `json:"inferenceFlavors,omitempty"`
 }
 
-// ModelSpecApplyConfiguration constructs an declarative configuration of the ModelSpec type for use with
+// ModelSpecApplyConfiguration constructs a declarative configuration of the ModelSpec type for use with
 // apply.
 func ModelSpec() *ModelSpecApplyConfiguration {
 	return &ModelSpecApplyConfiguration{}

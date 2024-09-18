@@ -21,14 +21,14 @@ import (
 	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
-// ModelClaimsApplyConfiguration represents an declarative configuration of the ModelClaims type for use
+// ModelClaimsApplyConfiguration represents a declarative configuration of the ModelClaims type for use
 // with apply.
 type ModelClaimsApplyConfiguration struct {
 	Models           []ModelReferApplyConfiguration `json:"models,omitempty"`
 	InferenceFlavors []corev1alpha1.FlavorName      `json:"inferenceFlavors,omitempty"`
 }
 
-// ModelClaimsApplyConfiguration constructs an declarative configuration of the ModelClaims type for use with
+// ModelClaimsApplyConfiguration constructs a declarative configuration of the ModelClaims type for use with
 // apply.
 func ModelClaims() *ModelClaimsApplyConfiguration {
 	return &ModelClaimsApplyConfiguration{}

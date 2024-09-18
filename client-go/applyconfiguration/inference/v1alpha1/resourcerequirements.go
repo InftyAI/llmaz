@@ -21,14 +21,14 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-// ResourceRequirementsApplyConfiguration represents an declarative configuration of the ResourceRequirements type for use
+// ResourceRequirementsApplyConfiguration represents a declarative configuration of the ResourceRequirements type for use
 // with apply.
 type ResourceRequirementsApplyConfiguration struct {
 	Limits   *v1.ResourceList `json:"limits,omitempty"`
 	Requests *v1.ResourceList `json:"requests,omitempty"`
 }
 
-// ResourceRequirementsApplyConfiguration constructs an declarative configuration of the ResourceRequirements type for use with
+// ResourceRequirementsApplyConfiguration constructs a declarative configuration of the ResourceRequirements type for use with
 // apply.
 func ResourceRequirements() *ResourceRequirementsApplyConfiguration {
 	return &ResourceRequirementsApplyConfiguration{}
