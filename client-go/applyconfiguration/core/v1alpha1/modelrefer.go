@@ -21,14 +21,14 @@ import (
 	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
-// ModelReferApplyConfiguration represents an declarative configuration of the ModelRefer type for use
+// ModelReferApplyConfiguration represents a declarative configuration of the ModelRefer type for use
 // with apply.
 type ModelReferApplyConfiguration struct {
 	Name *v1alpha1.ModelName `json:"name,omitempty"`
 	Role *v1alpha1.ModelRole `json:"role,omitempty"`
 }
 
-// ModelReferApplyConfiguration constructs an declarative configuration of the ModelRefer type for use with
+// ModelReferApplyConfiguration constructs a declarative configuration of the ModelRefer type for use with
 // apply.
 func ModelRefer() *ModelReferApplyConfiguration {
 	return &ModelReferApplyConfiguration{}

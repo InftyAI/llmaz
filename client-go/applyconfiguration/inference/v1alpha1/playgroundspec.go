@@ -21,7 +21,7 @@ import (
 	v1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 )
 
-// PlaygroundSpecApplyConfiguration represents an declarative configuration of the PlaygroundSpec type for use
+// PlaygroundSpecApplyConfiguration represents a declarative configuration of the PlaygroundSpec type for use
 // with apply.
 type PlaygroundSpecApplyConfiguration struct {
 	Replicas             *int32                                  `json:"replicas,omitempty"`
@@ -30,7 +30,7 @@ type PlaygroundSpecApplyConfiguration struct {
 	BackendRuntimeConfig *BackendRuntimeConfigApplyConfiguration `json:"backendRuntimeConfig,omitempty"`
 }
 
-// PlaygroundSpecApplyConfiguration constructs an declarative configuration of the PlaygroundSpec type for use with
+// PlaygroundSpecApplyConfiguration constructs a declarative configuration of the PlaygroundSpec type for use with
 // apply.
 func PlaygroundSpec() *PlaygroundSpecApplyConfiguration {
 	return &PlaygroundSpecApplyConfiguration{}

@@ -17,14 +17,14 @@ limitations under the License.
 
 package v1alpha1
 
-// ElasticConfigApplyConfiguration represents an declarative configuration of the ElasticConfig type for use
+// ElasticConfigApplyConfiguration represents a declarative configuration of the ElasticConfig type for use
 // with apply.
 type ElasticConfigApplyConfiguration struct {
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
 }
 
-// ElasticConfigApplyConfiguration constructs an declarative configuration of the ElasticConfig type for use with
+// ElasticConfigApplyConfiguration constructs a declarative configuration of the ElasticConfig type for use with
 // apply.
 func ElasticConfig() *ElasticConfigApplyConfiguration {
 	return &ElasticConfigApplyConfiguration{}
