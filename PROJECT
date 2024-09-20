@@ -7,7 +7,7 @@ layout:
 - go.kubebuilder.io/v4
 multigroup: true
 projectName: llmaz
-repo: inftyai.com/llmaz
+repo: github.com/inftyai/llmaz
 resources:
 - api:
     crdVersion: v1
@@ -16,7 +16,7 @@ resources:
   domain: llmaz.io
   group: inference
   kind: Service
-  path: inftyai.com/llmaz/api/inference/v1alpha1
+  path: github.com/inftyai/manta/api/inference/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -25,7 +25,7 @@ resources:
   domain: llmaz.io
   group: inference
   kind: Playground
-  path: inftyai.com/llmaz/api/inference/v1alpha1
+  path: github.com/inftyai/manta/inference/v1alpha1
   version: v1alpha1
 - api:
     crdVersion: v1
@@ -33,7 +33,7 @@ resources:
   controller: true
   domain: llmaz.io
   kind: Model
-  path: inftyai.com/llmaz/api/v1alpha1
+  path: github.com/inftyai/manta/api/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true
@@ -46,6 +46,6 @@ resources:
   domain: llmaz.io
   group: inference
   kind: BackendRuntime
-  path: inftyai.com/llmaz/api/inference/v1alpha1
+  path: github.com/inftyai/manta/api/inference/v1alpha1
   version: v1alpha1
 version: "3"
