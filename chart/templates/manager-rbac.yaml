@@ -18,6 +18,14 @@ rules:
   - admissionregistration.k8s.io
   resources:
   - mutatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
   - validatingwebhookconfigurations
   verbs:
   - get
@@ -28,8 +36,6 @@ rules:
   - inference.llmaz.io
   resources:
   - backendruntimes
-  - playgrounds
-  - services
   verbs:
   - create
   - delete
@@ -42,15 +48,63 @@ rules:
   - inference.llmaz.io
   resources:
   - backendruntimes/finalizers
-  - playgrounds/finalizers
-  - services/finalizers
   verbs:
   - update
 - apiGroups:
   - inference.llmaz.io
   resources:
   - backendruntimes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - playgrounds
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - playgrounds/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
   - playgrounds/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - inference.llmaz.io
+  resources:
+  - services/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - inference.llmaz.io
+  resources:
   - services/status
   verbs:
   - get
