@@ -69,6 +69,18 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: true,
 		}),
+		ginkgo.Entry("invalid BackendRuntime resources", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntimeRequest("cpu", "10").BackendRuntimeLimit("cpu", "5").Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("valid BackendRuntime resources with limit but without request", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntimeLimit("cpu", "5").Obj()
+			},
+			failed: false,
+		}),
 		ginkgo.Entry("no model claim declared", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).Obj()

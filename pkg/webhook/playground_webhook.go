@@ -18,6 +18,7 @@ package webhook
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation"
@@ -122,5 +123,21 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only one main model is allowed"))
 		}
 	}
+
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
+		requirements := playground.Spec.BackendRuntimeConfig.Resources
+		for resourceName, limit := range requirements.Limits {
+			request, ok := requirements.Requests[resourceName]
+			if !ok {
+				continue
+			}
+
+			if limit.Cmp(request) == -1 {
+				allErrs = append(allErrs, field.Forbidden(specPath.Child("backendRuntimeConfig", "resources"),
+					fmt.Sprintf("limit (%v) for %s must be greater than or equal to request (%v)", limit, resourceName, request)))
+			}
+		}
+	}
+
 	return allErrs
 }
