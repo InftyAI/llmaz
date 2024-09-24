@@ -38,6 +38,7 @@ kubectl delete crd \
 
 ```cmd
 git clone https://github.com/inftyai/llmaz.git && cd llmaz
+kubectl create ns llmaz-system && kubens llmaz-system
 make helm-install
 ```
 
@@ -56,4 +57,40 @@ kubectl delete crd \
     backendruntimes.inference.llmaz.io \
     playgrounds.inference.llmaz.io \
     services.inference.llmaz.io
+```
+
+### Install in a different namespace
+
+If you want to install llmaz controller in a different namespace, you should change the [values.global.yaml](../chart/values.global.yaml) like this:
+
+```yaml
+controllerManager:
+  manager:
+    args:
+      - --namespace=<your-namespace>
+```
+
+Then run:
+
+```cmd
+kubectl create ns <your-namespace> && kubens <your-namespace>
+make helm-install
+```
+
+## Change configurations
+
+If you want to change the default configurations, such as `Replicas`, please change the values in [values.global.yaml](../chart/values.global.yaml), then run
+
+```cmd
+make helm-install
+```
+
+**Do you change** the values in _values.yaml_ because it's auto-generated and will be overwritten.
+
+## Upgrade
+
+Once you changed your code, run the command to upgrade the controller:
+
+```cmd
+IMG=<image-registry>:<tag> make helm-upgrade
 ```

@@ -1,3 +1,4 @@
+{{- if .Values.leaderWorkerSet.install -}}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -16013,3 +16014,4 @@ webhooks:
     resources:
     - pods
   sideEffects: None
+{{- end }}
