@@ -49,5 +49,5 @@ if __name__ == "__main__":
         raise EnvironmentError(f"unknown model source type {model_source_type}")
 
     Logger.info(
-        f"loading models from {model_source_type} takes {datetime.now() - start_time}s"
+        f"loading models from {model_source_type} takes {(datetime.now() - start_time).total_seconds()}s"
     )
