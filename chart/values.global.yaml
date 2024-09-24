@@ -1,7 +1,10 @@
 fullnameOverride: "llmaz"
 
 backendRuntime:
-  enabled: true
+  install: true
+
+leaderWorkerSet:
+  install: true
 
 controllerManager:
   manager:
