@@ -22,7 +22,6 @@ import (
 )
 
 const (
-	secretNamespace         = "llmaz-system"
 	serviceName             = "llmaz-webhook-service"
 	secretName              = "llmaz-webhook-server-cert"
 	certDir                 = "/tmp/k8s-webhook-server/serving-certs"
@@ -32,18 +31,17 @@ const (
 	caOrg                   = "llmaz"
 )
 
-// dnsName is the format of <service name>.<namespace>.svc
-var dnsName = fmt.Sprintf("%s.%s.svc", serviceName, secretNamespace)
-
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;update
 //+kubebuilder:rbac:groups="admissionregistration.k8s.io",resources=mutatingwebhookconfigurations,verbs=get;list;watch;update
 //+kubebuilder:rbac:groups="admissionregistration.k8s.io",resources=validatingwebhookconfigurations,verbs=get;list;watch;update
 
 // CertsManager creates certs for webhooks.
-func CertsManager(mgr ctrl.Manager, setupFinish chan struct{}) error {
+func CertsManager(mgr ctrl.Manager, namespace string, setupFinish chan struct{}) error {
+	// dnsName is the format of <service name>.<namespace>.svc
+	dnsName := fmt.Sprintf("%s.%s.svc", serviceName, namespace)
 	return cert.AddRotator(mgr, &cert.CertRotator{
 		SecretKey: types.NamespacedName{
-			Namespace: secretNamespace,
+			Namespace: namespace,
 			Name:      secretName,
 		},
 		CertDir:        certDir,
