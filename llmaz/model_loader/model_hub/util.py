@@ -15,16 +15,20 @@ limitations under the License.
 """
 
 import os
+from llmaz.util.logger import Logger
 
-
-def get_folder_total_size(folder_path: str):
+def get_folder_total_size(folder_path: str) -> float:
     total_size = 0
 
     for dirpath, _, filenames in os.walk(folder_path):
         for filename in filenames:
             file_path = os.path.join(dirpath, filename)
-            if os.path.exists(file_path):
-                total_size += os.path.getsize(file_path)
+            try:
+                if os.path.exists(file_path):
+                    total_size += os.path.getsize(file_path)
+            except OSError as e:
+                Logger.error(f"Failed to get file {file_path} size, err is {e}")
+            
 
     total_size_gb = total_size / (1024**3)
     return total_size_gb
