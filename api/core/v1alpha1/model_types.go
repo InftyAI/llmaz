@@ -46,7 +46,7 @@ type ModelHub struct {
 	// in the near future.
 	Filename *string `json:"filename,omitempty"`
 	// Revision refers to a Git revision id which can be a branch name, a tag, or a commit hash.
-	// Most of the time, you don't need to specify it.
+	// +kubebuilder:default=main
 	// +optional
 	Revision *string `json:"revision,omitempty"`
 }
