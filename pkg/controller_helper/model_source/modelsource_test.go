@@ -39,7 +39,7 @@ func Test_ModelSourceProvider(t *testing.T) {
 		},
 		{
 			name:          "modelhub with GGUF file",
-			model:         wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf").Obj(),
+			model:         wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "").Obj(),
 			wantModelName: "test-7b",
 			wantModelPath: "/workspace/models/qwen2-0_5b-instruct-q5_k_m.gguf",
 		},
