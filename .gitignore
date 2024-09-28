@@ -32,3 +32,4 @@ __pycache__
 *.pyc
 .pytest_cache
 *.tgz
+.huggingface

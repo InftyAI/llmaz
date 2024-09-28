@@ -110,12 +110,20 @@ spec:
                     description: ModelHub represents the model registry for model
                       downloads.
                     properties:
+                      allowPatterns:
+                        description: AllowPatterns refers to only files matching at
+                          least one pattern are downloaded.
+                        type: string
                       filename:
                         description: |-
                           Filename refers to a specified model file rather than the whole repo.
                           This is helpful to download a specified GGUF model rather than downloading
                           the whole repo which includes all kinds of quantized models.
                           in the near future.
+                        type: string
+                      ignorePatterns:
+                        description: IgnorePatterns refers to files matching any of
+                          the patterns are not downloaded.
                         type: string
                       modelID:
                         description: |-
