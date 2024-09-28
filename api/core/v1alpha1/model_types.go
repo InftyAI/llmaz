@@ -44,11 +44,18 @@ type ModelHub struct {
 	// the whole repo which includes all kinds of quantized models.
 	// TODO: this is only supported with Huggingface, add support for ModelScope
 	// in the near future.
+	// Note: once filename is set, allowPatterns and ignorePatterns should be left unset.
 	Filename *string `json:"filename,omitempty"`
 	// Revision refers to a Git revision id which can be a branch name, a tag, or a commit hash.
 	// +kubebuilder:default=main
 	// +optional
 	Revision *string `json:"revision,omitempty"`
+	// AllowPatterns refers to files matched with at least one pattern will be downloaded.
+	// +optional
+	AllowPatterns []string `json:"allowPatterns,omitempty"`
+	// IgnorePatterns refers to files matched with any of the patterns will not be downloaded.
+	// +optional
+	IgnorePatterns []string `json:"ignorePatterns,omitempty"`
 }
 
 // URIProtocol represents the protocol of the URI.

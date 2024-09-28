@@ -57,7 +57,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
 		model = util.MockASampleModel()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
-		draftModel = wrapper.MakeModel("llama3-2b").FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-2B", "", "").Obj()
+		draftModel = wrapper.MakeModel("llama3-2b").FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-2B", "", "", nil, nil).Obj()
 		gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
 	})
 	ginkgo.AfterEach(func() {

@@ -110,6 +110,12 @@ spec:
                     description: ModelHub represents the model registry for model
                       downloads.
                     properties:
+                      allowPatterns:
+                        description: AllowPatterns refers to only files matching at
+                          least one pattern are downloaded.
+                        items:
+                          type: string
+                        type: array
                       filename:
                         description: |-
                           Filename refers to a specified model file rather than the whole repo.
@@ -117,6 +123,12 @@ spec:
                           the whole repo which includes all kinds of quantized models.
                           in the near future.
                         type: string
+                      ignorePatterns:
+                        description: IgnorePatterns refers to files matching any of
+                          the patterns are not downloaded.
+                        items:
+                          type: string
+                        type: array
                       modelID:
                         description: |-
                           ModelID refers to the model identifier on model hub,

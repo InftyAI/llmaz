@@ -15,15 +15,12 @@ limitations under the License.
 """
 
 import os
-import concurrent.futures
-from typing import Optional
+from typing import Optional, List
 
 from modelscope import snapshot_download
 
-from llmaz.model_loader.defaults import MODEL_LOCAL_DIR
+from llmaz.model_loader.constant import *
 from llmaz.model_loader.model_hub.model_hub import (
-    MAX_WORKERS,
-    MODEL_SCOPE,
     ModelHub,
 )
 from llmaz.util.logger import Logger
@@ -33,36 +30,35 @@ from llmaz.model_loader.model_hub.util import get_folder_total_size
 class ModelScope(ModelHub):
     @classmethod
     def name(cls) -> str:
-        return MODEL_SCOPE
+        return HUB_MODEL_SCOPE
 
-    # TODO: support filename
     @classmethod
     def load_model(
-        cls, model_id: str, filename: Optional[str], revision: Optional[str]
+            cls,
+            model_id: str,
+            filename: Optional[str],
+            revision: Optional[str],
+            allow_patterns: Optional[List[str]],
+            ignore_patterns: Optional[List[str]],
     ) -> None:
         Logger.info(
             f"Start to download, model_id: {model_id}, filename: {filename}, revision: {revision}"
         )
 
         local_dir = os.path.join(
-            MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+            MODEL_LOCAL_DIR, f"models--{model_id.replace('/', '--')}"
         )
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = []
-            futures.append(
-                executor.submit(
-                    snapshot_download,
-                    model_id=model_id,
-                    local_dir=local_dir,
-                    revision=revision,
-                ).add_done_callback(handle_completion)
-            )
+        if filename:
+            allow_patterns.append(filename)
+            local_dir = MODEL_LOCAL_DIR
 
+        snapshot_download(
+            model_id=model_id,
+            revision=revision,
+            local_dir=local_dir,
+            allow_patterns=allow_patterns,
+            ignore_patterns=ignore_patterns,
+        )
         total_size = get_folder_total_size(local_dir)
         Logger.info(f"The total size of {local_dir} is {total_size:.2f} GB")
-
-
-def handle_completion(future):
-    filename = future.result()
-    Logger.info(f"Download completed for {filename}")

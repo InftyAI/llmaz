@@ -52,18 +52,18 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "").FamilyName("llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "", nil, nil).FamilyName("llama3").Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "main").ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 		ginkgo.Entry("apply modelscope model hub name", &testDefaultingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "", nil, nil).Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main").ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
 			},
 		}),
 	)
@@ -83,19 +83,19 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		},
 		ginkgo.Entry("default normal huggingface model creation", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "", nil, nil).Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("normal modelScope model creation", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "").Obj()
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "", nil, nil).Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("invalid model name", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("qwen-2-0.5b").FamilyName("qwen2").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct", "", "").Obj()
+				return wrapper.MakeModel("qwen-2-0.5b").FamilyName("qwen2").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct", "", "", nil, nil).Obj()
 			},
 			failed: true,
 		}),
@@ -131,13 +131,31 @@ var _ = ginkgo.Describe("model default and validation", func() {
 		}),
 		ginkgo.Entry("set filename when modelHub is Huggingface", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "").FamilyName("llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).FamilyName("llama3").Obj()
+			},
+			failed: false,
+		}),
+		ginkgo.Entry("set filename and allowPatterns when modelHub is Huggingface", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", []string{"*"}, nil).FamilyName("llama3").Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("set filename and ignorePatterns when modelHub is Huggingface", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, []string{"*"}).FamilyName("llama3").Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("set allowPatterns and ignorePatterns when modelHub is Huggingface", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "", "", []string{"*"}, []string{"*.gguf"}).FamilyName("llama3").Obj()
 			},
 			failed: false,
 		}),
 		ginkgo.Entry("set filename when modelHub is ModelScope", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "").FamilyName("llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).FamilyName("llama3").Obj()
 			},
 			failed: true,
 		}),

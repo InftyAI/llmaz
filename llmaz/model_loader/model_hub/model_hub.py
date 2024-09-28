@@ -15,11 +15,7 @@ limitations under the License.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
-
-MAX_WORKERS = 4
-HUGGING_FACE = "Huggingface"
-MODEL_SCOPE = "ModelScope"
+from typing import Optional, List
 
 
 class ModelHub(ABC):
@@ -31,6 +27,11 @@ class ModelHub(ABC):
     @classmethod
     @abstractmethod
     def load_model(
-        cls, model_id: str, filename: Optional[str], revision: Optional[str]
+            cls,
+            model_id: str,
+            filename: Optional[str],
+            revision: Optional[str],
+            allow_patterns: Optional[List[str]],
+            ignore_patterns: Optional[List[str]],
     ) -> None:
         pass
