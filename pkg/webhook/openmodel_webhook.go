@@ -118,5 +118,15 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modeHub is Huggingface"))
 		}
 	}
+
+	if model.Spec.Source.ModelHub.Filename != nil {
+		if len(model.Spec.Source.ModelHub.AllowPatterns) != 0 {
+			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.allowPatterns"), model.Spec.Source.ModelHub.AllowPatterns, "Once Filename is set, allowPatterns should be nil"))
+		}
+		if len(model.Spec.Source.ModelHub.IgnorePatterns) != 0 {
+			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelhub.ignorePatterns"), model.Spec.Source.ModelHub.IgnorePatterns, "Once Filename is set, ignorePatterns should be nil"))
+		}
+	}
+
 	return allErrs
 }

@@ -17,69 +17,51 @@ limitations under the License.
 import concurrent.futures
 import os
 
-from huggingface_hub import hf_hub_download, list_repo_files
+from huggingface_hub import snapshot_download
 
-from llmaz.model_loader.defaults import MODEL_LOCAL_DIR
+from llmaz.model_loader.constant import MODEL_LOCAL_DIR, HUB_HUGGING_FACE
 from llmaz.model_loader.model_hub.model_hub import (
-    HUGGING_FACE,
-    MAX_WORKERS,
     ModelHub,
 )
 from llmaz.util.logger import Logger
 from llmaz.model_loader.model_hub.util import get_folder_total_size
 
-from typing import Optional
+from typing import Optional, List
 
 
 class Huggingface(ModelHub):
     @classmethod
     def name(cls) -> str:
-        return HUGGING_FACE
+        return HUB_HUGGING_FACE
 
     @classmethod
     def load_model(
-        cls, model_id: str, filename: Optional[str], revision: Optional[str]
+            cls,
+            model_id: str,
+            filename: Optional[str],
+            revision: Optional[str],
+            allow_patterns: Optional[List[str]],
+            ignore_patterns: Optional[List[str]],
     ) -> None:
         Logger.info(
             f"Start to download, model_id: {model_id}, filename: {filename}, revision: {revision}"
         )
 
-        if filename:
-            hf_hub_download(
-                repo_id=model_id,
-                filename=filename,
-                local_dir=MODEL_LOCAL_DIR,
-                revision=revision,
-            )
-            file_size = os.path.getsize(MODEL_LOCAL_DIR + filename) / (1024**3)
-            Logger.info(
-                f"The total size of {MODEL_LOCAL_DIR + filename} is {file_size: .2f} GB"
-            )
-            return
-
         local_dir = os.path.join(
-            MODEL_LOCAL_DIR, f"models--{model_id.replace('/','--')}"
+            MODEL_LOCAL_DIR, f"models--{model_id.replace('/', '--')}"
         )
 
-        # # TODO: Should we verify the download is finished?
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = []
-            for file in list_repo_files(repo_id=model_id):
-                # TODO: support version management, right now we didn't distinguish with them.
-                futures.append(
-                    executor.submit(
-                        hf_hub_download,
-                        repo_id=model_id,
-                        filename=file,
-                        local_dir=local_dir,
-                        revision=revision,
-                    ).add_done_callback(handle_completion)
-                )
+        if filename:
+            allow_patterns.append(filename)
+            local_dir = MODEL_LOCAL_DIR
+
+        snapshot_download(
+            repo_id=model_id,
+            revision=revision,
+            local_dir=local_dir,
+            allow_patterns=allow_patterns,
+            ignore_patterns=ignore_patterns,
+        )
 
         total_size = get_folder_total_size(local_dir)
         Logger.info(f"The total size of {local_dir} is {total_size: .2f} GB")
-
-
-def handle_completion(future):
-    filename = future.result()
-    Logger.info(f"Download completed for {filename}")

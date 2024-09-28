@@ -17,10 +17,9 @@ limitations under the License.
 package modelSource
 
 import (
-	corev1 "k8s.io/api/core/v1"
-
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/util"
+	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -60,11 +59,13 @@ type ModelSourceProvider interface {
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	if model.Spec.Source.ModelHub != nil {
 		return &ModelHubProvider{
-			modelName:     model.Name,
-			modelID:       model.Spec.Source.ModelHub.ModelID,
-			modelHub:      *model.Spec.Source.ModelHub.Name,
-			fileName:      model.Spec.Source.ModelHub.Filename,
-			modelRevision: model.Spec.Source.ModelHub.Revision,
+			modelName:           model.Name,
+			modelID:             model.Spec.Source.ModelHub.ModelID,
+			modelHub:            *model.Spec.Source.ModelHub.Name,
+			fileName:            model.Spec.Source.ModelHub.Filename,
+			modelRevision:       model.Spec.Source.ModelHub.Revision,
+			modelAllowPatterns:  model.Spec.Source.ModelHub.AllowPatterns,
+			modelIgnorePatterns: model.Spec.Source.ModelHub.IgnorePatterns,
 		}
 	}
 
