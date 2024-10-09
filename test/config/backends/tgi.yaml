@@ -1,0 +1,27 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: BackendRuntime
+metadata:
+  labels:
+    app.kubernetes.io/name: backendruntime
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/created-by: llmaz
+  name: tgi
+spec:
+  image: ghcr.io/huggingface/text-generation-inference
+  version: 2.3.1
+  # Do not edit the preset argument name unless you know what you're doing.
+  # Free to add more arguments with your requirements.
+  args:
+    - name: default
+      flags:
+        - --model-id
+        - "{{`{{ .ModelPath }}`}}"
+        - --port
+        - "8080"
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
