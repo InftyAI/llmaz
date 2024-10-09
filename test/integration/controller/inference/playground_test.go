@@ -236,6 +236,34 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
+		ginkgo.Entry("advance configured Playground with tgi", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
+					BackendRuntime("tgi").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--model-id", "Qwen/Qwen2-0.5B-Instruct"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
+					Obj()
+			},
+			updates: []*update{
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
 		ginkgo.Entry("playground is created when service exists with the same name", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return util.MockASamplePlayground(ns.Name)
