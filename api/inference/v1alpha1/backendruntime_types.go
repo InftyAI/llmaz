@@ -35,7 +35,8 @@ type BackendRuntimeArg struct {
 // BackendRuntimeSpec defines the desired state of BackendRuntime
 type BackendRuntimeSpec struct {
 	// Commands represents the default command of the backendRuntime.
-	Commands []string `json:"commands"`
+	// +optional
+	Commands []string `json:"commands,omitempty"`
 	// Image represents the default image registry of the backendRuntime.
 	// It will work together with version to make up a real image.
 	Image string `json:"image"`

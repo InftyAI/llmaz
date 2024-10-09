@@ -231,7 +231,6 @@ spec:
                   It will be appended to the image as a tag.
                 type: string
             required:
-            - commands
             - image
             - resources
             - version
