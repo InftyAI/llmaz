@@ -21,11 +21,7 @@ import corev1 "k8s.io/api/core/v1"
 type BackendName string
 
 const (
-	LLAMACPP BackendName = "llamacpp"
-	SGLANG   BackendName = "sglang"
-	VLLM     BackendName = "vllm"
-
-	DefaultBackend BackendName = VLLM
+	DefaultBackend BackendName = "vllm"
 )
 
 type BackendRuntimeConfig struct {

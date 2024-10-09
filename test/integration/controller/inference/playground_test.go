@@ -154,11 +154,9 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
-		ginkgo.Entry("advance configured Playground with sglang", &testValidatingCase{
+		ginkgo.Entry("Playground with speculativeDecoding", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRuntime("sglang").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
-					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaims([]string{model.Name, draftModel.Name}, []string{"main", "draft"}).Label(coreapi.ModelNameLabelKey, model.Name).
 					Obj()
 			},
 			updates: []*update{
@@ -182,9 +180,11 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
-		ginkgo.Entry("Playground with speculativeDecoding", &testValidatingCase{
+		ginkgo.Entry("advance configured Playground with sglang", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).ModelClaims([]string{model.Name, draftModel.Name}, []string{"main", "draft"}).Label(coreapi.ModelNameLabelKey, model.Name).
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
+					BackendRuntime("sglang").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
 			updates: []*update{

@@ -87,15 +87,9 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: true,
 		}),
-		ginkgo.Entry("sglang backendruntime supporeted", &testValidatingCase{
+		ginkgo.Entry("any kind of backendRuntime should be supported", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime(string(inferenceapi.SGLANG)).Obj()
-			},
-			failed: false,
-		}),
-		ginkgo.Entry("llamacpp backendruntime supporeted", &testValidatingCase{
-			playground: func() *inferenceapi.Playground {
-				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime(string(inferenceapi.LLAMACPP)).Obj()
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime(string("unknown")).Obj()
 			},
 			failed: false,
 		}),

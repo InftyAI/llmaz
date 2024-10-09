@@ -102,7 +102,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	backendRuntimeName := inferenceapi.VLLM
+	backendRuntimeName := inferenceapi.DefaultBackend
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
 		backendRuntimeName = *playground.Spec.BackendRuntimeConfig.Name
 	}
