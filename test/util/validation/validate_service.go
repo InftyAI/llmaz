@@ -111,6 +111,12 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, workload *lws.Lead
 			if model.Spec.Source.ModelHub.Revision != nil {
 				envStrings = append(envStrings, "REVISION")
 			}
+			if model.Spec.Source.ModelHub.AllowPatterns != nil {
+				envStrings = append(envStrings, "MODEL_ALLOW_PATTERNS")
+			}
+			if model.Spec.Source.ModelHub.IgnorePatterns != nil {
+				envStrings = append(envStrings, "MODEL_IGNORE_PATTERNS")
+			}
 		}
 		if model.Spec.Source.URI != nil {
 			envStrings = []string{"MODEL_SOURCE_TYPE", "PROVIDER", "ENDPOINT", "BUCKET", "MODEL_PATH", "OSS_ACCESS_KEY_ID", "OSS_ACCESS_KEY_SECRET"}
