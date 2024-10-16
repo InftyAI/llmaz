@@ -24,7 +24,7 @@ Models can be loaded from modelHub like Huggingface or object stores:
 
 Once deployed successfully, you can query like this:
 
-- export the service: `kubectl port-forward pod/qwen2-0-5b-0 8080:8080`
+- export the service: `kubectl port-forward pod/qwen2-0--5b-0 8080:8080`
 - run command:
 
     ```cmd
