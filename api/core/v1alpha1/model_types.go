@@ -49,6 +49,12 @@ type ModelHub struct {
 	// +kubebuilder:default=main
 	// +optional
 	Revision *string `json:"revision,omitempty"`
+	// AllowPatterns refers to only files matching at least one pattern are downloaded.
+	// +optional
+	AllowPatterns []string `json:"allowPatterns,omitempty"`
+	// IgnorePatterns refers to files matching any of the patterns are not downloaded.
+	// +optional
+	IgnorePatterns []string `json:"ignorePatterns,omitempty"`
 }
 
 // URIProtocol represents the protocol of the URI.
