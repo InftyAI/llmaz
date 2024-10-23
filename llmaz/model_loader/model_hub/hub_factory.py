@@ -13,19 +13,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from llmaz.model_loader.constant import HUB_HUGGING_FACE, HUB_MODEL_SCOPE
 from llmaz.model_loader.model_hub.model_hub import ModelHub
-from llmaz.model_loader.model_hub.huggingface import HUGGING_FACE, Huggingface
-from llmaz.model_loader.model_hub.modelscope import MODEL_SCOPE, ModelScope
-
+from llmaz.model_loader.model_hub.huggingface import Huggingface
+from llmaz.model_loader.model_hub.modelscope import ModelScope
 
 SUPPORT_MODEL_HUBS = {
-    HUGGING_FACE: Huggingface,
-    MODEL_SCOPE: ModelScope,
+    HUB_HUGGING_FACE: Huggingface,
+    HUB_MODEL_SCOPE: ModelScope,
 }
 
 
 class HubFactory:
+
     @classmethod
     def new(cls, hub_name: str) -> ModelHub:
         if hub_name not in SUPPORT_MODEL_HUBS.keys():

@@ -1,6 +1,6 @@
 from omnistore.objstore import StoreFactory
 
-from llmaz.model_loader.defaults import MODEL_LOCAL_DIR
+from llmaz.model_loader.constant import MODEL_LOCAL_DIR
 
 
 def model_download(provider: str, endpoint: str, bucket: str, src: str):

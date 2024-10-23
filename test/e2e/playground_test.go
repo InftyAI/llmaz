@@ -48,7 +48,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 	})
 
 	ginkgo.It("Deploy a huggingface model with llama.cpp", func() {
-		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "").Obj()
+		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 		defer func() {
 			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
@@ -73,7 +73,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 			Request("cpu", "2").Request("memory", "4Gi").Limit("cpu", "4").Limit("memory", "4Gi").Obj()
 		gomega.Expect(k8sClient.Create(ctx, backendRuntime)).To(gomega.Succeed())
 
-		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "").Obj()
+		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 		defer func() {
 			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
@@ -92,12 +92,12 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 	})
 	// TODO: add e2e tests.
 	// ginkgo.It("SpeculativeDecoding with llama.cpp", func() {
-	// 	targetModel := wrapper.MakeModel("llama2-7b-q8-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q8_0.gguf", "").Obj()
+	// 	targetModel := wrapper.MakeModel("llama2-7b-q8-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q8_0.gguf", "", nil, nil).Obj()
 	// 	gomega.Expect(k8sClient.Create(ctx, targetModel)).To(gomega.Succeed())
 	// 	defer func() {
 	// 		gomega.Expect(k8sClient.Delete(ctx, targetModel)).To(gomega.Succeed())
 	// 	}()
-	// 	draftModel := wrapper.MakeModel("llama2-7b-q2-k-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q2_K.gguf", "").Obj()
+	// 	draftModel := wrapper.MakeModel("llama2-7b-q2-k-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q2_K.gguf", "", nil, nil).Obj()
 	// 	gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
 	// 	defer func() {
 	// 		gomega.Expect(k8sClient.Delete(ctx, draftModel)).To(gomega.Succeed())

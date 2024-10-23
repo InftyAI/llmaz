@@ -47,7 +47,7 @@ func (w *ModelWrapper) FamilyName(name string) *ModelWrapper {
 	return w
 }
 
-func (w *ModelWrapper) ModelSourceWithModelID(modelID string, filename string, revision string) *ModelWrapper {
+func (w *ModelWrapper) ModelSourceWithModelID(modelID string, filename string, revision string, allowPatterns, ignorePatterns []string) *ModelWrapper {
 	if modelID != "" {
 		if w.Spec.Source.ModelHub == nil {
 			w.Spec.Source.ModelHub = &coreapi.ModelHub{}
@@ -60,6 +60,14 @@ func (w *ModelWrapper) ModelSourceWithModelID(modelID string, filename string, r
 
 		if revision != "" {
 			w.Spec.Source.ModelHub.Revision = &revision
+		}
+
+		if allowPatterns != nil {
+			w.Spec.Source.ModelHub.AllowPatterns = allowPatterns
+		}
+
+		if ignorePatterns != nil {
+			w.Spec.Source.ModelHub.IgnorePatterns = ignorePatterns
 		}
 	}
 	return w
