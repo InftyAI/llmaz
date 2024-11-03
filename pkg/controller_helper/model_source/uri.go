@@ -26,18 +26,23 @@ import (
 var _ ModelSourceProvider = &URIProvider{}
 
 const (
-	OSS = "OSS"
+	OSS    = "OSS"
+	OLLAMA = "OLLAMA"
 )
 
 type URIProvider struct {
-	modelName string
-	protocol  string
-	bucket    string
-	endpoint  string
-	modelPath string
+	modelName    string
+	protocol     string
+	bucket       string
+	endpoint     string
+	modelPath    string
+	modelAddress string
 }
 
 func (p *URIProvider) ModelName() string {
+	if p.protocol == OLLAMA {
+		return p.modelAddress
+	}
 	return p.modelName
 }
 
@@ -58,6 +63,9 @@ func (p *URIProvider) ModelPath() string {
 }
 
 func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
+	if p.protocol == OLLAMA {
+		return
+	}
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)

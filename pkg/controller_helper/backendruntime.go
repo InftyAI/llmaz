@@ -19,6 +19,7 @@ package helper
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 
@@ -94,19 +95,22 @@ func (p *BackendRuntimeParser) Resources() inferenceapi.ResourceRequirements {
 func renderFlags(flags []string, modelInfo map[string]string) ([]string, error) {
 	// Capture the word.
 	re := regexp.MustCompile(`\{\{\s*\.(\w+)\s*\}\}`)
+
 	res := []string{}
-	var value string
 
 	for _, flag := range flags {
-		value = flag
-		match := re.FindStringSubmatch(flag)
-		if len(match) > 1 {
-			// Return the matched word.
-			value = modelInfo[match[1]]
-
-			if value == "" {
+		value := flag
+		matches := re.FindAllStringSubmatch(flag, -1)
+		for _, match := range matches {
+			if len(match) <= 1 {
+				continue
+			}
+			key := match[1]
+			replacement, exists := modelInfo[key]
+			if !exists {
 				return nil, fmt.Errorf("missing flag or the flag has format error: %s", flag)
 			}
+			value = strings.Replace(value, match[0], replacement, -1)
 		}
 
 		res = append(res, value)

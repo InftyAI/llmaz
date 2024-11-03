@@ -1,0 +1,29 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: BackendRuntime
+metadata:
+  labels:
+    app.kubernetes.io/name: backendruntime
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/created-by: llmaz
+  name: ollama
+spec:
+  commands:
+    - sh
+    - -c
+  image: ollama/ollama
+  version: latest
+  args:
+    - name: default
+      flags:
+        - "ollama serve &
+           while true; do output=$(ollama list 2>&1);
+           if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;
+           ollama run {{`{{ .ModelName }}`}};
+           while true;do sleep 60;done"
+  resources:
+    requests:
+      cpu: 2
+      memory: 4Gi
+    limits:
+      cpu: 2
+      memory: 4Gi

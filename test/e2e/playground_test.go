@@ -47,6 +47,25 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		gomega.Expect(testing.DeleteNamespace(ctx, k8sClient, ns)).To(gomega.Succeed())
 	})
 
+	ginkgo.It("Deploy a ollama model with ollama", func() {
+		backendRuntime := wrapper.MakeBackendRuntime("llmaz-ollama").
+			Image("ollama/ollama").Version("latest").
+			Command([]string{"sh", "-c"}).
+			Arg("default", []string{"ollama serve & while true;do output=$(ollama list 2>&1);if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;ollama run {{.ModelName}};while true;do sleep 60;done"}).
+			Request("cpu", "2").Request("memory", "4Gi").Limit("cpu", "4").Limit("memory", "4Gi").Obj()
+		gomega.Expect(k8sClient.Create(ctx, backendRuntime)).To(gomega.Succeed())
+
+		model := wrapper.MakeModel("qwen2-0--5b").FamilyName("qwen2").ModelSourceWithURI("ollama://qwen2:0.5b").Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+		playground := wrapper.MakePlayground("qwen2-0--5b", ns.Name).ModelClaim("qwen2-0--5b").BackendRuntime("llmaz-ollama").Replicas(1).Obj()
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+	})
 	ginkgo.It("Deploy a huggingface model with llama.cpp", func() {
 		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())

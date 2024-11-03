@@ -72,11 +72,12 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	if model.Spec.Source.URI != nil {
 		// We'll validate the format in the webhook, so generally no error should happen here.
 		protocol, address, _ := util.ParseURI(string(*model.Spec.Source.URI))
-		provider := &URIProvider{modelName: model.Name, protocol: protocol}
+		provider := &URIProvider{modelName: model.Name, protocol: protocol, modelAddress: address}
 
 		switch protocol {
 		case OSS:
 			provider.endpoint, provider.bucket, provider.modelPath, _ = util.ParseOSS(address)
+		case OLLAMA:
 		default:
 			// This should be validated at webhooks.
 			panic("protocol not supported")

@@ -10,6 +10,7 @@ We provide a set of examples to help you serve large language models, by default
 - [Deploy models via SGLang](#deploy-models-via-sglang)
 - [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
 - [Deploy models via text-generation-inference](#deploy-models-via-tgi)
+- [Deploy models via ollama](#ollama)
 - [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
 
 ### Deploy models from Huggingface
@@ -32,7 +33,7 @@ In theory, if we want to load the `Qwen2-7B` model, which occupies about 14.2 GB
 
 - Alibaba Cloud OSS, see [example](./objstore-oss/) here
 
-    > Note: you should set OSS_ACCESS_KEY_ID and OSS_ACCESS_kEY_SECRET first by running `kubectl create secret generic oss-access-secret --from-literal=OSS_ACCESS_KEY_ID=<your ID> --from-literal=OSS_ACCESS_kEY_SECRET=<your secret>`
+  > Note: you should set OSS_ACCESS_KEY_ID and OSS_ACCESS_kEY_SECRET first by running `kubectl create secret generic oss-access-secret --from-literal=OSS_ACCESS_KEY_ID=<your ID> --from-literal=OSS_ACCESS_kEY_SECRET=<your secret>`
 
 ### Deploy models via SGLang
 
@@ -45,6 +46,10 @@ By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference
 ### Deploy models via text-generation-inference
 
 [text-generation-inference](https://github.com/huggingface/text-generation-inference) is used in production at Hugging Face to power Hugging Chat, the Inference API and Inference Endpoint. see [example](./tgi/) here.
+
+### Deploy models via ollama
+
+[ollama](https://github.com/ollama/ollama) based on llama.cpp, aims for local deploy. see [example](./ollama/) here.
 
 ### Speculative Decoding with vLLM
 
