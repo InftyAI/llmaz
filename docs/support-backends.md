@@ -14,6 +14,10 @@ If you want to integrate more backends into llmaz, please refer to this [PR](htt
 
 [text-generation-inference](https://github.com/huggingface/text-generation-inference) is a Rust, Python and gRPC server for text generation inference. Used in production at Hugging Face to power Hugging Chat, the Inference API and Inference Endpoint.
 
+## ollama
+
+[ollama](https://github.com/ollama/ollama) is running with Llama 3.2, Mistral, Gemma 2, and other large language models, based on llama.cpp, aims for local deploy.
+
 ## vLLM
 
 [vLLM](https://github.com/vllm-project/vllm) is a high-throughput and memory-efficient inference and serving engine for LLMs

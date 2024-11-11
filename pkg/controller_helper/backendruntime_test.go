@@ -31,6 +31,15 @@ func TestRenderFlags(t *testing.T) {
 		wantError bool
 	}{
 		{
+			name:  "normal parse long args",
+			flags: []string{"run {{ .ModelPath }};sleep 5", "--host", "0.0.0.0"},
+			modelInfo: map[string]string{
+				"ModelPath": "path/to/model",
+				"ModelName": "foo",
+			},
+			wantFlags: []string{"run path/to/model;sleep 5", "--host", "0.0.0.0"},
+		},
+		{
 			name:  "normal parse",
 			flags: []string{"-m", "{{ .ModelPath }}", "--served-model-name", "{{ .ModelName }}", "--host", "0.0.0.0"},
 			modelInfo: map[string]string{
