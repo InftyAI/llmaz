@@ -46,6 +46,7 @@ func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 }
 
 func (p *BackendRuntimeParser) Args(mode InferenceMode, models []*coreapi.OpenModel) ([]string, error) {
+	// TODO: add validation in webhook.
 	if mode == SpeculativeDecodingInferenceMode && len(models) != 2 {
 		return nil, fmt.Errorf("models number not right, want 2, got %d", len(models))
 	}
