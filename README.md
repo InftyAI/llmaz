@@ -24,7 +24,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 <p align="center">
   <picture>
-    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/arch.png" width=100%>
+    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/arch.png" width=70%>
   </picture>
 </p>
 
