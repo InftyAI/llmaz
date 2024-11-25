@@ -110,6 +110,13 @@ spec:
                   type: object
                 maxItems: 8
                 type: array
+              preheat:
+                default: false
+                description: |-
+                  Preheat represents whether we should preload the model, by default will use Manta(https://github.com/InftyAI/Manta)
+                  to preload the model, so you should enable the Manta in prior.
+                  Note: right now, we only support preloading models from Huggingface.
+                type: boolean
               source:
                 description: |-
                   Source represents the source of the model, there're several ways to load

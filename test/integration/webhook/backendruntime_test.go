@@ -19,6 +19,7 @@ package webhook
 import (
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
+	"k8s.io/apimachinery/pkg/types"
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
@@ -37,44 +38,57 @@ var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 	})
 
 	type testValidatingCase struct {
-		creationFunc func() error
-		failed       bool
+		creationFunc func() *inferenceapi.BackendRuntime
+		createFailed bool
+		updateFunc   func(*inferenceapi.BackendRuntime) *inferenceapi.BackendRuntime
+		updateFiled  bool
 	}
 	ginkgo.DescribeTable("test validating",
 		func(tc *testValidatingCase) {
-			if tc.failed {
-				gomega.Expect(tc.creationFunc()).To(gomega.HaveOccurred())
+			backend := tc.creationFunc()
+			err := k8sClient.Create(ctx, backend)
+
+			if tc.createFailed {
+				gomega.Expect(err).To(gomega.HaveOccurred())
+				return
 			} else {
-				gomega.Expect(tc.creationFunc()).To(gomega.Succeed())
+				gomega.Expect(err).To(gomega.Succeed())
+			}
+
+			gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: backend.Name, Namespace: backend.Namespace}, backend)).Should(gomega.Succeed())
+
+			if tc.updateFunc != nil {
+				err = k8sClient.Update(ctx, tc.updateFunc(backend))
+				if tc.updateFiled {
+					gomega.Expect(err).To(gomega.HaveOccurred())
+				} else {
+					gomega.Expect(err).To(gomega.Succeed())
+				}
 			}
 		},
 		ginkgo.Entry("normal BackendRuntime creation", &testValidatingCase{
-			creationFunc: func() error {
-				runtime := util.MockASampleBackendRuntime().Obj()
-				return k8sClient.Create(ctx, runtime)
+			creationFunc: func() *inferenceapi.BackendRuntime {
+				return util.MockASampleBackendRuntime().Obj()
 			},
-			failed: false,
+			createFailed: false,
 		}),
 		ginkgo.Entry("BackendRuntime creation with limits less than requests", &testValidatingCase{
-			creationFunc: func() error {
-				runtime := util.MockASampleBackendRuntime().Limit("cpu", "1").Obj()
-				return k8sClient.Create(ctx, runtime)
+			creationFunc: func() *inferenceapi.BackendRuntime {
+				return util.MockASampleBackendRuntime().Limit("cpu", "1").Obj()
 			},
-			failed: true,
+			createFailed: true,
 		}),
 		ginkgo.Entry("BackendRuntime creation with unknown argument name", &testValidatingCase{
-			creationFunc: func() error {
-				runtime := util.MockASampleBackendRuntime().Arg("unknown", []string{"foo", "bar"}).Obj()
-				return k8sClient.Create(ctx, runtime)
+			creationFunc: func() *inferenceapi.BackendRuntime {
+				return util.MockASampleBackendRuntime().Arg("unknown", []string{"foo", "bar"}).Obj()
 			},
-			failed: false,
+			createFailed: false,
 		}),
 		ginkgo.Entry("BackendRuntime creation with duplicated argument name", &testValidatingCase{
-			creationFunc: func() error {
-				runtime := util.MockASampleBackendRuntime().Arg("default", []string{"foo", "bar"}).Obj()
-				return k8sClient.Create(ctx, runtime)
+			creationFunc: func() *inferenceapi.BackendRuntime {
+				return util.MockASampleBackendRuntime().Arg("default", []string{"foo", "bar"}).Obj()
 			},
-			failed: true,
+			createFailed: true,
 		}),
 	)
 })

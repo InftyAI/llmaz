@@ -33,3 +33,4 @@ __pycache__
 .pytest_cache
 *.tgz
 .huggingface
+dist/

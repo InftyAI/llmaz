@@ -101,3 +101,15 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - manta.io
+  resources:
+  - torrents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch

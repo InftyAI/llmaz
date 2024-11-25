@@ -33,7 +33,7 @@ resources:
   controller: true
   domain: llmaz.io
   kind: Model
-  path: github.com/inftyai/manta/api/v1alpha1
+  path: github.com/inftyai/manta/api/core/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true

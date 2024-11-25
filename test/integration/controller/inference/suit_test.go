@@ -40,7 +40,7 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
-	"github.com/inftyai/llmaz/pkg/controller"
+	corecontroller "github.com/inftyai/llmaz/pkg/controller/core"
 	inferencecontroller "github.com/inftyai/llmaz/pkg/controller/inference"
 	"github.com/inftyai/llmaz/test/util"
 )
@@ -110,7 +110,7 @@ var _ = BeforeSuite(func() {
 	})
 	Expect(err).ToNot(HaveOccurred())
 
-	modelController := controller.NewModelReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("model"))
+	modelController := corecontroller.NewModelReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("model"))
 	Expect(modelController.SetupWithManager(mgr)).NotTo(HaveOccurred())
 	playgroundController := inferencecontroller.NewPlaygroundReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("playground"))
 	Expect(playgroundController.SetupWithManager(mgr)).NotTo(HaveOccurred())
