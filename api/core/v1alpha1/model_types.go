@@ -24,6 +24,16 @@ import (
 const (
 	ModelFamilyNameLabelKey = "llmaz.io/model-family-name"
 	ModelNameLabelKey       = "llmaz.io/model-name"
+	// Annotation with value = "true" represents we'll preload the model,
+	// by default via Manta(https://github.com/InftyAI/Manta), make sure
+	// Manta is installed in prior.
+	// Note: right now, we only support preloading models from Huggingface,
+	// in the future, more hubs and objstores will also be supported.
+	//
+	// We set this as an annotation rather than a field is just because preheating
+	// models is not a common sense and Manta is not a mature solution right now.
+	// Once either of them qualified, we'll expose this as a field in Model.
+	ModelPreheatAnnoKey = "llmaz.io/model-preheat"
 
 	HUGGING_FACE = "Huggingface"
 	MODEL_SCOPE  = "ModelScope"
@@ -182,6 +192,13 @@ type ModelSpec struct {
 	// +optional
 	InferenceFlavors []Flavor `json:"inferenceFlavors,omitempty"`
 }
+
+const (
+	// ModelPending means model is waiting for model downloading.
+	ModelPending = "Pending"
+	// ModelReady means model is already downloaded.
+	ModelReady = "Ready"
+)
 
 // ModelStatus defines the observed state of Model
 type ModelStatus struct {

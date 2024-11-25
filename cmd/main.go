@@ -36,7 +36,7 @@ import (
 	corev1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/cert"
-	"github.com/inftyai/llmaz/pkg/controller"
+	corecontroller "github.com/inftyai/llmaz/pkg/controller/core"
 	inferencecontroller "github.com/inftyai/llmaz/pkg/controller/inference"
 	"github.com/inftyai/llmaz/pkg/webhook"
 	//+kubebuilder:scaffold:imports
@@ -137,7 +137,7 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 	<-certsReady
 	setupLog.Info("certs ready")
 
-	if err := (&controller.ModelReconciler{
+	if err := (&corecontroller.ModelReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

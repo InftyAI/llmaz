@@ -13,7 +13,7 @@ Models can be loaded from modelHub like Huggingface or object stores:
         filename: qwen2-0_5b-instruct-q5_k_m.gguf
     ```
 
-- From Object Store
+- From Object Store (this is for private)
 
     ```yaml
     source:

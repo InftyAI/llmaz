@@ -101,9 +101,11 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 			corev1.EnvVar{Name: "MODEL_IGNORE_PATTERNS", Value: strings.Join(p.modelIgnorePatterns, ",")},
 		)
 	}
+
+	// Both HUGGING_FACE_HUB_TOKEN and HF_TOKEN works.
 	initContainer.Env = append(initContainer.Env,
 		corev1.EnvVar{
-			Name: "HUGGING_FACE_HUB_TOKEN", // vllm
+			Name: "HUGGING_FACE_HUB_TOKEN",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -114,7 +116,7 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 				},
 			},
 		}, corev1.EnvVar{
-			Name: "HF_TOKEN", //sglang
+			Name: "HF_TOKEN",
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{

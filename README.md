@@ -31,13 +31,13 @@ Easy, advanced inference platform for large language models on Kubernetes
 ## Features Overview
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
-- **Broad Backend Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
+- **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
 - **Model Distribution**: Out-of-the-box model cache system with [Manta](https://github.com/InftyAI/Manta).
-- **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to support elastic scenarios.
-- **Accelerator Fungibility (WIP)**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
+- **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
 - **SOTA Inference**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677)(WIP) to run on Kubernetes.
-- **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores(aliyun OSS, more on the way). llmaz automatically handles the model loading requiring no effort from users.
+- **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores. llmaz will automatically handle the model loading, requiring no effort from users.
 - **Multi-hosts Support**: llmaz supports both single-host and multi-hosts scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0.
+- **Scaling Efficiency (WIP)**: llmaz works smoothly with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) to meet elastic demands.
 
 ## Quick Start
 
@@ -47,10 +47,10 @@ Read the [Installation](./docs/installation.md) for guidance.
 
 ### Deploy
 
-Here's a toy sample for deploying `facebook/opt-125m`, all you need to do
+Here's a toy example for deploying `facebook/opt-125m`, all you need to do
 is to apply a `Model` and a `Playground`.
 
-Please refer to **[examples](/docs/examples/README.md)** to learn more.
+If you're running on CPUs, you can refer to [llama.cpp](/docs/examples/llamacpp/README.md), or more examples [here](/docs/examples/README.md).
 
 > Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic modelhub-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
@@ -125,12 +125,12 @@ If you want to learn more about this project, please refer to [develop.md](./doc
 - Model training, fine tuning in the long-term
 
 
+## Community
+
+Join us for more discussions:
+
+* **Slack Channel**: [#llmaz](https://inftyai.slack.com/archives/C06D0BGEQ1G)
+
 ## Contributions
 
-🚀 All kinds of contributions are welcomed ! Please follow [CONTRIBUTING.md](./CONTRIBUTING.md).
-
-**🎉 Thanks to all these contributors !**
-
-<a href="https://github.com/inftyai/llmaz/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=inftyai/llmaz" />
-</a>
+All kinds of contributions are welcomed ! Please following [CONTRIBUTING.md](./CONTRIBUTING.md).
