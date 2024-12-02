@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/inftyai/manta v0.0.3
 	github.com/onsi/ginkgo/v2 v2.22.0
-	github.com/onsi/gomega v1.35.1
+	github.com/onsi/gomega v1.36.0
 	github.com/open-policy-agent/cert-controller v0.12.0
 	k8s.io/api v0.31.3
 	k8s.io/apiextensions-apiserver v0.31.3
