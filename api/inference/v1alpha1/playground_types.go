@@ -42,6 +42,11 @@ type PlaygroundSpec struct {
 	// under the hood, e.g. vLLM, which is the default backendRuntime.
 	// +optional
 	BackendRuntimeConfig *BackendRuntimeConfig `json:"backendRuntimeConfig,omitempty"`
+	// ElasticConfig defines the configuration for elastic usage,
+	// e.g. the max/min replicas. Default to 0 ~ Inf+.
+	// This requires to install the HPA first or will not work.
+	// +optional
+	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
 
 const (

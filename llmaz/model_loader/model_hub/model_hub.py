@@ -27,11 +27,11 @@ class ModelHub(ABC):
     @classmethod
     @abstractmethod
     def load_model(
-            cls,
-            model_id: str,
-            filename: Optional[str],
-            revision: Optional[str],
-            allow_patterns: Optional[List[str]],
-            ignore_patterns: Optional[List[str]],
+        cls,
+        model_id: str,
+        filename: Optional[str],
+        revision: Optional[str],
+        allow_patterns: Optional[List[str]],
+        ignore_patterns: Optional[List[str]],
     ) -> None:
         pass

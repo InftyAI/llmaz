@@ -30,5 +30,5 @@ def get_folder_total_size(folder_path: str) -> float:
             except OSError as e:
                 Logger.error(f"Failed to get file {file_path} size, err is {e}")
 
-    total_size_gb = total_size / (1024 ** 3)
+    total_size_gb = total_size / (1024**3)
     return total_size_gb

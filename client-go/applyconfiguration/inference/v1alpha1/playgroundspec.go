@@ -28,6 +28,7 @@ type PlaygroundSpecApplyConfiguration struct {
 	ModelClaim           *v1alpha1.ModelClaimApplyConfiguration  `json:"modelClaim,omitempty"`
 	ModelClaims          *v1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
 	BackendRuntimeConfig *BackendRuntimeConfigApplyConfiguration `json:"backendRuntimeConfig,omitempty"`
+	ElasticConfig        *ElasticConfigApplyConfiguration        `json:"elasticConfig,omitempty"`
 }
 
 // PlaygroundSpecApplyConfiguration constructs a declarative configuration of the PlaygroundSpec type for use with
@@ -65,5 +66,13 @@ func (b *PlaygroundSpecApplyConfiguration) WithModelClaims(value *v1alpha1.Model
 // If called multiple times, the BackendRuntimeConfig field is set to the value of the last call.
 func (b *PlaygroundSpecApplyConfiguration) WithBackendRuntimeConfig(value *BackendRuntimeConfigApplyConfiguration) *PlaygroundSpecApplyConfiguration {
 	b.BackendRuntimeConfig = value
+	return b
+}
+
+// WithElasticConfig sets the ElasticConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ElasticConfig field is set to the value of the last call.
+func (b *PlaygroundSpecApplyConfiguration) WithElasticConfig(value *ElasticConfigApplyConfiguration) *PlaygroundSpecApplyConfiguration {
+	b.ElasticConfig = value
 	return b
 }
