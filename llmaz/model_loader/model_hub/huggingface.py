@@ -36,12 +36,12 @@ class Huggingface(ModelHub):
 
     @classmethod
     def load_model(
-            cls,
-            model_id: str,
-            filename: Optional[str],
-            revision: Optional[str],
-            allow_patterns: Optional[List[str]],
-            ignore_patterns: Optional[List[str]],
+        cls,
+        model_id: str,
+        filename: Optional[str],
+        revision: Optional[str],
+        allow_patterns: Optional[List[str]],
+        ignore_patterns: Optional[List[str]],
     ) -> None:
         Logger.info(
             f"Start to download, model_id: {model_id}, filename: {filename}, revision: {revision}"
