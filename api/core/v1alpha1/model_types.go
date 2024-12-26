@@ -98,14 +98,13 @@ type FlavorName string
 type Flavor struct {
 	// Name represents the flavor name, which will be used in model claim.
 	Name FlavorName `json:"name"`
-	// Requests defines the required accelerators to serve the model, like nvidia.com/gpu: 8.
-	// When GPU number is greater than 8, like 32, then multi-host inference is enabled and
-	// 32/8=4 hosts will be grouped as an unit, each host will have a resource request as
-	// nvidia.com/gpu: 8. The may change in the future if the GPU number limit is broken.
-	// Not recommended to set the cpu and memory usage here.
-	// If using playground, you can define the cpu/mem usage at backendConfig.
-	// If using service, you can define the cpu/mem at the container resources.
-	// Note: if you define the same accelerator requests at playground/service as well,
+	// Requests defines the required accelerators to serve the model for each replica,
+	// like <nvidia.com/gpu: 8>. For multi-hosts cases, the requests here indicates
+	// the resource requirements for each replica. This may change in the future.
+	// Not recommended to set the cpu and memory usage here:
+	// - if using playground, you can define the cpu/mem usage at backendConfig.
+	// - if using inference service, you can define the cpu/mem at the container resources.
+	// However, if you define the same accelerator requests at playground/service as well,
 	// the requests here will be covered.
 	// +optional
 	Requests v1.ResourceList `json:"requests,omitempty"`

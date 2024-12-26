@@ -27,7 +27,6 @@ import (
 type ServiceSpecApplyConfiguration struct {
 	ModelClaims      *v1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
 	WorkloadTemplate *v1.LeaderWorkerSetSpec                 `json:"workloadTemplate,omitempty"`
-	ElasticConfig    *ElasticConfigApplyConfiguration        `json:"elasticConfig,omitempty"`
 }
 
 // ServiceSpecApplyConfiguration constructs a declarative configuration of the ServiceSpec type for use with
@@ -49,13 +48,5 @@ func (b *ServiceSpecApplyConfiguration) WithModelClaims(value *v1alpha1.ModelCla
 // If called multiple times, the WorkloadTemplate field is set to the value of the last call.
 func (b *ServiceSpecApplyConfiguration) WithWorkloadTemplate(value v1.LeaderWorkerSetSpec) *ServiceSpecApplyConfiguration {
 	b.WorkloadTemplate = &value
-	return b
-}
-
-// WithElasticConfig sets the ElasticConfig field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ElasticConfig field is set to the value of the last call.
-func (b *ServiceSpecApplyConfiguration) WithElasticConfig(value *ElasticConfigApplyConfiguration) *ServiceSpecApplyConfiguration {
-	b.ElasticConfig = value
 	return b
 }

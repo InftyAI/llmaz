@@ -19,7 +19,6 @@ package wrapper
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
@@ -61,14 +60,6 @@ func (w *ServiceWrapper) ModelClaims(modelNames []string, roles []string, flavor
 
 	if len(fNames) > 0 {
 		w.Spec.ModelClaims.InferenceFlavors = fNames
-	}
-	return w
-}
-
-func (w *ServiceWrapper) ElasticConfig(maxReplicas, minReplicas int32) *ServiceWrapper {
-	w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{
-		MaxReplicas: ptr.To[int32](maxReplicas),
-		MinReplicas: ptr.To[int32](minReplicas),
 	}
 	return w
 }

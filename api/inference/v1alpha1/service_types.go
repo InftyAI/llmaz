@@ -35,11 +35,6 @@ type ServiceSpec struct {
 	// LWS supports both single-host and multi-host scenarios, for single host
 	// cases, only need to care about replicas, rolloutStrategy and workerTemplate.
 	WorkloadTemplate lws.LeaderWorkerSetSpec `json:"workloadTemplate"`
-	// ElasticConfig defines the configuration for elastic usage,
-	// e.g. the max/min replicas. Default to 0 ~ Inf+.
-	// This requires to install the HPA first or will not work.
-	// +optional
-	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
 
 const (
