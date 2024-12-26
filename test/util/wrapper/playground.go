@@ -22,6 +22,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 )
 
 type PlaygroundWrapper struct {
@@ -152,5 +153,13 @@ func (w *PlaygroundWrapper) BackendRuntimeLimit(r, v string) *PlaygroundWrapper 
 		w.Spec.BackendRuntimeConfig.Resources.Limits = v1.ResourceList{}
 	}
 	w.Spec.BackendRuntimeConfig.Resources.Limits[v1.ResourceName(r)] = resource.MustParse(v)
+	return w
+}
+
+func (w *PlaygroundWrapper) ElasticConfig(maxReplicas, minReplicas int32) *PlaygroundWrapper {
+	w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{
+		MaxReplicas: ptr.To[int32](maxReplicas),
+		MinReplicas: ptr.To[int32](minReplicas),
+	}
 	return w
 }

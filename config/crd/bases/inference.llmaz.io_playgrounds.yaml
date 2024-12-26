@@ -215,6 +215,27 @@ spec:
                       from the default version.
                     type: string
                 type: object
+              elasticConfig:
+                description: |-
+                  ElasticConfig defines the configuration for elastic usage,
+                  e.g. the max/min replicas. Default to 0 ~ Inf+.
+                  This requires to install the HPA first or will not work.
+                properties:
+                  maxReplicas:
+                    description: |-
+                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
+                      Default to nil means there's no limit for the instance number.
+                    format: int32
+                    type: integer
+                  minReplicas:
+                    default: 1
+                    description: |-
+                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
+                      Default to nil means we can scale down the instances to 1.
+                      If minReplicas set to 0, it requires to install serverless component at first.
+                    format: int32
+                    type: integer
+                type: object
               modelClaim:
                 description: |-
                   ModelClaim represents claiming for one model, it's a simplified use case
