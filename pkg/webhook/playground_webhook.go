@@ -112,8 +112,8 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 			}
 		}
 
-		mode := helper.PlaygroundInferenceMode(playground)
-		if mode == helper.SpeculativeDecodingInferenceMode {
+		arg := helper.DetectArgFrom(playground)
+		if arg == helper.SpeculativeDecodingArg {
 			if len(playground.Spec.ModelClaims.Models) != 2 {
 				allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))
 			}

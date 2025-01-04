@@ -33,10 +33,17 @@ type BackendRuntimeConfig struct {
 	// from the default version.
 	// +optional
 	Version *string `json:"version,omitempty"`
-	// Args represents the arguments appended to the backend.
-	// You can add new args or overwrite the default args.
+	// ArgName represents the argument name set in the backendRuntimeArg.
+	// If not set, will be derived by the model role, e.g. if one model's role
+	// is <draft>, the argName will be set to <speculative-decoding>. Better to
+	// set the argName explicitly.
+	// By default, the argName will be treated as <default> in runtime.
 	// +optional
-	Args []string `json:"args,omitempty"`
+	ArgName *string `json:"argName,omitempty"`
+	// ArgFlags represents the argument flags appended to the backend.
+	// You can add new flags or overwrite the default flags.
+	// +optional
+	ArgFlags []string `json:"argFlags,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional
 	Envs []corev1.EnvVar `json:"envs,omitempty"`

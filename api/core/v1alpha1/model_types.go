@@ -139,12 +139,14 @@ type ModelClaim struct {
 type ModelRole string
 
 const (
-	// Main represents the main model, if only one model is required,
+	// MainRole represents the main model, if only one model is required,
 	// it must be the main model. Only one main model is allowed.
 	MainRole ModelRole = "main"
-	// Draft represents the draft model in speculative decoding,
+	// DraftRole represents the draft model in speculative decoding,
 	// the main model is the target model then.
 	DraftRole ModelRole = "draft"
+	// LoraRole represents the lora model.
+	LoraRole ModelRole = "lora"
 )
 
 // ModelRefer refers to a created Model with it's role.

@@ -27,7 +27,8 @@ import (
 type BackendRuntimeConfigApplyConfiguration struct {
 	Name      *v1alpha1.BackendName                   `json:"name,omitempty"`
 	Version   *string                                 `json:"version,omitempty"`
-	Args      []string                                `json:"args,omitempty"`
+	ArgName   *string                                 `json:"argName,omitempty"`
+	ArgFlags  []string                                `json:"argFlags,omitempty"`
 	Envs      []v1.EnvVar                             `json:"envs,omitempty"`
 	Resources *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 }
@@ -54,12 +55,20 @@ func (b *BackendRuntimeConfigApplyConfiguration) WithVersion(value string) *Back
 	return b
 }
 
-// WithArgs adds the given value to the Args field in the declarative configuration
+// WithArgName sets the ArgName field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ArgName field is set to the value of the last call.
+func (b *BackendRuntimeConfigApplyConfiguration) WithArgName(value string) *BackendRuntimeConfigApplyConfiguration {
+	b.ArgName = &value
+	return b
+}
+
+// WithArgFlags adds the given value to the ArgFlags field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the Args field.
-func (b *BackendRuntimeConfigApplyConfiguration) WithArgs(values ...string) *BackendRuntimeConfigApplyConfiguration {
+// If called multiple times, values provided by each call will be appended to the ArgFlags field.
+func (b *BackendRuntimeConfigApplyConfiguration) WithArgFlags(values ...string) *BackendRuntimeConfigApplyConfiguration {
 	for i := range values {
-		b.Args = append(b.Args, values[i])
+		b.ArgFlags = append(b.ArgFlags, values[i])
 	}
 	return b
 }
