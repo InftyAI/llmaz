@@ -45,34 +45,29 @@ func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 	return p.backendRuntime.Spec.Envs
 }
 
-func (p *BackendRuntimeParser) Args(mode InferenceMode, models []*coreapi.OpenModel) ([]string, error) {
-	// TODO: add validation in webhook.
-	if mode == SpeculativeDecodingInferenceMode && len(models) != 2 {
-		return nil, fmt.Errorf("models number not right, want 2, got %d", len(models))
+func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models []*coreapi.OpenModel) ([]string, error) {
+	var argName string
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ArgName != nil {
+		argName = *playground.Spec.BackendRuntimeConfig.ArgName
+	} else {
+		// Auto detect the args from model roles.
+		argName = DetectArgFrom(playground)
 	}
 
-	modelInfo := map[string]string{}
-
-	if mode == DefaultInferenceMode {
-		source := modelSource.NewModelSourceProvider(models[0])
-		modelInfo = map[string]string{
-			"ModelPath": source.ModelPath(),
-			"ModelName": source.ModelName(),
-		}
+	source := modelSource.NewModelSourceProvider(models[0])
+	modelInfo := map[string]string{
+		"ModelPath": source.ModelPath(),
+		"ModelName": source.ModelName(),
 	}
 
-	if mode == SpeculativeDecodingInferenceMode {
-		targetSource := modelSource.NewModelSourceProvider(models[0])
-		draftSource := modelSource.NewModelSourceProvider(models[1])
-		modelInfo = map[string]string{
-			"ModelPath":      targetSource.ModelPath(),
-			"ModelName":      targetSource.ModelName(),
-			"DraftModelPath": draftSource.ModelPath(),
-		}
+	// TODO: This is not that reliable because two models doesn't always means speculative-decoding.
+	// Revisit this later.
+	if len(models) > 1 {
+		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(models[1]).ModelPath()
 	}
 
 	for _, arg := range p.backendRuntime.Spec.Args {
-		if InferenceMode(arg.Name) == mode {
+		if arg.Name == argName {
 			return renderFlags(arg.Flags, modelInfo)
 		}
 	}

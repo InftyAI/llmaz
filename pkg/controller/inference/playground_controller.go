@@ -257,14 +257,14 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (corev1.PodTemplateSpec, error) {
 	parser := helper.NewBackendRuntimeParser(backendRuntime)
 
-	args, err := parser.Args(helper.PlaygroundInferenceMode(playground), models)
+	args, err := parser.Args(playground, models)
 	if err != nil {
 		return corev1.PodTemplateSpec{}, err
 	}
 	envs := parser.Envs()
 
 	if playground.Spec.BackendRuntimeConfig != nil {
-		args = append(args, playground.Spec.BackendRuntimeConfig.Args...)
+		args = append(args, playground.Spec.BackendRuntimeConfig.ArgFlags...)
 		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
 	}
 

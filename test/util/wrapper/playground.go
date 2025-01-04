@@ -109,11 +109,19 @@ func (w *PlaygroundWrapper) BackendRuntimeVersion(version string) *PlaygroundWra
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendRuntimeArgs(args []string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeArgName(name string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.BackendRuntime("vllm")
 	}
-	w.Spec.BackendRuntimeConfig.Args = args
+	w.Spec.BackendRuntimeConfig.ArgName = &name
+	return w
+}
+
+func (w *PlaygroundWrapper) BackendRuntimeArgFlags(args []string) *PlaygroundWrapper {
+	if w.Spec.BackendRuntimeConfig == nil {
+		w = w.BackendRuntime("vllm")
+	}
+	w.Spec.BackendRuntimeConfig.ArgFlags = args
 	return w
 }
 

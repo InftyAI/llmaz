@@ -87,8 +87,13 @@ func (in *BackendRuntimeConfig) DeepCopyInto(out *BackendRuntimeConfig) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.Args != nil {
-		in, out := &in.Args, &out.Args
+	if in.ArgName != nil {
+		in, out := &in.ArgName, &out.ArgName
+		*out = new(string)
+		**out = **in
+	}
+	if in.ArgFlags != nil {
+		in, out := &in.ArgFlags, &out.ArgFlags
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}

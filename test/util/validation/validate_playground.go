@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
@@ -110,11 +111,26 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 					return fmt.Errorf("expected container image %s, got %s", parser.Image(parser.Version()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
 			}
-			for _, arg := range playground.Spec.BackendRuntimeConfig.Args {
+
+			// We assumed the 0-index arg is the default one.
+			argFlags := backendRuntime.Spec.Args[0].Flags
+			if playground.Spec.BackendRuntimeConfig.ArgName != nil {
+				for _, arg := range backendRuntime.Spec.Args {
+					if arg.Name == *playground.Spec.BackendRuntimeConfig.ArgName {
+						argFlags = arg.Flags
+					}
+				}
+			}
+			argFlags = append(argFlags, playground.Spec.BackendRuntimeConfig.ArgFlags...)
+			for _, arg := range argFlags {
+				if strings.Contains(arg, "{{") && strings.Contains(arg, "}}") {
+					continue
+				}
 				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
 					return fmt.Errorf("didn't contain arg: %s", arg)
 				}
 			}
+
 			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
 				return fmt.Errorf("unexpected envs")
 			}

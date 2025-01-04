@@ -1,0 +1,35 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: BackendRuntime
+metadata:
+  labels:
+    app.kubernetes.io/name: backendruntime
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/created-by: llmaz
+  name: fake-backend
+spec:
+  commands:
+    - sh
+    - -c
+    - echo "hello"
+  image: busybox
+  version: latest
+  args:
+    - name: default
+      flags:
+        - mode
+        - "default"
+    - name: speculative-decoding
+      flags:
+        - mode
+        - "speculative-decoding"
+    - name: fuz
+      flags:
+        - mode
+        - "fuz"
+  resources:
+    requests:
+      cpu: 4
+      memory: 8Gi
+    limits:
+      cpu: 4
+      memory: 8Gi

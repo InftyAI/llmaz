@@ -25,31 +25,28 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type InferenceMode string
-
 // These two modes are preset.
 const (
-	DefaultInferenceMode             InferenceMode = "default"
-	SpeculativeDecodingInferenceMode InferenceMode = "speculative-decoding"
+	DefaultArg             string = "default"
+	SpeculativeDecodingArg string = "speculative-decoding"
 )
 
-// PlaygroundInferenceMode gets the mode of inference process, supports default
-// or speculative-decoding for now, which is aligned with backendRuntime.
-func PlaygroundInferenceMode(playground *inferenceapi.Playground) InferenceMode {
+// DetectArgFrom wil auto detect the arg from model roles if not set explicitly.
+func DetectArgFrom(playground *inferenceapi.Playground) string {
 	if playground.Spec.ModelClaim != nil {
-		return DefaultInferenceMode
+		return DefaultArg
 	}
 
 	if playground.Spec.ModelClaims != nil {
 		for _, mr := range playground.Spec.ModelClaims.Models {
 			if *mr.Role == coreapi.DraftRole {
-				return SpeculativeDecodingInferenceMode
+				return SpeculativeDecodingArg
 			}
 		}
 	}
 
 	// We should not reach here.
-	return DefaultInferenceMode
+	return DefaultArg
 }
 
 func FetchModelsByService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) (models []*coreapi.OpenModel, err error) {
