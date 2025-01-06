@@ -1,0 +1,18 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: llama3-405b-instruct
+spec:
+  familyName: llama3
+  source:
+    modelHub:
+      modelID: facebook/opt-125m
+  inferenceFlavors:
+  - name: a100-80gb
+    requests:
+      nvidia.com/gpu: 2 # single node request
+    params:
+      TP: "2"
+      PP: "2"
+    # nodeSelector:
+    #   gpu.a100-80gb: true

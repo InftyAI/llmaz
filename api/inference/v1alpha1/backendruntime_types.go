@@ -32,11 +32,21 @@ type BackendRuntimeArg struct {
 	Flags []string `json:"flags,omitempty"`
 }
 
+// MultiNodesCommands represents leader & worker commands for multiple nodes scenarios.
+type MultiNodesCommands struct {
+	Leader []string `json:"leader,omitempty"`
+	Worker []string `json:"worker,omitempty"`
+}
+
 // BackendRuntimeSpec defines the desired state of BackendRuntime
 type BackendRuntimeSpec struct {
-	// Commands represents the default command of the backendRuntime.
+	// Commands represents the default commands for the backendRuntime.
 	// +optional
 	Commands []string `json:"commands,omitempty"`
+	// MultiNodesCommands represents multiple nodes commands for the backendRuntime,
+	// including leader and worker commands.
+	// +optional
+	MultiNodesCommands *MultiNodesCommands `json:"multiNodesCommands,omitempty"`
 	// Image represents the default image registry of the backendRuntime.
 	// It will work together with version to make up a real image.
 	Image string `json:"image"`
@@ -45,6 +55,7 @@ type BackendRuntimeSpec struct {
 	Version string `json:"version"`
 	// Args represents the preset arguments of the backendRuntime.
 	// They can be appended or overwritten by the Playground backendRuntimeConfig.
+	// Note: for multiNodesCommands, only work for leader commands.
 	Args []BackendRuntimeArg `json:"args,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional

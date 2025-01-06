@@ -23,6 +23,12 @@ import (
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
+const (
+	// InferenceServiceFlavorsAnnoKey is the annotation key for the flavors specified
+	// in the inference service, the value is a comma-separated list of flavor names.
+	InferenceServiceFlavorsAnnoKey = "llmaz.io/inference-service-flavors"
+)
+
 // ServiceSpec defines the desired state of Service.
 // Service controller will maintain multi-flavor of workloads with
 // different accelerators for cost or performance considerations.
