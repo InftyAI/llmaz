@@ -52,7 +52,7 @@ class Huggingface(ModelHub):
         )
 
         if filename:
-            allow_patterns.append(filename)
+            allow_patterns = [filename]
             local_dir = MODEL_LOCAL_DIR
 
         snapshot_download(

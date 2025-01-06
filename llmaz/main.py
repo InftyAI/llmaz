@@ -39,7 +39,7 @@ if __name__ == "__main__":
         if not model_id:
             raise EnvironmentError(f"Environment variable '{model_id}' not found.")
         hub = HubFactory.new(hub_name)
-        model_allow_patterns_list, model_ignore_patterns_list = [], []
+        model_allow_patterns_list, model_ignore_patterns_list = None, None
         if model_allow_patterns:
             model_allow_patterns_list = model_allow_patterns.split(",")
         if model_ignore_patterns:
