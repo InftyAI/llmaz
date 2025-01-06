@@ -33,7 +33,7 @@ controllerManager:
         - ALL
     image:
       repository: inftyai/llmaz
-      tag: v0.0.8
+      tag: v0.0.9
     resources:
       limits:
         cpu: 500m

@@ -45,13 +45,21 @@ spec:
                   BackendRuntimeConfig represents the inference backendRuntime configuration
                   under the hood, e.g. vLLM, which is the default backendRuntime.
                 properties:
-                  args:
+                  argFlags:
                     description: |-
-                      Args represents the arguments appended to the backend.
-                      You can add new args or overwrite the default args.
+                      ArgFlags represents the argument flags appended to the backend.
+                      You can add new flags or overwrite the default flags.
                     items:
                       type: string
                     type: array
+                  argName:
+                    description: |-
+                      ArgName represents the argument name set in the backendRuntimeArg.
+                      If not set, will be derived by the model role, e.g. if one model's role
+                      is <draft>, the argName will be set to <speculative-decoding>. Better to
+                      set the argName explicitly.
+                      By default, the argName will be treated as <default> in runtime.
+                    type: string
                   envs:
                     description: Envs represents the environments set to the container.
                     items:
@@ -213,6 +221,27 @@ spec:
                       Version represents the backend version if you want a different one
                       from the default version.
                     type: string
+                type: object
+              elasticConfig:
+                description: |-
+                  ElasticConfig defines the configuration for elastic usage,
+                  e.g. the max/min replicas. Default to 0 ~ Inf+.
+                  This requires to install the HPA first or will not work.
+                properties:
+                  maxReplicas:
+                    description: |-
+                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
+                      Default to nil means there's no limit for the instance number.
+                    format: int32
+                    type: integer
+                  minReplicas:
+                    default: 1
+                    description: |-
+                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
+                      Default to nil means we can scale down the instances to 1.
+                      If minReplicas set to 0, it requires to install serverless component at first.
+                    format: int32
+                    type: integer
                 type: object
               modelClaim:
                 description: |-

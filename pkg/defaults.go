@@ -17,5 +17,5 @@ limitations under the License.
 package pkg
 
 const (
-	LOADER_IMAGE = "inftyai/model-loader:v0.0.9"
+	LOADER_IMAGE = "inftyai/model-loader:v0.0.10"
 )
