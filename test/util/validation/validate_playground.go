@@ -34,6 +34,7 @@ import (
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	pkgutil "github.com/inftyai/llmaz/pkg/util"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/format"
 )
@@ -190,19 +191,6 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 
 		// compare the different parts.
 
-		if multiHost {
-			if diff := cmp.Diff(parser.LeaderCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Command); diff != "" {
-				return errors.New("command not right")
-			}
-			if diff := cmp.Diff(parser.WorkerCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
-				return errors.New("command not right")
-			}
-		} else {
-			if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
-				return errors.New("command not right")
-			}
-		}
-
 		args, err := parser.Args(playground, models, multiHost)
 		if err != nil {
 			return err
@@ -213,13 +201,26 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 
 		for _, arg := range args {
 			if multiHost {
-				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Args, arg) {
-					return fmt.Errorf("didn't contain arg: %s", arg)
+				if len(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Args) != 0 {
+					return fmt.Errorf("args should be empty, but got: %v", service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Args)
 				}
 			} else {
 				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
 					return fmt.Errorf("didn't contain arg: %s", arg)
 				}
+			}
+		}
+
+		if multiHost {
+			if diff := cmp.Diff(pkgutil.MergeArgsWithCommands(parser.LeaderCommands(), args), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Command); diff != "" {
+				return errors.New("command not right")
+			}
+			if diff := cmp.Diff(parser.WorkerCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+				return errors.New("command not right")
+			}
+		} else {
+			if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+				return errors.New("command not right")
 			}
 		}
 		return nil

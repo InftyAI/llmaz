@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -308,10 +307,9 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 		version = *playground.Spec.BackendRuntimeConfig.Version
 	}
 
-	// Pod can not accept shell commands with args together.
+	// Pod can not accept shell commands with args together, merge the args with the commands.
 	if multiHost {
-		fullArgs := strings.Join(args, " ")
-		commands[len(commands)-1] = fmt.Sprintf("%s %s", strings.TrimSuffix(commands[len(commands)-1], "\n"), fullArgs)
+		commands = util.MergeArgsWithCommands(commands, args)
 		args = nil
 	}
 
