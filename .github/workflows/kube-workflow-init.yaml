@@ -5,6 +5,6 @@ on:
 
 jobs:
   init:
-    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-as-kubernetes-init.yaml@v0.1.3
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-as-kubernetes-init.yaml@v0.1.4
     secrets:
       AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
