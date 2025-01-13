@@ -118,7 +118,9 @@ func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Play
 	return nil
 }
 
-func MultiNodesInference(model *coreapi.OpenModel, playground *inferenceapi.Playground) (int32, bool) {
+// MultiHostInference returns two values, the first one is the TP size,
+// the second one is whether this is a multi-host inference.
+func MultiHostInference(model *coreapi.OpenModel, playground *inferenceapi.Playground) (int32, bool) {
 	flavors := FirstAssignedFlavor(model, playground)
 	if len(flavors) > 0 && flavors[0].Params["PP"] != "" {
 		size, err := strconv.Atoi(flavors[0].Params["PP"])

@@ -6,13 +6,20 @@ spec:
   familyName: llama3
   source:
     modelHub:
-      modelID: facebook/opt-125m
+      # TODO:
+      modelID: Qwen/Qwen2-0.5B
   inferenceFlavors:
-  - name: a100-80gb
-    requests:
-      nvidia.com/gpu: 2 # single node request
-    params:
-      TP: "2"
-      PP: "2"
-    # nodeSelector:
-    #   gpu.a100-80gb: true
+    - name: a100-80gb
+      requests:
+        nvidia.com/gpu: 1 # single node request
+      params:
+        TP: "1"
+        PP: "2"
+  # - name: h100
+  #   requests:
+  #     nvidia.com/gpu: 8 # single node request
+  #   params:
+  #     TP: "8"
+  #     PP: "2"
+  #   nodeSelector:
+  #     gpu.h100: true

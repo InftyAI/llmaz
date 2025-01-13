@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -240,17 +241,17 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	workload.Replicas = playground.Spec.Replicas
 
-	nodeSize, multiNodes := helper.MultiNodesInference(models[0], playground)
-	if multiNodes {
+	nodeSize, multiHost := helper.MultiHostInference(models[0], playground)
+	if multiHost {
 		workload.LeaderWorkerTemplate.Size = &nodeSize
 	}
 
-	template, err := buildTemplate(models, playground, backendRuntime, multiNodes)
+	template, err := buildTemplate(models, playground, backendRuntime, multiHost)
 	if err != nil {
 		return lws.LeaderWorkerSetSpec{}, err
 	}
 
-	if multiNodes {
+	if multiHost {
 		workload.LeaderWorkerTemplate.LeaderTemplate = &template
 		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground, backendRuntime)
 	} else {
@@ -260,15 +261,15 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 	return workload, nil
 }
 
-func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime, multiNodes bool) (corev1.PodTemplateSpec, error) {
+func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime, multiHost bool) (corev1.PodTemplateSpec, error) {
 	parser := helper.NewBackendRuntimeParser(backendRuntime)
 
 	commands := parser.Commands()
-	if multiNodes {
+	if multiHost {
 		commands = parser.LeaderCommands()
 	}
 
-	args, err := parser.Args(playground, models, multiNodes)
+	args, err := parser.Args(playground, models, multiHost)
 	if err != nil {
 		return corev1.PodTemplateSpec{}, err
 	}
@@ -305,6 +306,13 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	version := parser.Version()
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
 		version = *playground.Spec.BackendRuntimeConfig.Version
+	}
+
+	// Pod can not accept shell commands with args together.
+	if multiHost {
+		fullArgs := strings.Join(args, " ")
+		commands[len(commands)-1] = fmt.Sprintf("%s %s", strings.TrimSuffix(commands[len(commands)-1], "\n"), fullArgs)
+		args = nil
 	}
 
 	template := corev1.PodTemplateSpec{

@@ -42,17 +42,17 @@ func (p *BackendRuntimeParser) Commands() []string {
 }
 
 func (p *BackendRuntimeParser) LeaderCommands() []string {
-	if p.backendRuntime.Spec.MultiNodesCommands == nil {
+	if p.backendRuntime.Spec.MultiHostCommands == nil {
 		return nil
 	}
-	return p.backendRuntime.Spec.MultiNodesCommands.Leader
+	return p.backendRuntime.Spec.MultiHostCommands.Leader
 }
 
 func (p *BackendRuntimeParser) WorkerCommands() []string {
-	if p.backendRuntime.Spec.MultiNodesCommands == nil {
+	if p.backendRuntime.Spec.MultiHostCommands == nil {
 		return nil
 	}
-	return p.backendRuntime.Spec.MultiNodesCommands.Worker
+	return p.backendRuntime.Spec.MultiHostCommands.Worker
 }
 
 func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {

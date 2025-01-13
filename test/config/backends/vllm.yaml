@@ -11,7 +11,7 @@ spec:
     - python3
     - -m
     - vllm.entrypoints.openai.api_server
-  multiNodesCommands:
+  multiHostCommands:
     leader:
       - sh
       - -c
@@ -34,7 +34,7 @@ spec:
           sleep 5s;
         done
 
-        python3 -m vllm.entrypoints.openai.api_server $@
+        python3 -m vllm.entrypoints.openai.api_server
     worker:
       - sh
       - -c

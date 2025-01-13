@@ -21,9 +21,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// BackendRuntimeArg is preset arguments for easy to use.
-// Do not edit the preset names unless set the argument name explicitly
-// in Playground backendRuntimeConfig.
+// BackendRuntimeArg is the preset arguments for easy to use.
+// Three preset names are provided: default, speculative-decoding, model-parallelism,
+// do not change the name.
 type BackendRuntimeArg struct {
 	// Name represents the identifier of the backendRuntime argument.
 	Name string `json:"name"`
@@ -32,8 +32,8 @@ type BackendRuntimeArg struct {
 	Flags []string `json:"flags,omitempty"`
 }
 
-// MultiNodesCommands represents leader & worker commands for multiple nodes scenarios.
-type MultiNodesCommands struct {
+// MultiHostCommands represents leader & worker commands for multiple nodes scenarios.
+type MultiHostCommands struct {
 	Leader []string `json:"leader,omitempty"`
 	Worker []string `json:"worker,omitempty"`
 }
@@ -43,10 +43,10 @@ type BackendRuntimeSpec struct {
 	// Commands represents the default commands for the backendRuntime.
 	// +optional
 	Commands []string `json:"commands,omitempty"`
-	// MultiNodesCommands represents multiple nodes commands for the backendRuntime,
-	// including leader and worker commands.
+	// MultiHostCommands represents leader and worker commands for nodes with
+	// different roles.
 	// +optional
-	MultiNodesCommands *MultiNodesCommands `json:"multiNodesCommands,omitempty"`
+	MultiHostCommands *MultiHostCommands `json:"multiHostCommands,omitempty"`
 	// Image represents the default image registry of the backendRuntime.
 	// It will work together with version to make up a real image.
 	Image string `json:"image"`
@@ -55,7 +55,6 @@ type BackendRuntimeSpec struct {
 	Version string `json:"version"`
 	// Args represents the preset arguments of the backendRuntime.
 	// They can be appended or overwritten by the Playground backendRuntimeConfig.
-	// Note: for multiNodesCommands, only work for leader commands.
 	Args []BackendRuntimeArg `json:"args,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional

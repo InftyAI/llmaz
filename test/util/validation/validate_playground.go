@@ -60,8 +60,8 @@ func validateModelClaim(models []*coreapi.OpenModel, playground *inferenceapi.Pl
 		return fmt.Errorf("unexpected Playground label value, want %v, got %v", models[0].Name, playground.Labels[coreapi.ModelNameLabelKey])
 	}
 
-	nodeSize, multiNodes := helper.MultiNodesInference(models[0], playground)
-	if multiNodes && nodeSize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size {
+	nodeSize, multiHost := helper.MultiHostInference(models[0], playground)
+	if multiHost && nodeSize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size {
 		return fmt.Errorf("expected nodeSize %d, got %d", nodeSize, *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size)
 	}
 
@@ -98,12 +98,12 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		}
 
 		parser := helper.NewBackendRuntimeParser(&backendRuntime)
-		multiNodes := service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil
+		multiHost := service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil
 
 		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
 		}
-		if multiNodes {
+		if multiHost {
 			if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
 				return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Name)
 			}
@@ -115,7 +115,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 				if parser.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 					return fmt.Errorf("expected container image %s, got %s", parser.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
-				if multiNodes {
+				if multiHost {
 					if parser.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image {
 						return fmt.Errorf("expected container image %s, got %s", parser.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image)
 					}
@@ -124,7 +124,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 				if parser.Image(parser.Version()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 					return fmt.Errorf("expected container image %s, got %s", parser.Image(parser.Version()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
-				if multiNodes {
+				if multiHost {
 					if parser.Image(parser.Version()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image {
 						return fmt.Errorf("expected container image %s, got %s", parser.Image(parser.Version()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image)
 					}
@@ -135,7 +135,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 				if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
 					return fmt.Errorf("unexpected envs")
 				}
-				if multiNodes {
+				if multiHost {
 					if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
 						return fmt.Errorf("unexpected envs")
 					}
@@ -147,7 +147,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
 						return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
 					}
-					if multiNodes {
+					if multiHost {
 						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
 							return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k])
 						}
@@ -157,7 +157,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
 						return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 					}
-					if multiNodes {
+					if multiHost {
 						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
 							return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k])
 						}
@@ -169,7 +169,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
 						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
 					}
-					if multiNodes {
+					if multiHost {
 						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
 							return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k])
 						}
@@ -179,7 +179,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
 						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 					}
-					if multiNodes {
+					if multiHost {
 						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
 							return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k])
 						}
@@ -190,7 +190,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 
 		// compare the different parts.
 
-		if multiNodes {
+		if multiHost {
 			if diff := cmp.Diff(parser.LeaderCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Command); diff != "" {
 				return errors.New("command not right")
 			}
@@ -203,7 +203,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			}
 		}
 
-		args, err := parser.Args(playground, models, multiNodes)
+		args, err := parser.Args(playground, models, multiHost)
 		if err != nil {
 			return err
 		}
@@ -212,7 +212,7 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		}
 
 		for _, arg := range args {
-			if multiNodes {
+			if multiHost {
 				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Args, arg) {
 					return fmt.Errorf("didn't contain arg: %s", arg)
 				}
