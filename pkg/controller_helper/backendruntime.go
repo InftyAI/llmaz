@@ -41,23 +41,47 @@ func (p *BackendRuntimeParser) Commands() []string {
 	return p.backendRuntime.Spec.Commands
 }
 
+func (p *BackendRuntimeParser) LeaderCommands() []string {
+	if p.backendRuntime.Spec.MultiHostCommands == nil {
+		return nil
+	}
+	return p.backendRuntime.Spec.MultiHostCommands.Leader
+}
+
+func (p *BackendRuntimeParser) WorkerCommands() []string {
+	if p.backendRuntime.Spec.MultiHostCommands == nil {
+		return nil
+	}
+	return p.backendRuntime.Spec.MultiHostCommands.Worker
+}
+
 func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 	return p.backendRuntime.Spec.Envs
 }
 
-func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models []*coreapi.OpenModel) ([]string, error) {
+func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models []*coreapi.OpenModel, multiNodes bool) ([]string, error) {
 	var argName string
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ArgName != nil {
 		argName = *playground.Spec.BackendRuntimeConfig.ArgName
 	} else {
 		// Auto detect the args from model roles.
-		argName = DetectArgFrom(playground)
+		argName = DetectArgFrom(playground, multiNodes)
 	}
 
-	source := modelSource.NewModelSourceProvider(models[0])
+	mainModel := models[0]
+
+	source := modelSource.NewModelSourceProvider(mainModel)
 	modelInfo := map[string]string{
 		"ModelPath": source.ModelPath(),
 		"ModelName": source.ModelName(),
+	}
+
+	if multiNodes {
+		flavors := FirstAssignedFlavor(mainModel, playground)
+		if len(flavors) > 0 {
+			modelInfo["PP"] = flavors[0].Params["PP"]
+			modelInfo["TP"] = flavors[0].Params["TP"]
+		}
 	}
 
 	// TODO: This is not that reliable because two models doesn't always means speculative-decoding.
@@ -103,7 +127,7 @@ func renderFlags(flags []string, modelInfo map[string]string) ([]string, error) 
 			}
 			key := match[1]
 			replacement, exists := modelInfo[key]
-			if !exists {
+			if !exists || replacement == "" {
 				return nil, fmt.Errorf("missing flag or the flag has format error: %s", flag)
 			}
 			value = strings.Replace(value, match[0], replacement, -1)

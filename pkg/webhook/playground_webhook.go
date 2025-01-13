@@ -112,7 +112,8 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 			}
 		}
 
-		arg := helper.DetectArgFrom(playground)
+		// We only have to detect whether this is speculativeDecoding mode, so set the second argument to false is ok.
+		arg := helper.DetectArgFrom(playground, false)
 		if arg == helper.SpeculativeDecodingArg {
 			if len(playground.Spec.ModelClaims.Models) != 2 {
 				allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))

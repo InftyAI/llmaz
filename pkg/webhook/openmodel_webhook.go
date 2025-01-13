@@ -90,7 +90,8 @@ func (w *OpenModelWebhook) ValidateDelete(ctx context.Context, obj runtime.Objec
 // /mnt/models/<model-namespace>/ is allowed.
 func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList {
 	model := obj.(*coreapi.OpenModel)
-	sourcePath := field.NewPath("spec", "source")
+	specPath := field.NewPath("spec")
+	sourcePath := specPath.Child("source")
 
 	var allErrs field.ErrorList
 	if model.Spec.Source.ModelHub == nil && model.Spec.Source.URI == nil {

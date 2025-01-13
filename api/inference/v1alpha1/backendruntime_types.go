@@ -21,9 +21,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// BackendRuntimeArg is preset arguments for easy to use.
-// Do not edit the preset names unless set the argument name explicitly
-// in Playground backendRuntimeConfig.
+// BackendRuntimeArg is the preset arguments for easy to use.
+// Three preset names are provided: default, speculative-decoding, model-parallelism,
+// do not change the name.
 type BackendRuntimeArg struct {
 	// Name represents the identifier of the backendRuntime argument.
 	Name string `json:"name"`
@@ -32,11 +32,21 @@ type BackendRuntimeArg struct {
 	Flags []string `json:"flags,omitempty"`
 }
 
+// MultiHostCommands represents leader & worker commands for multiple nodes scenarios.
+type MultiHostCommands struct {
+	Leader []string `json:"leader,omitempty"`
+	Worker []string `json:"worker,omitempty"`
+}
+
 // BackendRuntimeSpec defines the desired state of BackendRuntime
 type BackendRuntimeSpec struct {
-	// Commands represents the default command of the backendRuntime.
+	// Commands represents the default commands for the backendRuntime.
 	// +optional
 	Commands []string `json:"commands,omitempty"`
+	// MultiHostCommands represents leader and worker commands for nodes with
+	// different roles.
+	// +optional
+	MultiHostCommands *MultiHostCommands `json:"multiHostCommands,omitempty"`
 	// Image represents the default image registry of the backendRuntime.
 	// It will work together with version to make up a real image.
 	Image string `json:"image"`

@@ -41,6 +41,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 	var ns *corev1.Namespace
 	var model *coreapi.OpenModel
 	var draftModel *coreapi.OpenModel
+	var multiNodesModel *coreapi.OpenModel
 
 	type update struct {
 		updateFunc func(*inferenceapi.Playground)
@@ -59,11 +60,21 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 		draftModel = wrapper.MakeModel("llama3-2b").FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-2B", "", "", nil, nil).Obj()
 		gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
+		multiNodesModel = wrapper.MakeModel("llama3-405b").FamilyName("llama3").
+			ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Llama-3.1-405B-Instruct", "", "", nil, nil).
+			InferenceFlavors(*wrapper.MakeFlavor("model-parallelism").
+				SetRequest("nvidia.com/gpu", "8").
+				SetParams("PP", "2").
+				SetParams("TP", "8").
+				Obj()).
+			Obj()
+		gomega.Expect(k8sClient.Create(ctx, multiNodesModel)).To(gomega.Succeed())
 	})
 	ginkgo.AfterEach(func() {
 		gomega.Expect(k8sClient.Delete(ctx, ns)).To(gomega.Succeed())
 		gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
 		gomega.Expect(k8sClient.Delete(ctx, draftModel)).To(gomega.Succeed())
+		gomega.Expect(k8sClient.Delete(ctx, multiNodesModel)).To(gomega.Succeed())
 	})
 
 	type testValidatingCase struct {
@@ -424,6 +435,32 @@ var _ = ginkgo.Describe("playground controller test", func() {
 						}).Should(gomega.Succeed())
 						validation.ValidatePlayground(ctx, k8sClient, playground)
 						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("Playground with model parallelism", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(multiNodesModel.Name).Label(coreapi.ModelNameLabelKey, multiNodesModel.Name).
+					Obj()
+			},
+			updates: []*update{
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 					},
 				},
 			},

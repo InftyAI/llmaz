@@ -26,7 +26,13 @@ const (
 )
 
 func MockASampleModel() *coreapi.OpenModel {
-	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "", nil, nil).Obj()
+	return wrapper.MakeModel(sampleModelName).FamilyName("llama3").
+		ModelSourceWithModelHub("Huggingface").
+		ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "", nil, nil).
+		InferenceFlavors(
+			*wrapper.MakeFlavor("a100").SetRequest("nvidia.com/gpu", "1").Obj(),
+			*wrapper.MakeFlavor("a10").SetRequest("nvidia.com/gpu", "2").Obj()).
+		Obj()
 }
 
 func MockASamplePlayground(ns string) *inferenceapi.Playground {
@@ -35,7 +41,7 @@ func MockASamplePlayground(ns string) *inferenceapi.Playground {
 
 func MockASampleService(ns string) *inferenceapi.Service {
 	return wrapper.MakeService("service-llama3-8b", ns).
-		ModelClaims([]string{"llama3-8b"}, []string{"main"}).
+		ModelClaims([]string{sampleModelName}, []string{"main"}).
 		WorkerTemplate().
 		Obj()
 }
