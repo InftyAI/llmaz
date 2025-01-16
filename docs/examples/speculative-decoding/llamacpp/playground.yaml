@@ -9,10 +9,10 @@ spec:
   replicas: 1
   modelClaims:
     models:
-      - name: llama2-7b-q8-gguf # the target model
-        role: main
-      - name: llama2-7b-q2-k-gguf  # the draft model
-        role: draft
+    - name: llama2-7b-q8-gguf # the target model
+      role: main
+    - name: llama2-7b-q2-k-gguf  # the draft model
+      role: draft
   backendRuntimeConfig:
     name: llamacpp
     argFlags:

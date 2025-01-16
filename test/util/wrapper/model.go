@@ -91,7 +91,8 @@ func (w *ModelWrapper) ModelSourceWithURI(uri string) *ModelWrapper {
 	return w
 }
 
-func (w *ModelWrapper) InferenceFlavors() *ModelWrapper {
+func (w *ModelWrapper) InferenceFlavors(flavors ...coreapi.Flavor) *ModelWrapper {
+	w.Spec.InferenceFlavors = flavors
 	return w
 }
 
@@ -103,6 +104,14 @@ func (w *ModelWrapper) Label(k, v string) *ModelWrapper {
 	return w
 }
 
+func MakeFlavor(name string) *FlavorWrapper {
+	return &FlavorWrapper{
+		coreapi.Flavor{
+			Name: coreapi.FlavorName(name),
+		},
+	}
+}
+
 type FlavorWrapper struct {
 	coreapi.Flavor
 }
@@ -111,25 +120,26 @@ func (w *FlavorWrapper) Obj() *coreapi.Flavor {
 	return &w.Flavor
 }
 
-func (w *FlavorWrapper) SetName(name string) *coreapi.Flavor {
-	w.Name = coreapi.FlavorName(name)
-	return &w.Flavor
-}
-
-func (w *FlavorWrapper) SetRequest(r, v string) *coreapi.Flavor {
+func (w *FlavorWrapper) SetRequest(r, v string) *FlavorWrapper {
+	if w.Requests == nil {
+		w.Requests = map[v1.ResourceName]resource.Quantity{}
+	}
 	w.Requests[v1.ResourceName(r)] = resource.MustParse(v)
-	return &w.Flavor
+	return w
 }
 
-func (w *FlavorWrapper) SetNodeSelector(k, v string) *coreapi.Flavor {
+func (w *FlavorWrapper) SetNodeSelector(k, v string) *FlavorWrapper {
 	if w.NodeSelector == nil {
 		w.NodeSelector = map[string]string{}
 	}
 	w.NodeSelector[k] = v
-	return &w.Flavor
+	return w
 }
 
-func (w *FlavorWrapper) SetParams(k, v string) *coreapi.Flavor {
+func (w *FlavorWrapper) SetParams(k, v string) *FlavorWrapper {
+	if w.Params == nil {
+		w.Params = map[string]string{}
+	}
 	w.Params[k] = v
-	return &w.Flavor
+	return w
 }

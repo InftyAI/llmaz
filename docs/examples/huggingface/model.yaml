@@ -8,6 +8,6 @@ spec:
     modelHub:
       modelID: facebook/opt-125m
   inferenceFlavors:
-  - name: t4 # GPU type
-    requests:
-      nvidia.com/gpu: 1
+    - name: t4 # GPU type
+      requests:
+        nvidia.com/gpu: 1

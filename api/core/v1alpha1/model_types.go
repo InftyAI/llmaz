@@ -100,12 +100,12 @@ type Flavor struct {
 	Name FlavorName `json:"name"`
 	// Requests defines the required accelerators to serve the model for each replica,
 	// like <nvidia.com/gpu: 8>. For multi-hosts cases, the requests here indicates
-	// the resource requirements for each replica. This may change in the future.
+	// the resource requirements for each replica, usually equals to the TP size.
 	// Not recommended to set the cpu and memory usage here:
 	// - if using playground, you can define the cpu/mem usage at backendConfig.
 	// - if using inference service, you can define the cpu/mem at the container resources.
 	// However, if you define the same accelerator requests at playground/service as well,
-	// the requests here will be covered.
+	// the requests will be overwritten by the flavor requests.
 	// +optional
 	Requests v1.ResourceList `json:"requests,omitempty"`
 	// NodeSelector represents the node candidates for Pod placements, if a node doesn't
@@ -113,10 +113,11 @@ type Flavor struct {
 	// If nodeSelector is empty, it means every node is a candidate.
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
-	// Params stores other useful parameters and will be consumed by the autoscaling components
-	// like cluster-autoscaler, Karpenter.
-	// E.g. when scaling up nodes with 8x Nvidia A00, the parameter can be injected with
-	// instance-type: p4d.24xlarge for AWS.
+	// Params stores other useful parameters and will be consumed by cluster-autoscaler / Karpenter
+	// for autoscaling or be defined as model parallelism parameters like TP or PP size.
+	// E.g. with autoscaling, when scaling up nodes with 8x Nvidia A00, the parameter can be injected
+	// with <INSTANCE-TYPE: p4d.24xlarge> for AWS.
+	// Preset parameters: TP, PP, INSTANCE-TYPE.
 	// +optional
 	Params map[string]string `json:"params,omitempty"`
 }

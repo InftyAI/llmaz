@@ -79,7 +79,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	logger.V(10).Info("reconcile Service", "Playground", klog.KObj(service))
+	logger.V(10).Info("reconcile Service", "Service", klog.KObj(service))
 
 	models, err := helper.FetchModelsByService(ctx, r.Client, service)
 	if err != nil {
@@ -130,75 +130,86 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
+	if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil {
+		leaderWorkerTemplate.WithLeaderTemplate(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate)
+	}
 	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate)
 
 	// The core logic to inject additional configurations.
-	injectModelProperties(leaderWorkerTemplate, models)
+	injectModelProperties(leaderWorkerTemplate, models, service)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
 	spec.WithReplicas(*service.Spec.WorkloadTemplate.Replicas)
+	spec.LeaderWorkerTemplate.WithSize(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size)
 
 	workload.WithSpec(spec)
 	return workload
 }
 
-func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel) {
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
+	isMultiNodesInference := template.LeaderTemplate != nil
+
 	for i, model := range models {
 		source := modelSource.NewModelSourceProvider(model)
+		if isMultiNodesInference {
+			source.InjectModelLoader(template.LeaderTemplate, i)
+		}
 		source.InjectModelLoader(template.WorkerTemplate, i)
 	}
 
 	// We only consider the main model's requirements for now.
-	template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(models[0]))
-	injectModelFlavor(template, models[0])
+	if isMultiNodesInference {
+		template.LeaderTemplate.Labels = util.MergeKVs(template.LeaderTemplate.Labels, modelLabels(models[0]))
+		template.LeaderTemplate.Annotations = util.MergeKVs(template.LeaderTemplate.Annotations, modelAnnotations(service))
+	} else {
+		template.WorkerTemplate.Labels = util.MergeKVs(template.WorkerTemplate.Labels, modelLabels(models[0]))
+		template.WorkerTemplate.Annotations = util.MergeKVs(template.WorkerTemplate.Annotations, modelAnnotations(service))
+	}
+
+	// Consider main model only.
+	injectModelFlavor(template.WorkerTemplate, models[0], service)
+	if isMultiNodesInference {
+		injectModelFlavor(template.LeaderTemplate, models[0], service)
+	}
 }
 
-func injectModelFlavor(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, model *coreapi.OpenModel) {
+func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenModel, service *inferenceapi.Service) {
 	if len(model.Spec.InferenceFlavors) == 0 {
 		return
 	}
 
 	container := &corev1.Container{}
-	for i, c := range template.WorkerTemplate.Spec.Containers {
+	for i, c := range template.Spec.Containers {
 		if c.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
-			container = &template.WorkerTemplate.Spec.Containers[i]
+			container = &template.Spec.Containers[i]
 		}
 	}
 
-	// Let's handle the 0-index flavor for the model first.
-	// TODO: fungibility support.
-	requests := model.Spec.InferenceFlavors[0].Requests
-	for k, v := range requests {
-		if container.Resources.Requests == nil {
-			container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
-		}
-		container.Resources.Requests[k] = v
-
-		if container.Resources.Limits == nil {
-			container.Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
-		}
-		container.Resources.Limits[k] = v
+	flavorName := model.Spec.InferenceFlavors[0].Name
+	if len(service.Spec.ModelClaims.InferenceFlavors) > 0 {
+		// We only support the same resource request right now, so 0-index flavor is enough.
+		flavorName = service.Spec.ModelClaims.InferenceFlavors[0]
 	}
 
-	nodeSelector := model.Spec.InferenceFlavors[0].NodeSelector
-	if len(nodeSelector) > 0 {
-		template.WorkerTemplate.Spec.Affinity = &corev1.Affinity{
-			NodeAffinity: &corev1.NodeAffinity{
-				RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{},
-			},
-		}
+	for i, flavor := range model.Spec.InferenceFlavors {
+		if flavor.Name == flavorName {
+			requests := model.Spec.InferenceFlavors[i].Requests
+			for k, v := range requests {
+				if container.Resources.Requests == nil {
+					container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
+				}
+				// overwrite the requests and limits.
+				container.Resources.Requests[k] = v
 
-		term := corev1.NodeSelectorTerm{}
-		for k, v := range nodeSelector {
-			term.MatchExpressions = append(term.MatchExpressions,
-				corev1.NodeSelectorRequirement{
-					Key:      k,
-					Values:   []string{v},
-					Operator: corev1.NodeSelectorOpIn,
-				})
+				if container.Resources.Limits == nil {
+					container.Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
+				}
+				// overwrite the requests and limits.
+				container.Resources.Limits[k] = v
+			}
+			break
 		}
-		template.WorkerTemplate.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms = []corev1.NodeSelectorTerm{term}
 	}
 }
 
@@ -207,6 +218,24 @@ func modelLabels(model *coreapi.OpenModel) map[string]string {
 		coreapi.ModelNameLabelKey:       model.Name,
 		coreapi.ModelFamilyNameLabelKey: string(model.Spec.FamilyName),
 	}
+}
+
+func modelAnnotations(service *inferenceapi.Service) map[string]string {
+	var values string
+	for i, value := range service.Spec.ModelClaims.InferenceFlavors {
+		if i == len(service.Spec.ModelClaims.InferenceFlavors)-1 {
+			values += string(value)
+		} else {
+			values += string(value) + ","
+		}
+	}
+
+	if len(values) > 0 {
+		return map[string]string{
+			inferenceapi.InferenceServiceFlavorsAnnoKey: values,
+		}
+	}
+	return nil
 }
 
 func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWorkerSet) {

@@ -47,9 +47,9 @@ spec:
                   They can be appended or overwritten by the Playground backendRuntimeConfig.
                 items:
                   description: |-
-                    BackendRuntimeArg is preset arguments for easy to use.
-                    Do not edit the preset names unless set the argument name explicitly
-                    in Playground backendRuntimeConfig.
+                    BackendRuntimeArg is the preset arguments for easy to use.
+                    Three preset names are provided: default, speculative-decoding, model-parallelism,
+                    do not change the name.
                   properties:
                     flags:
                       description: |-
@@ -67,7 +67,7 @@ spec:
                   type: object
                 type: array
               commands:
-                description: Commands represents the default command of the backendRuntime.
+                description: Commands represents the default commands for the backendRuntime.
                 items:
                   type: string
                 type: array
@@ -194,6 +194,20 @@ spec:
                   Image represents the default image registry of the backendRuntime.
                   It will work together with version to make up a real image.
                 type: string
+              multiHostCommands:
+                description: |-
+                  MultiHostCommands represents leader and worker commands for nodes with
+                  different roles.
+                properties:
+                  leader:
+                    items:
+                      type: string
+                    type: array
+                  worker:
+                    items:
+                      type: string
+                    type: array
+                type: object
               resources:
                 description: |-
                   Resources represents the resource requirements for backendRuntime, like cpu/mem,

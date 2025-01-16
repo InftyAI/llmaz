@@ -1,0 +1,25 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: llama3-405b-instruct
+spec:
+  familyName: llama3
+  source:
+    modelHub:
+      # TODO:
+      modelID: Qwen/Qwen2-0.5B
+  inferenceFlavors:
+    - name: a100-80gb
+      requests:
+        nvidia.com/gpu: 1 # single node request
+      params:
+        TP: "8"
+        PP: "2"
+  # - name: h100
+  #   requests:
+  #     nvidia.com/gpu: 8 # single node request
+  #   params:
+  #     TP: "8"
+  #     PP: "2"
+  #   nodeSelector:
+  #     gpu.h100: true

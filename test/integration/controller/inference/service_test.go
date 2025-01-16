@@ -37,6 +37,7 @@ import (
 var _ = ginkgo.Describe("inferenceService controller test", func() {
 	// Each test runs in a separate namespace.
 	var ns *corev1.Namespace
+	var model *coreapi.OpenModel
 
 	type update struct {
 		updateFunc func(*inferenceapi.Service)
@@ -51,7 +52,7 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 			},
 		}
 		gomega.Expect(k8sClient.Create(ctx, ns)).To(gomega.Succeed())
-		model := util.MockASampleModel()
+		model = util.MockASampleModel()
 		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 		modelWithURI := wrapper.MakeModel("model-with-uri").FamilyName("llama3").ModelSourceWithURI("oss://bucket.endpoint/modelPath").Obj()
 		gomega.Expect(k8sClient.Create(ctx, modelWithURI)).To(gomega.Succeed())
@@ -206,6 +207,44 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)
 						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("service with inference flavor specified", &testValidatingCase{
+			makeService: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelClaims([]string{model.Name}, []string{"main"}, "a10").
+					WorkerTemplate().
+					Obj()
+			},
+			updates: []*update{
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
+		ginkgo.Entry("service with model parallelism configured", &testValidatingCase{
+			makeService: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					ModelClaims([]string{model.Name}, []string{"main"}, "a10").
+					WorkerTemplate().
+					Obj()
+			},
+			updates: []*update{
+				{
+					updateFunc: func(service *inferenceapi.Service) {
+						gomega.Expect(k8sClient.Create(ctx, service)).To(gomega.Succeed())
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+						validation.ValidateService(ctx, k8sClient, service)
+						validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceProgressing, "ServiceInProgress", metav1.ConditionTrue)
 					},
 				},
 			},

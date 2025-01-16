@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -61,7 +60,12 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 
 		for index, model := range models {
 			// Validate injecting modelLoaders
-			if err := ValidateModelLoader(model, index, &workload, service); err != nil {
+			if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil {
+				if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+					return err
+				}
+			}
+			if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
 				return err
 			}
 		}
@@ -76,7 +80,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 
 		// Validate injecting flavors.
 		if len(mainModel.Spec.InferenceFlavors) != 0 {
-			if err := ValidateModelFlavor(mainModel, &workload); err != nil {
+			if err := ValidateModelFlavor(service, mainModel, &workload); err != nil {
 				return err
 			}
 		}
@@ -85,13 +89,13 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
-func ValidateModelLoader(model *coreapi.OpenModel, index int, workload *lws.LeaderWorkerSet, service *inferenceapi.Service) error {
+func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service) error {
 	if model.Spec.Source.ModelHub != nil || model.Spec.Source.URI != nil {
-		if len(workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers) == 0 {
+		if len(template.Spec.InitContainers) == 0 {
 			return errors.New("no initContainer configured")
 		}
 
-		initContainer := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers[index]
+		initContainer := template.Spec.InitContainers[index]
 
 		containerName := modelSource.MODEL_LOADER_CONTAINER_NAME
 		if index != 0 {
@@ -158,37 +162,27 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, workload *lws.Lead
 	return nil
 }
 
-func ValidateModelFlavor(model *coreapi.OpenModel, workload *lws.LeaderWorkerSet) error {
-	// TODO: Use the 0-index flavor for validation right now.
-	flavor := model.Spec.InferenceFlavors[0]
+func ValidateModelFlavor(service *inferenceapi.Service, model *coreapi.OpenModel, workload *lws.LeaderWorkerSet) error {
+	flavorName := model.Spec.InferenceFlavors[0].Name
+	if len(service.Spec.ModelClaims.InferenceFlavors) > 0 {
+		flavorName = service.Spec.ModelClaims.InferenceFlavors[0]
+	}
 
-	requests := flavor.Requests
-	container := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0]
-	for k, v := range requests {
-		if !container.Resources.Requests[k].Equal(v) {
-			return fmt.Errorf("unexpected request value %v, got %v", v, workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
-		}
-		if !container.Resources.Limits[k].Equal(v) {
-			return fmt.Errorf("unexpected limit value %v, got %v", v, workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+	for _, flavor := range model.Spec.InferenceFlavors {
+		if flavor.Name == flavorName {
+			requests := flavor.Requests
+			container := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0]
+			for k, v := range requests {
+				if !container.Resources.Requests[k].Equal(v) {
+					return fmt.Errorf("unexpected request value %v, got %v", v, workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
+				}
+				if !container.Resources.Limits[k].Equal(v) {
+					return fmt.Errorf("unexpected limit value %v, got %v", v, workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+				}
+			}
 		}
 	}
 
-	if len(flavor.NodeSelector) != 0 {
-		terms := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Affinity.NodeAffinity.RequiredDuringSchedulingIgnoredDuringExecution.NodeSelectorTerms
-		requirements := []corev1.NodeSelectorRequirement{}
-		for k, v := range flavor.NodeSelector {
-			requirements = append(requirements, corev1.NodeSelectorRequirement{
-				Key:      k,
-				Values:   []string{v},
-				Operator: corev1.NodeSelectorOpIn,
-			})
-		}
-		if diff := cmp.Diff(terms, []corev1.NodeSelectorTerm{
-			{MatchExpressions: requirements},
-		}); diff != "" {
-			return errors.New("unexpected nodeSelectors")
-		}
-	}
 	return nil
 }
 
