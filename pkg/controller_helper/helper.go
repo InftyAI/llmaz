@@ -18,6 +18,7 @@ package helper
 
 import (
 	"context"
+	"strconv"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
@@ -29,10 +30,15 @@ import (
 const (
 	DefaultArg             string = "default"
 	SpeculativeDecodingArg string = "speculative-decoding"
+	ModelParallelismArg    string = "model-parallelism"
 )
 
 // DetectArgFrom wil auto detect the arg from model roles if not set explicitly.
-func DetectArgFrom(playground *inferenceapi.Playground) string {
+func DetectArgFrom(playground *inferenceapi.Playground, isMultiNodesInference bool) string {
+	if isMultiNodesInference {
+		return ModelParallelismArg
+	}
+
 	if playground.Spec.ModelClaim != nil {
 		return DefaultArg
 	}
@@ -83,4 +89,45 @@ func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.Mod
 	}
 
 	return models, nil
+}
+
+// FirstAssignedFlavor will return the first assigned flavor of the model, always the 0-index flavor.
+func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Playground) []coreapi.Flavor {
+	var flavors []coreapi.FlavorName
+	if playground.Spec.ModelClaim != nil {
+		flavors = playground.Spec.ModelClaim.InferenceFlavors
+	} else {
+		flavors = playground.Spec.ModelClaims.InferenceFlavors
+	}
+
+	// This should not happen.
+	if len(flavors) == 0 && len(model.Spec.InferenceFlavors) == 0 {
+		return nil
+	}
+
+	if len(flavors) == 0 {
+		return []coreapi.Flavor{model.Spec.InferenceFlavors[0]}
+	}
+
+	for _, flavor := range model.Spec.InferenceFlavors {
+		if flavor.Name == flavors[0] {
+			return []coreapi.Flavor{flavor}
+		}
+	}
+
+	return nil
+}
+
+// MultiHostInference returns two values, the first one is the TP size,
+// the second one is whether this is a multi-host inference.
+func MultiHostInference(model *coreapi.OpenModel, playground *inferenceapi.Playground) (int32, bool) {
+	flavors := FirstAssignedFlavor(model, playground)
+	if len(flavors) > 0 && flavors[0].Params["PP"] != "" {
+		size, err := strconv.Atoi(flavors[0].Params["PP"])
+		if err != nil {
+			return 0, false
+		}
+		return int32(size), true
+	}
+	return 0, false
 }

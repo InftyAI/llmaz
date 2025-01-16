@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"os"
 	"slices"
-	"strings"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/onsi/gomega"
@@ -35,6 +34,7 @@ import (
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	pkgutil "github.com/inftyai/llmaz/pkg/util"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/format"
 )
@@ -59,6 +59,11 @@ func validateModelClaim(models []*coreapi.OpenModel, playground *inferenceapi.Pl
 
 	if playground.Labels[coreapi.ModelNameLabelKey] != models[0].Name {
 		return fmt.Errorf("unexpected Playground label value, want %v, got %v", models[0].Name, playground.Labels[coreapi.ModelNameLabelKey])
+	}
+
+	nodeSize, multiHost := helper.MultiHostInference(models[0], playground)
+	if multiHost && nodeSize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size {
+		return fmt.Errorf("expected nodeSize %d, got %d", nodeSize, *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size)
 	}
 
 	return nil
@@ -94,72 +99,130 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		}
 
 		parser := helper.NewBackendRuntimeParser(&backendRuntime)
+		multiHost := service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil
 
 		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
 		}
-		if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
-			return errors.New("command not right")
+		if multiHost {
+			if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
+				return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Name)
+			}
 		}
+
+		// compare the same part of leader and worker template, image, version, env, resources.
 		if playground.Spec.BackendRuntimeConfig != nil {
 			if playground.Spec.BackendRuntimeConfig.Version != nil {
 				if parser.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 					return fmt.Errorf("expected container image %s, got %s", parser.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
+				if multiHost {
+					if parser.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image {
+						return fmt.Errorf("expected container image %s, got %s", parser.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image)
+					}
+				}
 			} else {
 				if parser.Image(parser.Version()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 					return fmt.Errorf("expected container image %s, got %s", parser.Image(parser.Version()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
 				}
-			}
-
-			// We assumed the 0-index arg is the default one.
-			argFlags := backendRuntime.Spec.Args[0].Flags
-			if playground.Spec.BackendRuntimeConfig.ArgName != nil {
-				for _, arg := range backendRuntime.Spec.Args {
-					if arg.Name == *playground.Spec.BackendRuntimeConfig.ArgName {
-						argFlags = arg.Flags
+				if multiHost {
+					if parser.Image(parser.Version()) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image {
+						return fmt.Errorf("expected container image %s, got %s", parser.Image(parser.Version()), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Image)
 					}
 				}
 			}
-			argFlags = append(argFlags, playground.Spec.BackendRuntimeConfig.ArgFlags...)
-			for _, arg := range argFlags {
-				if strings.Contains(arg, "{{") && strings.Contains(arg, "}}") {
-					continue
+
+			if playground.Spec.BackendRuntimeConfig.Envs != nil {
+				if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
+					return fmt.Errorf("unexpected envs")
 				}
+				if multiHost {
+					if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
+						return fmt.Errorf("unexpected envs")
+					}
+				}
+			}
+
+			if playground.Spec.BackendRuntimeConfig.Resources != nil {
+				for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Limits {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+						return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+					}
+					if multiHost {
+						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+							return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k])
+						}
+					}
+				}
+				for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Requests {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+						return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
+					}
+					if multiHost {
+						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+							return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k])
+						}
+					}
+				}
+			} else {
+				// Validate default resources requirements.
+				for k, v := range parser.Resources().Limits {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+					}
+					if multiHost {
+						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+							return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Limits[k])
+						}
+					}
+				}
+				for k, v := range parser.Resources().Requests {
+					if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+						return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
+					}
+					if multiHost {
+						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+							return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k])
+						}
+					}
+				}
+			}
+		}
+
+		// compare the different parts.
+
+		args, err := parser.Args(playground, models, multiHost)
+		if err != nil {
+			return err
+		}
+		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ArgFlags != nil {
+			args = append(args, playground.Spec.BackendRuntimeConfig.ArgFlags...)
+		}
+
+		for _, arg := range args {
+			if multiHost {
+				if len(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Args) != 0 {
+					return fmt.Errorf("args should be empty, but got: %v", service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Args)
+				}
+			} else {
 				if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
 					return fmt.Errorf("didn't contain arg: %s", arg)
 				}
 			}
-
-			if diff := cmp.Diff(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env, playground.Spec.BackendRuntimeConfig.Envs); diff != "" {
-				return fmt.Errorf("unexpected envs")
-			}
 		}
-		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
-			for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Limits {
-				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
-					return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
-				}
+
+		if multiHost {
+			if diff := cmp.Diff(pkgutil.MergeArgsWithCommands(parser.LeaderCommands(), args), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Command); diff != "" {
+				return errors.New("command not right")
 			}
-			for k, v := range playground.Spec.BackendRuntimeConfig.Resources.Requests {
-				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
-					return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
-				}
+			if diff := cmp.Diff(parser.WorkerCommands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+				return errors.New("command not right")
 			}
 		} else {
-			// Validate default resources requirements.
-			for k, v := range parser.Resources().Limits {
-				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
-					return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
-				}
-			}
-			for k, v := range parser.Resources().Requests {
-				if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
-					return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
-				}
+			if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+				return errors.New("command not right")
 			}
 		}
-
 		return nil
 
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())

@@ -12,6 +12,49 @@ spec:
     - python3
     - -m
     - vllm.entrypoints.openai.api_server
+  multiHostCommands:
+    leader:
+      - sh
+      - -c
+      - |
+        ray start --head --disable-usage-stats --include-dashboard false
+
+        i=0
+        while true; do
+          active_nodes=`python3 -c 'import ray; ray.init(); print(sum(node["Alive"] for node in ray.nodes()))'`
+          if [ $active_nodes -eq $(LWS_GROUP_SIZE) ]; then
+            echo "All ray workers are active and the ray cluster is initialized successfully."
+            break
+          fi
+          if [ $i -eq 60 ]; then
+            echo "Initialization failed. Exiting..."
+            exit 1
+          fi
+          echo "Wait for $active_nodes/$(LWS_GROUP_SIZE) workers to be active."
+          i=$((i+1))
+          sleep 5s;
+        done
+
+        python3 -m vllm.entrypoints.openai.api_server
+    worker:
+      - sh
+      - -c
+      - |
+        i=0
+        while true; do
+          ray start --address=$(LWS_LEADER_ADDRESS):6379 --block
+
+          if [ $? -eq 0 ]; then
+            echo "Worker: Ray runtime started with head address $(LWS_LEADER_ADDRESS):6379"
+            break
+          fi
+          if [ $i -eq 60 ]; then
+            echo "Initialization failed. Exiting..."
+            exit 1
+          fi
+          echo "Waiting until the ray worker is active..."
+          sleep 5s;
+        done
   image: vllm/vllm-openai
   version: v0.6.0
   # Do not edit the preset argument name unless you know what you're doing.
@@ -39,11 +82,24 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
-        - --use-v2-block-manager
         - --num_speculative_tokens
         - "5"
         - -tp
         - "1"
+    - name: model-parallelism
+      flags:
+        - --model
+        - "{{`{{ .ModelPath }}`}}"
+        - --served-model-name
+        - "{{`{{ .ModelName }}`}}"
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "8080"
+        - --tensor-parallel-size
+        - "{{`{{ .TP }}`}}"
+        - --pipeline-parallel-size
+        - "{{`{{ .PP }}`}}"
   resources:
     requests:
       cpu: 4

@@ -6,10 +6,10 @@ spec:
   replicas: 1
   modelClaims:
     models:
-      - name: opt-6--7b # the target model
-        role: main
-      - name: opt-125m  # the draft model
-        role: draft
+    - name: opt-6--7b # the target model
+      role: main
+    - name: opt-125m  # the draft model
+      role: draft
   backendRuntimeConfig:
     resources:
       limits:

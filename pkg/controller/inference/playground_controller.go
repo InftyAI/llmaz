@@ -161,8 +161,6 @@ func (r *PlaygroundReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			})
 		}
 
-		// TODO: handle MultiModelsClaims in the future.
-
 		return reqs
 	}
 
@@ -232,7 +230,6 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 // update when one replica failed, we'll fix this in the kubernetes upstream.
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
 func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (lws.LeaderWorkerSetSpec, error) {
-	// TODO: this should be leaderWorkerSetTemplateSpec, we should support in the lws upstream.
 	workload := lws.LeaderWorkerSetSpec{
 		// Use the default policy defined in lws.
 		StartupPolicy: lws.LeaderCreatedStartupPolicy,
@@ -243,21 +240,35 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	workload.Replicas = playground.Spec.Replicas
 
-	// TODO: handle multi-host scenarios, e.g. nvidia.com/gpu: 32, means we'll split into 4 hosts.
-	// Do we need another configuration for playground for multi-host use case? I guess no currently.
-	template, err := buildWorkerTemplate(models, playground, backendRuntime)
+	nodeSize, multiHost := helper.MultiHostInference(models[0], playground)
+	if multiHost {
+		workload.LeaderWorkerTemplate.Size = &nodeSize
+	}
+
+	template, err := buildTemplate(models, playground, backendRuntime, multiHost)
 	if err != nil {
 		return lws.LeaderWorkerSetSpec{}, err
 	}
-	workload.LeaderWorkerTemplate.WorkerTemplate = template
+
+	if multiHost {
+		workload.LeaderWorkerTemplate.LeaderTemplate = &template
+		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(playground, backendRuntime)
+	} else {
+		workload.LeaderWorkerTemplate.WorkerTemplate = template
+	}
 
 	return workload, nil
 }
 
-func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (corev1.PodTemplateSpec, error) {
+func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime, multiHost bool) (corev1.PodTemplateSpec, error) {
 	parser := helper.NewBackendRuntimeParser(backendRuntime)
 
-	args, err := parser.Args(playground, models)
+	commands := parser.Commands()
+	if multiHost {
+		commands = parser.LeaderCommands()
+	}
+
+	args, err := parser.Args(playground, models, multiHost)
 	if err != nil {
 		return corev1.PodTemplateSpec{}, err
 	}
@@ -265,6 +276,77 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 
 	if playground.Spec.BackendRuntimeConfig != nil {
 		args = append(args, playground.Spec.BackendRuntimeConfig.ArgFlags...)
+		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
+	}
+
+	resources := corev1.ResourceRequirements{
+		Requests: parser.Resources().Requests,
+		Limits:   parser.Resources().Limits,
+	}
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
+		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, parser.Resources().Limits)
+		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, parser.Resources().Requests)
+
+		resources = corev1.ResourceRequirements{
+			Limits:   limits,
+			Requests: requests,
+		}
+
+		// Make sure the limits are always greater than requests.
+		for k, v := range resources.Limits {
+			if k == corev1.ResourceCPU || k == corev1.ResourceMemory {
+				if v.Cmp(requests[k]) == -1 {
+					resources.Limits[k] = requests[k]
+				}
+			}
+		}
+	}
+
+	version := parser.Version()
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
+		version = *playground.Spec.BackendRuntimeConfig.Version
+	}
+
+	// Pod can not accept shell commands with args together, merge the args with the commands.
+	if multiHost {
+		commands = util.MergeArgsWithCommands(commands, args)
+		args = nil
+	}
+
+	template := corev1.PodTemplateSpec{
+		Spec: corev1.PodSpec{
+			// TODO: should we support image pull secret here?
+			// TODO: support readiness/liveness
+			Containers: []corev1.Container{
+				{
+					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
+					Image:     parser.Image(version),
+					Resources: resources,
+					Command:   commands,
+					Args:      args,
+					Env:       envs,
+					Ports: []corev1.ContainerPort{
+						{
+							Name:          "http",
+							Protocol:      corev1.ProtocolTCP,
+							ContainerPort: modelSource.DEFAULT_BACKEND_PORT,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return template, nil
+}
+
+// This is a copy of buildTemplate with some refactors, only used in multi-nodes cases.
+// Worker template has no args, no contain port.
+func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
+	parser := helper.NewBackendRuntimeParser(backendRuntime)
+
+	envs := parser.Envs()
+	if playground.Spec.BackendRuntimeConfig != nil {
 		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
 	}
 
@@ -305,22 +387,14 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
 					Image:     parser.Image(version),
 					Resources: resources,
-					Command:   parser.Commands(),
-					Args:      args,
+					Command:   parser.WorkerCommands(),
 					Env:       envs,
-					Ports: []corev1.ContainerPort{
-						{
-							Name:          "http",
-							Protocol:      corev1.ProtocolTCP,
-							ContainerPort: modelSource.DEFAULT_BACKEND_PORT,
-						},
-					},
 				},
 			},
 		},
 	}
 
-	return template, nil
+	return template
 }
 
 func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceWithSameNameExists bool) (changed bool) {
