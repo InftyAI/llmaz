@@ -313,6 +313,17 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 		args = nil
 	}
 
+	var livenessProbe, readinessProbe, startupProbe *corev1.Probe
+	if backendRuntime.Spec.StartupProbe != nil {
+		startupProbe = backendRuntime.Spec.StartupProbe
+	}
+	if backendRuntime.Spec.LivenessProbe != nil {
+		livenessProbe = backendRuntime.Spec.LivenessProbe
+	}
+	if backendRuntime.Spec.ReadinessProbe != nil {
+		readinessProbe = backendRuntime.Spec.ReadinessProbe
+	}
+
 	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
 			// TODO: should we support image pull secret here?
@@ -332,6 +343,9 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 							ContainerPort: modelSource.DEFAULT_BACKEND_PORT,
 						},
 					},
+					StartupProbe:   startupProbe,
+					LivenessProbe:  livenessProbe,
+					ReadinessProbe: readinessProbe,
 				},
 			},
 		},

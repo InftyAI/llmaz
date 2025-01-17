@@ -16,10 +16,10 @@ spec:
     - name: default
       flags:
         - "ollama serve &
-           while true; do output=$(ollama list 2>&1);
-           if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;
-           ollama run {{`{{ .ModelName }}`}};
-           while true;do sleep 60;done"
+          while true; do output=$(ollama list 2>&1);
+          if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;
+          ollama run {{`{{ .ModelName }}`}};
+          while true;do sleep 60;done"
   resources:
     requests:
       cpu: 2

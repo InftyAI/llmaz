@@ -107,4 +107,24 @@ spec:
     limits:
       cpu: 4
       memory: 8Gi
+  startupProbe:
+    periodSeconds: 10
+    failureThreshold: 30
+    httpGet:
+      path: /health
+      port: 8080
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 8080
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 8080
 {{- end }}

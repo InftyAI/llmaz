@@ -67,9 +67,9 @@ spec:
     modelHub:
       modelID: facebook/opt-125m
   inferenceFlavors:
-  - name: t4 # GPU type
-    requests:
-      nvidia.com/gpu: 1
+    - name: t4 # GPU type
+      requests:
+        nvidia.com/gpu: 1
 ```
 
 #### Inference Playground
@@ -124,12 +124,11 @@ If you want to learn more about this project, please refer to [develop.md](./doc
 - CLI tool support
 - Model training, fine tuning in the long-term
 
-
 ## Community
 
 Join us for more discussions:
 
-* **Slack Channel**: [#llmaz](https://inftyai.slack.com/archives/C06D0BGEQ1G)
+- **Slack Channel**: [#llmaz](https://inftyai.slack.com/archives/C06D0BGEQ1G)
 
 ## Contributions
 

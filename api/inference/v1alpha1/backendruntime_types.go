@@ -63,6 +63,22 @@ type BackendRuntimeSpec struct {
 	// accelerators like GPU should not be defined here, but at the model flavors,
 	// or the values here will be overwritten.
 	Resources ResourceRequirements `json:"resources"`
+	// Periodic probe of backend liveness.
+	// Backend will be restarted if the probe fails.
+	// Cannot be updated.
+	// +optional
+	LivenessProbe *corev1.Probe `json:"livenessProbe,omitempty"`
+	// Periodic probe of backend readiness.
+	// Backend will be removed from service endpoints if the probe fails.
+	// +optional
+	ReadinessProbe *corev1.Probe `json:"readinessProbe,omitempty"`
+	// StartupProbe indicates that the Backend has successfully initialized.
+	// If specified, no other probes are executed until this completes successfully.
+	// If this probe fails, the backend will be restarted, just as if the livenessProbe failed.
+	// This can be used to provide different probe parameters at the beginning of a backend's lifecycle,
+	// when it might take a long time to load data or warm a cache, than during steady-state operation.
+	// +optional
+	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
 }
 
 // BackendRuntimeStatus defines the observed state of BackendRuntime

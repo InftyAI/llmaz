@@ -20,6 +20,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
+    # TODO: not supported yet, see https://github.com/InftyAI/llmaz/issues/240.
     - name: speculative-decoding
       flags:
         - -m
@@ -30,6 +31,10 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
+        - --draft-max
+        - "16"
+        - --draft-min
+        - "5"
   resources:
     requests:
       cpu: 2
@@ -37,3 +42,23 @@ spec:
     limits:
       cpu: 2
       memory: 4Gi
+  startupProbe:
+    periodSeconds: 10
+    failureThreshold: 30
+    httpGet:
+      path: /health
+      port: 8080
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 8080
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 8080
