@@ -112,6 +112,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 
 		// compare the same part of leader and worker template, image, version, env, resources.
 		if playground.Spec.BackendRuntimeConfig != nil {
+
+			// compare image & version
 			if playground.Spec.BackendRuntimeConfig.Version != nil {
 				if parser.Image(*playground.Spec.BackendRuntimeConfig.Version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
 					return fmt.Errorf("expected container image %s, got %s", parser.Image(*playground.Spec.BackendRuntimeConfig.Version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
@@ -184,6 +186,41 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 						if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
 							return fmt.Errorf("unexpected limit for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].Resources.Requests[k])
 						}
+					}
+				}
+			}
+
+			// compare probes
+			if backendRuntime.Spec.StartupProbe != nil {
+				if multiHost {
+					if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].StartupProbe, *backendRuntime.Spec.StartupProbe); diff != "" {
+						return fmt.Errorf("unexpected startupProbe")
+					}
+				} else {
+					if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].StartupProbe, *backendRuntime.Spec.StartupProbe); diff != "" {
+						return fmt.Errorf("unexpected startupProbe")
+					}
+				}
+			}
+			if backendRuntime.Spec.LivenessProbe != nil {
+				if multiHost {
+					if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].LivenessProbe, *backendRuntime.Spec.LivenessProbe); diff != "" {
+						return fmt.Errorf("unexpected livenessProbe")
+					}
+				} else {
+					if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].LivenessProbe, *backendRuntime.Spec.LivenessProbe); diff != "" {
+						return fmt.Errorf("unexpected livenessProbe")
+					}
+				}
+			}
+			if backendRuntime.Spec.ReadinessProbe != nil {
+				if multiHost {
+					if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Containers[0].ReadinessProbe, *backendRuntime.Spec.ReadinessProbe); diff != "" {
+						return fmt.Errorf("unexpected readinessProbe")
+					}
+				} else {
+					if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].ReadinessProbe, *backendRuntime.Spec.ReadinessProbe); diff != "" {
+						return fmt.Errorf("unexpected readinessProbe")
 					}
 				}
 			}

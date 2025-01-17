@@ -17,7 +17,7 @@ limitations under the License.
 package wrapper
 
 import (
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -72,16 +72,29 @@ func (w *BackendRuntimeWrapper) Arg(name string, flags []string) *BackendRuntime
 
 func (w *BackendRuntimeWrapper) Request(r, v string) *BackendRuntimeWrapper {
 	if w.Spec.Resources.Requests == nil {
-		w.Spec.Resources.Requests = v1.ResourceList{}
+		w.Spec.Resources.Requests = corev1.ResourceList{}
 	}
-	w.Spec.Resources.Requests[v1.ResourceName(r)] = resource.MustParse(v)
+	w.Spec.Resources.Requests[corev1.ResourceName(r)] = resource.MustParse(v)
 	return w
 }
 
 func (w *BackendRuntimeWrapper) Limit(r, v string) *BackendRuntimeWrapper {
 	if w.Spec.Resources.Limits == nil {
-		w.Spec.Resources.Limits = v1.ResourceList{}
+		w.Spec.Resources.Limits = corev1.ResourceList{}
 	}
-	w.Spec.Resources.Limits[v1.ResourceName(r)] = resource.MustParse(v)
+	w.Spec.Resources.Limits[corev1.ResourceName(r)] = resource.MustParse(v)
+	return w
+}
+
+func (w *BackendRuntimeWrapper) Probe(name string, probe *corev1.Probe) *BackendRuntimeWrapper {
+	if name == "liveness" {
+		w.Spec.LivenessProbe = probe
+	}
+	if name == "readiness" {
+		w.Spec.ReadinessProbe = probe
+	}
+	if name == "startup" {
+		w.Spec.LivenessProbe = probe
+	}
 	return w
 }
