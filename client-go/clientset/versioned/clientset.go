@@ -18,8 +18,8 @@ limitations under the License.
 package versioned
 
 import (
-	"fmt"
-	"net/http"
+	fmt "fmt"
+	http "net/http"
 
 	llmazv1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/core/v1alpha1"
 	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1"

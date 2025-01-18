@@ -18,179 +18,33 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-	json "encoding/json"
-	"fmt"
-
 	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	typedinferencev1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/inference/v1alpha1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakePlaygrounds implements PlaygroundInterface
-type FakePlaygrounds struct {
+// fakePlaygrounds implements PlaygroundInterface
+type fakePlaygrounds struct {
+	*gentype.FakeClientWithListAndApply[*v1alpha1.Playground, *v1alpha1.PlaygroundList, *inferencev1alpha1.PlaygroundApplyConfiguration]
 	Fake *FakeInferenceV1alpha1
-	ns   string
 }
 
-var playgroundsResource = v1alpha1.SchemeGroupVersion.WithResource("playgrounds")
-
-var playgroundsKind = v1alpha1.SchemeGroupVersion.WithKind("Playground")
-
-// Get takes name of the playground, and returns the corresponding playground object, and an error if there is any.
-func (c *FakePlaygrounds) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Playground, err error) {
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewGetActionWithOptions(playgroundsResource, c.ns, name, options), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
+func newFakePlaygrounds(fake *FakeInferenceV1alpha1, namespace string) typedinferencev1alpha1.PlaygroundInterface {
+	return &fakePlaygrounds{
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.Playground, *v1alpha1.PlaygroundList, *inferencev1alpha1.PlaygroundApplyConfiguration](
+			fake.Fake,
+			namespace,
+			v1alpha1.SchemeGroupVersion.WithResource("playgrounds"),
+			v1alpha1.SchemeGroupVersion.WithKind("Playground"),
+			func() *v1alpha1.Playground { return &v1alpha1.Playground{} },
+			func() *v1alpha1.PlaygroundList { return &v1alpha1.PlaygroundList{} },
+			func(dst, src *v1alpha1.PlaygroundList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha1.PlaygroundList) []*v1alpha1.Playground { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1alpha1.PlaygroundList, items []*v1alpha1.Playground) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1alpha1.Playground), err
-}
-
-// List takes label and field selectors, and returns the list of Playgrounds that match those selectors.
-func (c *FakePlaygrounds) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.PlaygroundList, err error) {
-	emptyResult := &v1alpha1.PlaygroundList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewListActionWithOptions(playgroundsResource, playgroundsKind, c.ns, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha1.PlaygroundList{ListMeta: obj.(*v1alpha1.PlaygroundList).ListMeta}
-	for _, item := range obj.(*v1alpha1.PlaygroundList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested playgrounds.
-func (c *FakePlaygrounds) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchActionWithOptions(playgroundsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a playground and creates it.  Returns the server's representation of the playground, and an error, if there is any.
-func (c *FakePlaygrounds) Create(ctx context.Context, playground *v1alpha1.Playground, opts v1.CreateOptions) (result *v1alpha1.Playground, err error) {
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(playgroundsResource, c.ns, playground, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.Playground), err
-}
-
-// Update takes the representation of a playground and updates it. Returns the server's representation of the playground, and an error, if there is any.
-func (c *FakePlaygrounds) Update(ctx context.Context, playground *v1alpha1.Playground, opts v1.UpdateOptions) (result *v1alpha1.Playground, err error) {
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateActionWithOptions(playgroundsResource, c.ns, playground, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.Playground), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakePlaygrounds) UpdateStatus(ctx context.Context, playground *v1alpha1.Playground, opts v1.UpdateOptions) (result *v1alpha1.Playground, err error) {
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceActionWithOptions(playgroundsResource, "status", c.ns, playground, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.Playground), err
-}
-
-// Delete takes name of the playground and deletes it. Returns an error if one occurs.
-func (c *FakePlaygrounds) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(playgroundsResource, c.ns, name, opts), &v1alpha1.Playground{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakePlaygrounds) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionActionWithOptions(playgroundsResource, c.ns, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.PlaygroundList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched playground.
-func (c *FakePlaygrounds) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Playground, err error) {
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(playgroundsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.Playground), err
-}
-
-// Apply takes the given apply declarative configuration, applies it and returns the applied playground.
-func (c *FakePlaygrounds) Apply(ctx context.Context, playground *inferencev1alpha1.PlaygroundApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Playground, err error) {
-	if playground == nil {
-		return nil, fmt.Errorf("playground provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(playground)
-	if err != nil {
-		return nil, err
-	}
-	name := playground.Name
-	if name == nil {
-		return nil, fmt.Errorf("playground.Name must be provided to Apply")
-	}
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(playgroundsResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions()), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.Playground), err
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakePlaygrounds) ApplyStatus(ctx context.Context, playground *inferencev1alpha1.PlaygroundApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Playground, err error) {
-	if playground == nil {
-		return nil, fmt.Errorf("playground provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(playground)
-	if err != nil {
-		return nil, err
-	}
-	name := playground.Name
-	if name == nil {
-		return nil, fmt.Errorf("playground.Name must be provided to Apply")
-	}
-	emptyResult := &v1alpha1.Playground{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(playgroundsResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions(), "status"), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.Playground), err
 }

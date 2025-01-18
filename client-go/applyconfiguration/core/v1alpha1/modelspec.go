@@ -18,15 +18,15 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
 // ModelSpecApplyConfiguration represents a declarative configuration of the ModelSpec type for use
 // with apply.
 type ModelSpecApplyConfiguration struct {
-	FamilyName       *v1alpha1.ModelName            `json:"familyName,omitempty"`
-	Source           *ModelSourceApplyConfiguration `json:"source,omitempty"`
-	InferenceFlavors []FlavorApplyConfiguration     `json:"inferenceFlavors,omitempty"`
+	FamilyName      *corev1alpha1.ModelName            `json:"familyName,omitempty"`
+	Source          *ModelSourceApplyConfiguration     `json:"source,omitempty"`
+	InferenceConfig *InferenceConfigApplyConfiguration `json:"inferenceConfig,omitempty"`
 }
 
 // ModelSpecApplyConfiguration constructs a declarative configuration of the ModelSpec type for use with
@@ -38,7 +38,7 @@ func ModelSpec() *ModelSpecApplyConfiguration {
 // WithFamilyName sets the FamilyName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the FamilyName field is set to the value of the last call.
-func (b *ModelSpecApplyConfiguration) WithFamilyName(value v1alpha1.ModelName) *ModelSpecApplyConfiguration {
+func (b *ModelSpecApplyConfiguration) WithFamilyName(value corev1alpha1.ModelName) *ModelSpecApplyConfiguration {
 	b.FamilyName = &value
 	return b
 }
@@ -51,15 +51,10 @@ func (b *ModelSpecApplyConfiguration) WithSource(value *ModelSourceApplyConfigur
 	return b
 }
 
-// WithInferenceFlavors adds the given value to the InferenceFlavors field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the InferenceFlavors field.
-func (b *ModelSpecApplyConfiguration) WithInferenceFlavors(values ...*FlavorApplyConfiguration) *ModelSpecApplyConfiguration {
-	for i := range values {
-		if values[i] == nil {
-			panic("nil value passed to WithInferenceFlavors")
-		}
-		b.InferenceFlavors = append(b.InferenceFlavors, *values[i])
-	}
+// WithInferenceConfig sets the InferenceConfig field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the InferenceConfig field is set to the value of the last call.
+func (b *ModelSpecApplyConfiguration) WithInferenceConfig(value *InferenceConfigApplyConfiguration) *ModelSpecApplyConfiguration {
+	b.InferenceConfig = value
 	return b
 }

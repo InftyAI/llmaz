@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
-	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
-	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	applyconfigurationinferencev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
 	scheme "github.com/inftyai/llmaz/client-go/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,36 +37,37 @@ type PlaygroundsGetter interface {
 
 // PlaygroundInterface has methods to work with Playground resources.
 type PlaygroundInterface interface {
-	Create(ctx context.Context, playground *v1alpha1.Playground, opts v1.CreateOptions) (*v1alpha1.Playground, error)
-	Update(ctx context.Context, playground *v1alpha1.Playground, opts v1.UpdateOptions) (*v1alpha1.Playground, error)
+	Create(ctx context.Context, playground *inferencev1alpha1.Playground, opts v1.CreateOptions) (*inferencev1alpha1.Playground, error)
+	Update(ctx context.Context, playground *inferencev1alpha1.Playground, opts v1.UpdateOptions) (*inferencev1alpha1.Playground, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, playground *v1alpha1.Playground, opts v1.UpdateOptions) (*v1alpha1.Playground, error)
+	UpdateStatus(ctx context.Context, playground *inferencev1alpha1.Playground, opts v1.UpdateOptions) (*inferencev1alpha1.Playground, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Playground, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.PlaygroundList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*inferencev1alpha1.Playground, error)
+	List(ctx context.Context, opts v1.ListOptions) (*inferencev1alpha1.PlaygroundList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Playground, err error)
-	Apply(ctx context.Context, playground *inferencev1alpha1.PlaygroundApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Playground, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *inferencev1alpha1.Playground, err error)
+	Apply(ctx context.Context, playground *applyconfigurationinferencev1alpha1.PlaygroundApplyConfiguration, opts v1.ApplyOptions) (result *inferencev1alpha1.Playground, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, playground *inferencev1alpha1.PlaygroundApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Playground, err error)
+	ApplyStatus(ctx context.Context, playground *applyconfigurationinferencev1alpha1.PlaygroundApplyConfiguration, opts v1.ApplyOptions) (result *inferencev1alpha1.Playground, err error)
 	PlaygroundExpansion
 }
 
 // playgrounds implements PlaygroundInterface
 type playgrounds struct {
-	*gentype.ClientWithListAndApply[*v1alpha1.Playground, *v1alpha1.PlaygroundList, *inferencev1alpha1.PlaygroundApplyConfiguration]
+	*gentype.ClientWithListAndApply[*inferencev1alpha1.Playground, *inferencev1alpha1.PlaygroundList, *applyconfigurationinferencev1alpha1.PlaygroundApplyConfiguration]
 }
 
 // newPlaygrounds returns a Playgrounds
 func newPlaygrounds(c *InferenceV1alpha1Client, namespace string) *playgrounds {
 	return &playgrounds{
-		gentype.NewClientWithListAndApply[*v1alpha1.Playground, *v1alpha1.PlaygroundList, *inferencev1alpha1.PlaygroundApplyConfiguration](
+		gentype.NewClientWithListAndApply[*inferencev1alpha1.Playground, *inferencev1alpha1.PlaygroundList, *applyconfigurationinferencev1alpha1.PlaygroundApplyConfiguration](
 			"playgrounds",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.Playground { return &v1alpha1.Playground{} },
-			func() *v1alpha1.PlaygroundList { return &v1alpha1.PlaygroundList{} }),
+			func() *inferencev1alpha1.Playground { return &inferencev1alpha1.Playground{} },
+			func() *inferencev1alpha1.PlaygroundList { return &inferencev1alpha1.PlaygroundList{} },
+		),
 	}
 }

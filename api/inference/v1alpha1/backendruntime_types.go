@@ -26,6 +26,7 @@ import (
 // do not change the name.
 type BackendRuntimeArg struct {
 	// Name represents the identifier of the backendRuntime argument.
+	// +kubebuilder:default=default
 	Name string `json:"name"`
 	// Flags represents all the preset configurations.
 	// Flag around with {{ .CONFIG }} is a configuration waiting for render.

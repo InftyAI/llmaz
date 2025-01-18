@@ -18,17 +18,17 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 )
 
 // FlavorApplyConfiguration represents a declarative configuration of the Flavor type for use
 // with apply.
 type FlavorApplyConfiguration struct {
-	Name         *v1alpha1.FlavorName `json:"name,omitempty"`
-	Requests     *v1.ResourceList     `json:"requests,omitempty"`
-	NodeSelector map[string]string    `json:"nodeSelector,omitempty"`
-	Params       map[string]string    `json:"params,omitempty"`
+	Name         *corev1alpha1.FlavorName `json:"name,omitempty"`
+	Requests     *v1.ResourceList         `json:"requests,omitempty"`
+	NodeSelector map[string]string        `json:"nodeSelector,omitempty"`
+	Params       map[string]string        `json:"params,omitempty"`
 }
 
 // FlavorApplyConfiguration constructs a declarative configuration of the Flavor type for use with
@@ -40,7 +40,7 @@ func Flavor() *FlavorApplyConfiguration {
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *FlavorApplyConfiguration) WithName(value v1alpha1.FlavorName) *FlavorApplyConfiguration {
+func (b *FlavorApplyConfiguration) WithName(value corev1alpha1.FlavorName) *FlavorApplyConfiguration {
 	b.Name = &value
 	return b
 }

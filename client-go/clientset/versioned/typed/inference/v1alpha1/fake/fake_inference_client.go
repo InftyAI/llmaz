@@ -28,11 +28,11 @@ type FakeInferenceV1alpha1 struct {
 }
 
 func (c *FakeInferenceV1alpha1) Playgrounds(namespace string) v1alpha1.PlaygroundInterface {
-	return &FakePlaygrounds{c, namespace}
+	return newFakePlaygrounds(c, namespace)
 }
 
 func (c *FakeInferenceV1alpha1) Services(namespace string) v1alpha1.ServiceInterface {
-	return &FakeServices{c, namespace}
+	return newFakeServices(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate

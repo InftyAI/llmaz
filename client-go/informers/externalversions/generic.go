@@ -18,7 +18,7 @@ limitations under the License.
 package externalversions
 
 import (
-	"fmt"
+	fmt "fmt"
 
 	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"

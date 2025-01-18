@@ -33,6 +33,8 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=inference.llmaz.io, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("BackendRuntimeArg"):
+		return &inferencev1alpha1.BackendRuntimeArgApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("BackendRuntimeConfig"):
 		return &inferencev1alpha1.BackendRuntimeConfigApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ElasticConfig"):
@@ -55,6 +57,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		// Group=llmaz.io, Version=v1alpha1
 	case corev1alpha1.SchemeGroupVersion.WithKind("Flavor"):
 		return &applyconfigurationcorev1alpha1.FlavorApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("InferenceConfig"):
+		return &applyconfigurationcorev1alpha1.InferenceConfigApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelClaim"):
 		return &applyconfigurationcorev1alpha1.ModelClaimApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelClaims"):

@@ -232,8 +232,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		if err != nil {
 			return err
 		}
-		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ArgFlags != nil {
-			args = append(args, playground.Spec.BackendRuntimeConfig.ArgFlags...)
+		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Args != nil {
+			args = append(args, playground.Spec.BackendRuntimeConfig.Args.Flags...)
 		}
 
 		for _, arg := range args {

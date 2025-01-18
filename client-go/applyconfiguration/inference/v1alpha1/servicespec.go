@@ -18,15 +18,15 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	v1 "sigs.k8s.io/lws/api/leaderworkerset/v1"
 )
 
 // ServiceSpecApplyConfiguration represents a declarative configuration of the ServiceSpec type for use
 // with apply.
 type ServiceSpecApplyConfiguration struct {
-	ModelClaims      *v1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
-	WorkloadTemplate *v1.LeaderWorkerSetSpec                 `json:"workloadTemplate,omitempty"`
+	ModelClaims      *corev1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
+	WorkloadTemplate *v1.LeaderWorkerSetSpec                     `json:"workloadTemplate,omitempty"`
 }
 
 // ServiceSpecApplyConfiguration constructs a declarative configuration of the ServiceSpec type for use with
@@ -38,7 +38,7 @@ func ServiceSpec() *ServiceSpecApplyConfiguration {
 // WithModelClaims sets the ModelClaims field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ModelClaims field is set to the value of the last call.
-func (b *ServiceSpecApplyConfiguration) WithModelClaims(value *v1alpha1.ModelClaimsApplyConfiguration) *ServiceSpecApplyConfiguration {
+func (b *ServiceSpecApplyConfiguration) WithModelClaims(value *corev1alpha1.ModelClaimsApplyConfiguration) *ServiceSpecApplyConfiguration {
 	b.ModelClaims = value
 	return b
 }

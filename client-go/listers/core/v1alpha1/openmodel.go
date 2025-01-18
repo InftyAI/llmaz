@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/client-go/listers"
-	"k8s.io/client-go/tools/cache"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	labels "k8s.io/apimachinery/pkg/labels"
+	listers "k8s.io/client-go/listers"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // OpenModelLister helps list OpenModels.
@@ -29,7 +29,7 @@ import (
 type OpenModelLister interface {
 	// List lists all OpenModels in the indexer.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.OpenModel, err error)
+	List(selector labels.Selector) (ret []*corev1alpha1.OpenModel, err error)
 	// OpenModels returns an object that can list and get OpenModels.
 	OpenModels(namespace string) OpenModelNamespaceLister
 	OpenModelListerExpansion
@@ -37,17 +37,17 @@ type OpenModelLister interface {
 
 // openModelLister implements the OpenModelLister interface.
 type openModelLister struct {
-	listers.ResourceIndexer[*v1alpha1.OpenModel]
+	listers.ResourceIndexer[*corev1alpha1.OpenModel]
 }
 
 // NewOpenModelLister returns a new OpenModelLister.
 func NewOpenModelLister(indexer cache.Indexer) OpenModelLister {
-	return &openModelLister{listers.New[*v1alpha1.OpenModel](indexer, v1alpha1.Resource("openmodel"))}
+	return &openModelLister{listers.New[*corev1alpha1.OpenModel](indexer, corev1alpha1.Resource("openmodel"))}
 }
 
 // OpenModels returns an object that can list and get OpenModels.
 func (s *openModelLister) OpenModels(namespace string) OpenModelNamespaceLister {
-	return openModelNamespaceLister{listers.NewNamespaced[*v1alpha1.OpenModel](s.ResourceIndexer, namespace)}
+	return openModelNamespaceLister{listers.NewNamespaced[*corev1alpha1.OpenModel](s.ResourceIndexer, namespace)}
 }
 
 // OpenModelNamespaceLister helps list and get OpenModels.
@@ -55,15 +55,15 @@ func (s *openModelLister) OpenModels(namespace string) OpenModelNamespaceLister 
 type OpenModelNamespaceLister interface {
 	// List lists all OpenModels in the indexer for a given namespace.
 	// Objects returned here must be treated as read-only.
-	List(selector labels.Selector) (ret []*v1alpha1.OpenModel, err error)
+	List(selector labels.Selector) (ret []*corev1alpha1.OpenModel, err error)
 	// Get retrieves the OpenModel from the indexer for a given namespace and name.
 	// Objects returned here must be treated as read-only.
-	Get(name string) (*v1alpha1.OpenModel, error)
+	Get(name string) (*corev1alpha1.OpenModel, error)
 	OpenModelNamespaceListerExpansion
 }
 
 // openModelNamespaceLister implements the OpenModelNamespaceLister
 // interface.
 type openModelNamespaceLister struct {
-	listers.ResourceIndexer[*v1alpha1.OpenModel]
+	listers.ResourceIndexer[*corev1alpha1.OpenModel]
 }

@@ -92,7 +92,10 @@ func (w *ModelWrapper) ModelSourceWithURI(uri string) *ModelWrapper {
 }
 
 func (w *ModelWrapper) InferenceFlavors(flavors ...coreapi.Flavor) *ModelWrapper {
-	w.Spec.InferenceFlavors = flavors
+	if w.Spec.InferenceConfig == nil {
+		w.Spec.InferenceConfig = &coreapi.InferenceConfig{}
+	}
+	w.Spec.InferenceConfig.Flavors = flavors
 	return w
 }
 

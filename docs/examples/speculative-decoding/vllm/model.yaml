@@ -7,10 +7,11 @@ spec:
   source:
     modelHub:
       modelID: facebook/opt-6.7b
-  inferenceFlavors:
-  - name: a10 # gpu type
-    requests:
-      nvidia.com/gpu: 1
+  inferenceConfig:
+    flavors:
+      - name: a10 # gpu type
+        requests:
+          nvidia.com/gpu: 1
 ---
 apiVersion: llmaz.io/v1alpha1
 kind: OpenModel
