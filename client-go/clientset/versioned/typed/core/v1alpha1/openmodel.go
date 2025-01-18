@@ -18,10 +18,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 
-	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
-	corev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	applyconfigurationcorev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	scheme "github.com/inftyai/llmaz/client-go/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
@@ -37,36 +37,37 @@ type OpenModelsGetter interface {
 
 // OpenModelInterface has methods to work with OpenModel resources.
 type OpenModelInterface interface {
-	Create(ctx context.Context, openModel *v1alpha1.OpenModel, opts v1.CreateOptions) (*v1alpha1.OpenModel, error)
-	Update(ctx context.Context, openModel *v1alpha1.OpenModel, opts v1.UpdateOptions) (*v1alpha1.OpenModel, error)
+	Create(ctx context.Context, openModel *corev1alpha1.OpenModel, opts v1.CreateOptions) (*corev1alpha1.OpenModel, error)
+	Update(ctx context.Context, openModel *corev1alpha1.OpenModel, opts v1.UpdateOptions) (*corev1alpha1.OpenModel, error)
 	// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-	UpdateStatus(ctx context.Context, openModel *v1alpha1.OpenModel, opts v1.UpdateOptions) (*v1alpha1.OpenModel, error)
+	UpdateStatus(ctx context.Context, openModel *corev1alpha1.OpenModel, opts v1.UpdateOptions) (*corev1alpha1.OpenModel, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.OpenModel, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.OpenModelList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*corev1alpha1.OpenModel, error)
+	List(ctx context.Context, opts v1.ListOptions) (*corev1alpha1.OpenModelList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.OpenModel, err error)
-	Apply(ctx context.Context, openModel *corev1alpha1.OpenModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.OpenModel, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *corev1alpha1.OpenModel, err error)
+	Apply(ctx context.Context, openModel *applyconfigurationcorev1alpha1.OpenModelApplyConfiguration, opts v1.ApplyOptions) (result *corev1alpha1.OpenModel, err error)
 	// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-	ApplyStatus(ctx context.Context, openModel *corev1alpha1.OpenModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.OpenModel, err error)
+	ApplyStatus(ctx context.Context, openModel *applyconfigurationcorev1alpha1.OpenModelApplyConfiguration, opts v1.ApplyOptions) (result *corev1alpha1.OpenModel, err error)
 	OpenModelExpansion
 }
 
 // openModels implements OpenModelInterface
 type openModels struct {
-	*gentype.ClientWithListAndApply[*v1alpha1.OpenModel, *v1alpha1.OpenModelList, *corev1alpha1.OpenModelApplyConfiguration]
+	*gentype.ClientWithListAndApply[*corev1alpha1.OpenModel, *corev1alpha1.OpenModelList, *applyconfigurationcorev1alpha1.OpenModelApplyConfiguration]
 }
 
 // newOpenModels returns a OpenModels
 func newOpenModels(c *LlmazV1alpha1Client, namespace string) *openModels {
 	return &openModels{
-		gentype.NewClientWithListAndApply[*v1alpha1.OpenModel, *v1alpha1.OpenModelList, *corev1alpha1.OpenModelApplyConfiguration](
+		gentype.NewClientWithListAndApply[*corev1alpha1.OpenModel, *corev1alpha1.OpenModelList, *applyconfigurationcorev1alpha1.OpenModelApplyConfiguration](
 			"openmodels",
 			c.RESTClient(),
 			scheme.ParameterCodec,
 			namespace,
-			func() *v1alpha1.OpenModel { return &v1alpha1.OpenModel{} },
-			func() *v1alpha1.OpenModelList { return &v1alpha1.OpenModelList{} }),
+			func() *corev1alpha1.OpenModel { return &corev1alpha1.OpenModel{} },
+			func() *corev1alpha1.OpenModelList { return &corev1alpha1.OpenModelList{} },
+		),
 	}
 }

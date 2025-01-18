@@ -46,21 +46,26 @@ spec:
                   BackendRuntimeConfig represents the inference backendRuntime configuration
                   under the hood, e.g. vLLM, which is the default backendRuntime.
                 properties:
-                  argFlags:
+                  args:
                     description: |-
-                      ArgFlags represents the argument flags appended to the backend.
-                      You can add new flags or overwrite the default flags.
-                    items:
-                      type: string
-                    type: array
-                  argName:
-                    description: |-
-                      ArgName represents the argument name set in the backendRuntimeArg.
-                      If not set, will be derived by the model role, e.g. if one model's role
-                      is <draft>, the argName will be set to <speculative-decoding>. Better to
-                      set the argName explicitly.
-                      By default, the argName will be treated as <default> in runtime.
-                    type: string
+                      Args represents the specified arguments of the backendRuntime,
+                      will be append to the backendRuntime.spec.Args.
+                    properties:
+                      flags:
+                        description: |-
+                          Flags represents all the preset configurations.
+                          Flag around with {{ .CONFIG }} is a configuration waiting for render.
+                        items:
+                          type: string
+                        type: array
+                      name:
+                        default: default
+                        description: Name represents the identifier of the backendRuntime
+                          argument.
+                        type: string
+                    required:
+                    - name
+                    type: object
                   envs:
                     description: Envs represents the environments set to the container.
                     items:

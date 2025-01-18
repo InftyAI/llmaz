@@ -109,19 +109,15 @@ func (w *PlaygroundWrapper) BackendRuntimeVersion(version string) *PlaygroundWra
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendRuntimeArgName(name string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeArgs(name string, args []string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.BackendRuntime("vllm")
 	}
-	w.Spec.BackendRuntimeConfig.ArgName = &name
-	return w
-}
-
-func (w *PlaygroundWrapper) BackendRuntimeArgFlags(args []string) *PlaygroundWrapper {
-	if w.Spec.BackendRuntimeConfig == nil {
-		w = w.BackendRuntime("vllm")
+	if w.Spec.BackendRuntimeConfig.Args == nil {
+		w.Spec.BackendRuntimeConfig.Args = &inferenceapi.BackendRuntimeArg{}
 	}
-	w.Spec.BackendRuntimeConfig.ArgFlags = args
+	w.Spec.BackendRuntimeConfig.Args.Name = name
+	w.Spec.BackendRuntimeConfig.Args.Flags = args
 	return w
 }
 

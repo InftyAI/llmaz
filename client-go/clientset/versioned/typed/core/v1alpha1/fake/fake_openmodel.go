@@ -18,179 +18,33 @@ limitations under the License.
 package fake
 
 import (
-	"context"
-	json "encoding/json"
-	"fmt"
-
 	v1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 	corev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	labels "k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
-	watch "k8s.io/apimachinery/pkg/watch"
-	testing "k8s.io/client-go/testing"
+	typedcorev1alpha1 "github.com/inftyai/llmaz/client-go/clientset/versioned/typed/core/v1alpha1"
+	gentype "k8s.io/client-go/gentype"
 )
 
-// FakeOpenModels implements OpenModelInterface
-type FakeOpenModels struct {
+// fakeOpenModels implements OpenModelInterface
+type fakeOpenModels struct {
+	*gentype.FakeClientWithListAndApply[*v1alpha1.OpenModel, *v1alpha1.OpenModelList, *corev1alpha1.OpenModelApplyConfiguration]
 	Fake *FakeLlmazV1alpha1
-	ns   string
 }
 
-var openmodelsResource = v1alpha1.SchemeGroupVersion.WithResource("openmodels")
-
-var openmodelsKind = v1alpha1.SchemeGroupVersion.WithKind("OpenModel")
-
-// Get takes name of the openModel, and returns the corresponding openModel object, and an error if there is any.
-func (c *FakeOpenModels) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.OpenModel, err error) {
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewGetActionWithOptions(openmodelsResource, c.ns, name, options), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
+func newFakeOpenModels(fake *FakeLlmazV1alpha1, namespace string) typedcorev1alpha1.OpenModelInterface {
+	return &fakeOpenModels{
+		gentype.NewFakeClientWithListAndApply[*v1alpha1.OpenModel, *v1alpha1.OpenModelList, *corev1alpha1.OpenModelApplyConfiguration](
+			fake.Fake,
+			namespace,
+			v1alpha1.SchemeGroupVersion.WithResource("openmodels"),
+			v1alpha1.SchemeGroupVersion.WithKind("OpenModel"),
+			func() *v1alpha1.OpenModel { return &v1alpha1.OpenModel{} },
+			func() *v1alpha1.OpenModelList { return &v1alpha1.OpenModelList{} },
+			func(dst, src *v1alpha1.OpenModelList) { dst.ListMeta = src.ListMeta },
+			func(list *v1alpha1.OpenModelList) []*v1alpha1.OpenModel { return gentype.ToPointerSlice(list.Items) },
+			func(list *v1alpha1.OpenModelList, items []*v1alpha1.OpenModel) {
+				list.Items = gentype.FromPointerSlice(items)
+			},
+		),
+		fake,
 	}
-	return obj.(*v1alpha1.OpenModel), err
-}
-
-// List takes label and field selectors, and returns the list of OpenModels that match those selectors.
-func (c *FakeOpenModels) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.OpenModelList, err error) {
-	emptyResult := &v1alpha1.OpenModelList{}
-	obj, err := c.Fake.
-		Invokes(testing.NewListActionWithOptions(openmodelsResource, openmodelsKind, c.ns, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-
-	label, _, _ := testing.ExtractFromListOptions(opts)
-	if label == nil {
-		label = labels.Everything()
-	}
-	list := &v1alpha1.OpenModelList{ListMeta: obj.(*v1alpha1.OpenModelList).ListMeta}
-	for _, item := range obj.(*v1alpha1.OpenModelList).Items {
-		if label.Matches(labels.Set(item.Labels)) {
-			list.Items = append(list.Items, item)
-		}
-	}
-	return list, err
-}
-
-// Watch returns a watch.Interface that watches the requested openModels.
-func (c *FakeOpenModels) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
-	return c.Fake.
-		InvokesWatch(testing.NewWatchActionWithOptions(openmodelsResource, c.ns, opts))
-
-}
-
-// Create takes the representation of a openModel and creates it.  Returns the server's representation of the openModel, and an error, if there is any.
-func (c *FakeOpenModels) Create(ctx context.Context, openModel *v1alpha1.OpenModel, opts v1.CreateOptions) (result *v1alpha1.OpenModel, err error) {
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(openmodelsResource, c.ns, openModel, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.OpenModel), err
-}
-
-// Update takes the representation of a openModel and updates it. Returns the server's representation of the openModel, and an error, if there is any.
-func (c *FakeOpenModels) Update(ctx context.Context, openModel *v1alpha1.OpenModel, opts v1.UpdateOptions) (result *v1alpha1.OpenModel, err error) {
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateActionWithOptions(openmodelsResource, c.ns, openModel, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.OpenModel), err
-}
-
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeOpenModels) UpdateStatus(ctx context.Context, openModel *v1alpha1.OpenModel, opts v1.UpdateOptions) (result *v1alpha1.OpenModel, err error) {
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceActionWithOptions(openmodelsResource, "status", c.ns, openModel, opts), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.OpenModel), err
-}
-
-// Delete takes name of the openModel and deletes it. Returns an error if one occurs.
-func (c *FakeOpenModels) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(openmodelsResource, c.ns, name, opts), &v1alpha1.OpenModel{})
-
-	return err
-}
-
-// DeleteCollection deletes a collection of objects.
-func (c *FakeOpenModels) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionActionWithOptions(openmodelsResource, c.ns, opts, listOpts)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.OpenModelList{})
-	return err
-}
-
-// Patch applies the patch and returns the patched openModel.
-func (c *FakeOpenModels) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.OpenModel, err error) {
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(openmodelsResource, c.ns, name, pt, data, opts, subresources...), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.OpenModel), err
-}
-
-// Apply takes the given apply declarative configuration, applies it and returns the applied openModel.
-func (c *FakeOpenModels) Apply(ctx context.Context, openModel *corev1alpha1.OpenModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.OpenModel, err error) {
-	if openModel == nil {
-		return nil, fmt.Errorf("openModel provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(openModel)
-	if err != nil {
-		return nil, err
-	}
-	name := openModel.Name
-	if name == nil {
-		return nil, fmt.Errorf("openModel.Name must be provided to Apply")
-	}
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(openmodelsResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions()), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.OpenModel), err
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakeOpenModels) ApplyStatus(ctx context.Context, openModel *corev1alpha1.OpenModelApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.OpenModel, err error) {
-	if openModel == nil {
-		return nil, fmt.Errorf("openModel provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(openModel)
-	if err != nil {
-		return nil, err
-	}
-	name := openModel.Name
-	if name == nil {
-		return nil, fmt.Errorf("openModel.Name must be provided to Apply")
-	}
-	emptyResult := &v1alpha1.OpenModel{}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceActionWithOptions(openmodelsResource, c.ns, *name, types.ApplyPatchType, data, opts.ToPatchOptions(), "status"), emptyResult)
-
-	if obj == nil {
-		return emptyResult, err
-	}
-	return obj.(*v1alpha1.OpenModel), err
 }

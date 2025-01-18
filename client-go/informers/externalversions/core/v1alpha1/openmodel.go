@@ -18,13 +18,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
-	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	apicorev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 	versioned "github.com/inftyai/llmaz/client-go/clientset/versioned"
 	internalinterfaces "github.com/inftyai/llmaz/client-go/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/inftyai/llmaz/client-go/listers/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/client-go/listers/core/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -35,7 +35,7 @@ import (
 // OpenModels.
 type OpenModelInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.OpenModelLister
+	Lister() corev1alpha1.OpenModelLister
 }
 
 type openModelInformer struct {
@@ -70,7 +70,7 @@ func NewFilteredOpenModelInformer(client versioned.Interface, namespace string, 
 				return client.LlmazV1alpha1().OpenModels(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&corev1alpha1.OpenModel{},
+		&apicorev1alpha1.OpenModel{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,9 +81,9 @@ func (f *openModelInformer) defaultInformer(client versioned.Interface, resyncPe
 }
 
 func (f *openModelInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&corev1alpha1.OpenModel{}, f.defaultInformer)
+	return f.factory.InformerFor(&apicorev1alpha1.OpenModel{}, f.defaultInformer)
 }
 
-func (f *openModelInformer) Lister() v1alpha1.OpenModelLister {
-	return v1alpha1.NewOpenModelLister(f.Informer().GetIndexer())
+func (f *openModelInformer) Lister() corev1alpha1.OpenModelLister {
+	return corev1alpha1.NewOpenModelLister(f.Informer().GetIndexer())
 }

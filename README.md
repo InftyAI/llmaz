@@ -66,10 +66,11 @@ spec:
   source:
     modelHub:
       modelID: facebook/opt-125m
-  inferenceFlavors:
-    - name: t4 # GPU type
-      requests:
-        nvidia.com/gpu: 1
+  inferenceConfig:
+    flavors:
+      - name: default # Configure GPU type
+        requests:
+          nvidia.com/gpu: 1
 ```
 
 #### Inference Playground

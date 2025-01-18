@@ -59,6 +59,7 @@ spec:
                         type: string
                       type: array
                     name:
+                      default: default
                       description: Name represents the identifier of the backendRuntime
                         argument.
                       type: string

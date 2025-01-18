@@ -18,13 +18,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
-	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	apiinferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	versioned "github.com/inftyai/llmaz/client-go/clientset/versioned"
 	internalinterfaces "github.com/inftyai/llmaz/client-go/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/inftyai/llmaz/client-go/listers/inference/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/listers/inference/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -35,7 +35,7 @@ import (
 // Services.
 type ServiceInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.ServiceLister
+	Lister() inferencev1alpha1.ServiceLister
 }
 
 type serviceInformer struct {
@@ -70,7 +70,7 @@ func NewFilteredServiceInformer(client versioned.Interface, namespace string, re
 				return client.InferenceV1alpha1().Services(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&inferencev1alpha1.Service{},
+		&apiinferencev1alpha1.Service{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,9 +81,9 @@ func (f *serviceInformer) defaultInformer(client versioned.Interface, resyncPeri
 }
 
 func (f *serviceInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&inferencev1alpha1.Service{}, f.defaultInformer)
+	return f.factory.InformerFor(&apiinferencev1alpha1.Service{}, f.defaultInformer)
 }
 
-func (f *serviceInformer) Lister() v1alpha1.ServiceLister {
-	return v1alpha1.NewServiceLister(f.Informer().GetIndexer())
+func (f *serviceInformer) Lister() inferencev1alpha1.ServiceLister {
+	return inferencev1alpha1.NewServiceLister(f.Informer().GetIndexer())
 }

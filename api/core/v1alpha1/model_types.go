@@ -122,6 +122,15 @@ type Flavor struct {
 	Params map[string]string `json:"params,omitempty"`
 }
 
+// InferenceConfig represents the inference configurations for the model.
+type InferenceConfig struct {
+	// Flavors represents the accelerator requirements to serve the model.
+	// Flavors are fungible following the priority represented by the slice order.
+	// +kubebuilder:validation:MaxItems=8
+	// +optional
+	Flavors []Flavor `json:"flavors,omitempty"`
+}
+
 type ModelName string
 
 // ModelClaim represents claiming for one model, it's the standard claimMode
@@ -188,11 +197,8 @@ type ModelSpec struct {
 	// Source represents the source of the model, there're several ways to load
 	// the model such as loading from huggingface, OCI registry, s3, host path and so on.
 	Source ModelSource `json:"source"`
-	// InferenceFlavors represents the accelerator requirements to serve the model.
-	// Flavors are fungible following the priority represented by the slice order.
-	// +kubebuilder:validation:MaxItems=8
-	// +optional
-	InferenceFlavors []Flavor `json:"inferenceFlavors,omitempty"`
+	// InferenceConfig represents the inference configurations for the model.
+	InferenceConfig *InferenceConfig `json:"inferenceConfig,omitempty"`
 }
 
 const (

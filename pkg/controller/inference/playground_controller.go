@@ -275,8 +275,10 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	envs := parser.Envs()
 
 	if playground.Spec.BackendRuntimeConfig != nil {
-		args = append(args, playground.Spec.BackendRuntimeConfig.ArgFlags...)
 		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
+		if playground.Spec.BackendRuntimeConfig.Args != nil {
+			args = append(args, playground.Spec.BackendRuntimeConfig.Args.Flags...)
+		}
 	}
 
 	resources := corev1.ResourceRequirements{

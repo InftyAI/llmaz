@@ -18,13 +18,13 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"context"
+	context "context"
 	time "time"
 
-	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	apiinferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	versioned "github.com/inftyai/llmaz/client-go/clientset/versioned"
 	internalinterfaces "github.com/inftyai/llmaz/client-go/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/inftyai/llmaz/client-go/listers/inference/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/client-go/listers/inference/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -35,7 +35,7 @@ import (
 // Playgrounds.
 type PlaygroundInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.PlaygroundLister
+	Lister() inferencev1alpha1.PlaygroundLister
 }
 
 type playgroundInformer struct {
@@ -70,7 +70,7 @@ func NewFilteredPlaygroundInformer(client versioned.Interface, namespace string,
 				return client.InferenceV1alpha1().Playgrounds(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&inferencev1alpha1.Playground{},
+		&apiinferencev1alpha1.Playground{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,9 +81,9 @@ func (f *playgroundInformer) defaultInformer(client versioned.Interface, resyncP
 }
 
 func (f *playgroundInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&inferencev1alpha1.Playground{}, f.defaultInformer)
+	return f.factory.InformerFor(&apiinferencev1alpha1.Playground{}, f.defaultInformer)
 }
 
-func (f *playgroundInformer) Lister() v1alpha1.PlaygroundLister {
-	return v1alpha1.NewPlaygroundLister(f.Informer().GetIndexer())
+func (f *playgroundInformer) Lister() inferencev1alpha1.PlaygroundLister {
+	return inferencev1alpha1.NewPlaygroundLister(f.Informer().GetIndexer())
 }

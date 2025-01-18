@@ -18,17 +18,16 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 )
 
 // BackendRuntimeConfigApplyConfiguration represents a declarative configuration of the BackendRuntimeConfig type for use
 // with apply.
 type BackendRuntimeConfigApplyConfiguration struct {
-	Name      *v1alpha1.BackendName                   `json:"name,omitempty"`
+	Name      *inferencev1alpha1.BackendName          `json:"name,omitempty"`
 	Version   *string                                 `json:"version,omitempty"`
-	ArgName   *string                                 `json:"argName,omitempty"`
-	ArgFlags  []string                                `json:"argFlags,omitempty"`
+	Args      *BackendRuntimeArgApplyConfiguration    `json:"args,omitempty"`
 	Envs      []v1.EnvVar                             `json:"envs,omitempty"`
 	Resources *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 }
@@ -42,7 +41,7 @@ func BackendRuntimeConfig() *BackendRuntimeConfigApplyConfiguration {
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *BackendRuntimeConfigApplyConfiguration) WithName(value v1alpha1.BackendName) *BackendRuntimeConfigApplyConfiguration {
+func (b *BackendRuntimeConfigApplyConfiguration) WithName(value inferencev1alpha1.BackendName) *BackendRuntimeConfigApplyConfiguration {
 	b.Name = &value
 	return b
 }
@@ -55,21 +54,11 @@ func (b *BackendRuntimeConfigApplyConfiguration) WithVersion(value string) *Back
 	return b
 }
 
-// WithArgName sets the ArgName field in the declarative configuration to the given value
+// WithArgs sets the Args field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ArgName field is set to the value of the last call.
-func (b *BackendRuntimeConfigApplyConfiguration) WithArgName(value string) *BackendRuntimeConfigApplyConfiguration {
-	b.ArgName = &value
-	return b
-}
-
-// WithArgFlags adds the given value to the ArgFlags field in the declarative configuration
-// and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the ArgFlags field.
-func (b *BackendRuntimeConfigApplyConfiguration) WithArgFlags(values ...string) *BackendRuntimeConfigApplyConfiguration {
-	for i := range values {
-		b.ArgFlags = append(b.ArgFlags, values[i])
-	}
+// If called multiple times, the Args field is set to the value of the last call.
+func (b *BackendRuntimeConfigApplyConfiguration) WithArgs(value *BackendRuntimeArgApplyConfiguration) *BackendRuntimeConfigApplyConfiguration {
+	b.Args = value
 	return b
 }
 

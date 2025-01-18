@@ -175,7 +175,7 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 }
 
 func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenModel, service *inferenceapi.Service) {
-	if len(model.Spec.InferenceFlavors) == 0 {
+	if model.Spec.InferenceConfig == nil || len(model.Spec.InferenceConfig.Flavors) == 0 {
 		return
 	}
 
@@ -186,15 +186,15 @@ func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenMode
 		}
 	}
 
-	flavorName := model.Spec.InferenceFlavors[0].Name
+	flavorName := model.Spec.InferenceConfig.Flavors[0].Name
 	if len(service.Spec.ModelClaims.InferenceFlavors) > 0 {
 		// We only support the same resource request right now, so 0-index flavor is enough.
 		flavorName = service.Spec.ModelClaims.InferenceFlavors[0]
 	}
 
-	for i, flavor := range model.Spec.InferenceFlavors {
+	for i, flavor := range model.Spec.InferenceConfig.Flavors {
 		if flavor.Name == flavorName {
-			requests := model.Spec.InferenceFlavors[i].Requests
+			requests := model.Spec.InferenceConfig.Flavors[i].Requests
 			for k, v := range requests {
 				if container.Resources.Requests == nil {
 					container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}

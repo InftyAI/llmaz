@@ -8,7 +8,8 @@ spec:
     # You should replace this with your own oss address following the protocol:
     # oss://<bucket>.<endpoint>/<path-to-your-model>
     uri: oss://llmaz.oss-ap-southeast-1-internal.aliyuncs.com/models/Qwen2-7B
-  inferenceFlavors:
-  - name: t4 # GPU type
-    requests:
-      nvidia.com/gpu: 1
+  inferenceConfig:
+    flavors:
+      - name: t4 # GPU type
+        requests:
+          nvidia.com/gpu: 1

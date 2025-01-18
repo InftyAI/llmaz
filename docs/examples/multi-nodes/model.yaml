@@ -6,15 +6,15 @@ spec:
   familyName: llama3
   source:
     modelHub:
-      # TODO:
       modelID: meta-llama/Llama-3.1-405B
-  inferenceFlavors:
-    - name: a100-80gb
-      requests:
-        nvidia.com/gpu: 1 # single node request
-      params:
-        TP: "8"
-        PP: "2"
+  inferenceConfig:
+    flavors:
+      - name: a100-80gb
+        requests:
+          nvidia.com/gpu: 1 # single node request
+        params:
+          TP: "8"
+          PP: "2"
   # - name: h100
   #   requests:
   #     nvidia.com/gpu: 8 # single node request

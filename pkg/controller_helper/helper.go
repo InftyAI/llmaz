@@ -100,16 +100,15 @@ func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Play
 		flavors = playground.Spec.ModelClaims.InferenceFlavors
 	}
 
-	// This should not happen.
-	if len(flavors) == 0 && len(model.Spec.InferenceFlavors) == 0 {
+	if len(flavors) == 0 && (model.Spec.InferenceConfig == nil || len(model.Spec.InferenceConfig.Flavors) == 0) {
 		return nil
 	}
 
 	if len(flavors) == 0 {
-		return []coreapi.Flavor{model.Spec.InferenceFlavors[0]}
+		return []coreapi.Flavor{model.Spec.InferenceConfig.Flavors[0]}
 	}
 
-	for _, flavor := range model.Spec.InferenceFlavors {
+	for _, flavor := range model.Spec.InferenceConfig.Flavors {
 		if flavor.Name == flavors[0] {
 			return []coreapi.Flavor{flavor}
 		}

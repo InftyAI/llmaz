@@ -18,17 +18,17 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
+	corev1alpha1 "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 )
 
 // PlaygroundSpecApplyConfiguration represents a declarative configuration of the PlaygroundSpec type for use
 // with apply.
 type PlaygroundSpecApplyConfiguration struct {
-	Replicas             *int32                                  `json:"replicas,omitempty"`
-	ModelClaim           *v1alpha1.ModelClaimApplyConfiguration  `json:"modelClaim,omitempty"`
-	ModelClaims          *v1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
-	BackendRuntimeConfig *BackendRuntimeConfigApplyConfiguration `json:"backendRuntimeConfig,omitempty"`
-	ElasticConfig        *ElasticConfigApplyConfiguration        `json:"elasticConfig,omitempty"`
+	Replicas             *int32                                      `json:"replicas,omitempty"`
+	ModelClaim           *corev1alpha1.ModelClaimApplyConfiguration  `json:"modelClaim,omitempty"`
+	ModelClaims          *corev1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
+	BackendRuntimeConfig *BackendRuntimeConfigApplyConfiguration     `json:"backendRuntimeConfig,omitempty"`
+	ElasticConfig        *ElasticConfigApplyConfiguration            `json:"elasticConfig,omitempty"`
 }
 
 // PlaygroundSpecApplyConfiguration constructs a declarative configuration of the PlaygroundSpec type for use with
@@ -48,7 +48,7 @@ func (b *PlaygroundSpecApplyConfiguration) WithReplicas(value int32) *Playground
 // WithModelClaim sets the ModelClaim field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ModelClaim field is set to the value of the last call.
-func (b *PlaygroundSpecApplyConfiguration) WithModelClaim(value *v1alpha1.ModelClaimApplyConfiguration) *PlaygroundSpecApplyConfiguration {
+func (b *PlaygroundSpecApplyConfiguration) WithModelClaim(value *corev1alpha1.ModelClaimApplyConfiguration) *PlaygroundSpecApplyConfiguration {
 	b.ModelClaim = value
 	return b
 }
@@ -56,7 +56,7 @@ func (b *PlaygroundSpecApplyConfiguration) WithModelClaim(value *v1alpha1.ModelC
 // WithModelClaims sets the ModelClaims field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ModelClaims field is set to the value of the last call.
-func (b *PlaygroundSpecApplyConfiguration) WithModelClaims(value *v1alpha1.ModelClaimsApplyConfiguration) *PlaygroundSpecApplyConfiguration {
+func (b *PlaygroundSpecApplyConfiguration) WithModelClaims(value *corev1alpha1.ModelClaimsApplyConfiguration) *PlaygroundSpecApplyConfiguration {
 	b.ModelClaims = value
 	return b
 }
