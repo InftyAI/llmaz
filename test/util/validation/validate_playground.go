@@ -45,15 +45,15 @@ func validateModelClaim(models []*coreapi.OpenModel, playground *inferenceapi.Pl
 		if playground.Spec.ModelClaim.ModelName != service.Spec.ModelClaims.Models[0].Name {
 			return fmt.Errorf("expected modelName %s, got %s", playground.Spec.ModelClaim.ModelName, service.Spec.ModelClaims.Models[0].Name)
 		}
-		if diff := cmp.Diff(playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors); diff != "" {
-			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors)
+		if diff := cmp.Diff(playground.Spec.ModelClaim.InferenceFlavorClaims, service.Spec.ModelClaims.InferenceFlavorClaims); diff != "" {
+			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavorClaims, service.Spec.ModelClaims.InferenceFlavorClaims)
 		}
 	} else if playground.Spec.ModelClaims != nil {
 		if diff := cmp.Diff(*playground.Spec.ModelClaims, service.Spec.ModelClaims); diff != "" {
 			return fmt.Errorf("expected modelClaims, want %v, got %v", *playground.Spec.ModelClaims, service.Spec.ModelClaims)
 		}
-		if diff := cmp.Diff(playground.Spec.ModelClaims.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors); diff != "" {
-			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavors, service.Spec.ModelClaims.InferenceFlavors)
+		if diff := cmp.Diff(playground.Spec.ModelClaims.InferenceFlavorClaims, service.Spec.ModelClaims.InferenceFlavorClaims); diff != "" {
+			return fmt.Errorf("unexpected flavors, want %v, got %v", playground.Spec.ModelClaim.InferenceFlavorClaims, service.Spec.ModelClaims.InferenceFlavorClaims)
 		}
 	}
 

@@ -67,7 +67,7 @@ func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) 
 	}
 
 	if len(names) > 0 {
-		w.Spec.ModelClaim.InferenceFlavors = names
+		w.Spec.ModelClaim.InferenceFlavorClaims = names
 	}
 	return w
 }
@@ -87,7 +87,7 @@ func (w *PlaygroundWrapper) ModelClaims(modelNames []string, roles []string, fla
 	}
 
 	if len(fNames) > 0 {
-		w.Spec.ModelClaims.InferenceFlavors = fNames
+		w.Spec.ModelClaims.InferenceFlavorClaims = fNames
 	}
 	return w
 }
