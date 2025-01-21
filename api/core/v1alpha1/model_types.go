@@ -82,8 +82,10 @@ type ModelSource struct {
 	// ModelHub represents the model registry for model downloads.
 	// +optional
 	ModelHub *ModelHub `json:"modelHub,omitempty"`
-	// URI represents a various kinds of model sources following the uri protocol, e.g.:
-	// - OSS: oss://<bucket>.<endpoint>/<path-to-your-model>
+	// URI represents a various kinds of model sources following the uri protocol, protocol://<address>, e.g.
+	// - oss://<bucket>.<endpoint>/<path-to-your-model>
+	// - ollama://llama3.3
+	// - host://<path-to-your-model>
 	//
 	// +optional
 	URI *URIProtocol `json:"uri,omitempty"`

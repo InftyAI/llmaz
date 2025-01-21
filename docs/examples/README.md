@@ -13,6 +13,7 @@ We provide a set of examples to help you serve large language models, by default
 - [Deploy models via ollama](#ollama)
 - [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
 - [Deploy multi-host inference](#multi-host-inference)
+- [Deploy host models](#deploy-host-models)
 
 ### Deploy models from Huggingface
 
@@ -59,3 +60,7 @@ By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference
 ### Multi-Host Inference
 
 Model size is growing bigger and bigger, Llama 3.1 405B FP16 LLM requires more than 750 GB GPU for weights only, leaving kv cache unconsidered, even with 8 x H100 Nvidia GPUs, 80 GB size of HBM each, can not fit in a single host, requires a multi-host deployment, see [example](./multi-nodes/) here.
+
+### Deploy Host Models
+
+Models could be loaded in prior to the hosts, especially those extremely big models, see [example](./hostpath/) to serve local models.

@@ -160,7 +160,7 @@ func (w *PlaygroundWrapper) BackendRuntimeLimit(r, v string) *PlaygroundWrapper 
 	return w
 }
 
-func (w *PlaygroundWrapper) ElasticConfig(maxReplicas, minReplicas int32) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) ElasticConfig(minReplicas, maxReplicas int32) *PlaygroundWrapper {
 	w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{
 		MaxReplicas: ptr.To[int32](maxReplicas),
 		MinReplicas: ptr.To[int32](minReplicas),

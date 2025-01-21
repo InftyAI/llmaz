@@ -105,6 +105,12 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			},
 			failed: false,
 		}),
+		ginkgo.Entry("model creation with host protocol", &testValidatingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithURI("host:///models/meta-llama-3-8B").Obj()
+			},
+			failed: false,
+		}),
 		ginkgo.Entry("model creation with protocol unknown URI", &testValidatingCase{
 			model: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithURI("unknown://bucket.endpoint/models/meta-llama-3-8B").Obj()

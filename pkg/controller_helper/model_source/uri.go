@@ -26,22 +26,24 @@ import (
 var _ ModelSourceProvider = &URIProvider{}
 
 const (
-	OSS    = "OSS"
-	OLLAMA = "OLLAMA"
+	OSS      = "OSS"
+	Ollama   = "OLLAMA"
+	HostPath = "HOST"
 )
 
 type URIProvider struct {
-	modelName    string
-	protocol     string
-	bucket       string
-	endpoint     string
-	modelPath    string
-	modelAddress string
+	modelName string
+	protocol  string
+	bucket    string
+	endpoint  string
+	modelPath string
 }
 
 func (p *URIProvider) ModelName() string {
-	if p.protocol == OLLAMA {
-		return p.modelAddress
+	if p.protocol == Ollama {
+		// model path stores the ollama model name,
+		// the model name is the name of model CRD.
+		return p.modelPath
 	}
 	return p.modelName
 }
@@ -54,18 +56,51 @@ func (p *URIProvider) ModelName() string {
 //   - uri: bucket.endpoint/modelPath/model.gguf
 //     modelPath: /workspace/models/model.gguf
 func (p *URIProvider) ModelPath() string {
+	if p.protocol == HostPath {
+		return p.modelPath
+	}
+
+	// protocol is oss.
+
 	splits := strings.Split(p.modelPath, "/")
 
-	if strings.Contains(p.modelPath, ".") {
+	if strings.Contains(p.modelPath, ".gguf") {
 		return CONTAINER_MODEL_PATH + splits[len(splits)-1]
 	}
 	return CONTAINER_MODEL_PATH + "models--" + splits[len(splits)-1]
 }
 
 func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
-	if p.protocol == OLLAMA {
+	// We don't have additional operations for Ollama, just load in runtime.
+	if p.protocol == Ollama {
 		return
 	}
+
+	if p.protocol == HostPath {
+		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
+			Name: MODEL_VOLUME_NAME,
+			VolumeSource: corev1.VolumeSource{
+				HostPath: &corev1.HostPathVolumeSource{
+					Path: p.modelPath,
+				},
+			},
+		})
+
+		for i, container := range template.Spec.Containers {
+			// We only consider this container.
+			if container.Name == MODEL_RUNNER_CONTAINER_NAME {
+				template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
+					Name:      MODEL_VOLUME_NAME,
+					MountPath: p.modelPath,
+					ReadOnly:  true,
+				})
+			}
+		}
+		return
+	}
+
+	// Other protocols.
+
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
