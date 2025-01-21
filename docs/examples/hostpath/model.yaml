@@ -5,6 +5,7 @@ metadata:
 spec:
   familyName: qwen2
   source:
+    # download the model to the host ahead.
     uri: host:///workspace/Qwen2-0.5B-Instruct
   inferenceConfig:
     flavors:

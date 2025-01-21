@@ -95,9 +95,9 @@ func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.Mod
 func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Playground) []coreapi.Flavor {
 	var flavors []coreapi.FlavorName
 	if playground.Spec.ModelClaim != nil {
-		flavors = playground.Spec.ModelClaim.InferenceFlavors
+		flavors = playground.Spec.ModelClaim.InferenceFlavorClaims
 	} else {
-		flavors = playground.Spec.ModelClaims.InferenceFlavors
+		flavors = playground.Spec.ModelClaims.InferenceFlavorClaims
 	}
 
 	if len(flavors) == 0 && (model.Spec.InferenceConfig == nil || len(model.Spec.InferenceConfig.Flavors) == 0) {

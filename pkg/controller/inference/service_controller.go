@@ -187,9 +187,9 @@ func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenMode
 	}
 
 	flavorName := model.Spec.InferenceConfig.Flavors[0].Name
-	if len(service.Spec.ModelClaims.InferenceFlavors) > 0 {
+	if len(service.Spec.ModelClaims.InferenceFlavorClaims) > 0 {
 		// We only support the same resource request right now, so 0-index flavor is enough.
-		flavorName = service.Spec.ModelClaims.InferenceFlavors[0]
+		flavorName = service.Spec.ModelClaims.InferenceFlavorClaims[0]
 	}
 
 	for i, flavor := range model.Spec.InferenceConfig.Flavors {
@@ -222,8 +222,8 @@ func modelLabels(model *coreapi.OpenModel) map[string]string {
 
 func modelAnnotations(service *inferenceapi.Service) map[string]string {
 	var values string
-	for i, value := range service.Spec.ModelClaims.InferenceFlavors {
-		if i == len(service.Spec.ModelClaims.InferenceFlavors)-1 {
+	for i, value := range service.Spec.ModelClaims.InferenceFlavorClaims {
+		if i == len(service.Spec.ModelClaims.InferenceFlavorClaims)-1 {
 			values += string(value)
 		} else {
 			values += string(value) + ","

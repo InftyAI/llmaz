@@ -6,7 +6,7 @@ spec:
   replicas: 1
   modelClaim:
     modelName: llama3-405b-instruct
-    inferenceFlavors:
+    inferenceFlavorClaims:
       - a100-80gb # actually no need to specify this since we have only one flavor
   backendRuntimeConfig:
     resources:

@@ -59,7 +59,7 @@ func (w *ServiceWrapper) ModelClaims(modelNames []string, roles []string, flavor
 	}
 
 	if len(fNames) > 0 {
-		w.Spec.ModelClaims.InferenceFlavors = fNames
+		w.Spec.ModelClaims.InferenceFlavorClaims = fNames
 	}
 	return w
 }
