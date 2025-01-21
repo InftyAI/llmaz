@@ -47,8 +47,9 @@ func SetupOpenModelWebhook(mgr ctrl.Manager) error {
 var _ webhook.CustomDefaulter = &OpenModelWebhook{}
 
 var SUPPORTED_OBJ_STORES = map[string]struct{}{
-	modelSource.OSS:    {},
-	modelSource.OLLAMA: {},
+	modelSource.OSS:      {},
+	modelSource.Ollama:   {},
+	modelSource.HostPath: {},
 }
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
