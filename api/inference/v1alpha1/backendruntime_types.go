@@ -34,10 +34,10 @@ type BackendRuntimeArg struct {
 	Flags []string `json:"flags,omitempty"`
 }
 
-// ScalingPolicy defines the HPA policies for scaling the workloads.
-// HPA should be installed in prior.
+// HPAConfig represents the configuration of the HorizontalPodAutoscaler.
 // Inspired by kubernetes.io/pkg/apis/autoscaling/types.go#HorizontalPodAutoscalerSpec.
-type ScalingPolicy struct {
+// Note: HPA component should be installed in prior.
+type HPAConfig struct {
 	// metrics contains the specifications for which to use to calculate the
 	// desired replica count (the maximum replica count across all metrics will
 	// be used).  The desired replica count is calculated multiplying the
@@ -52,6 +52,13 @@ type ScalingPolicy struct {
 	// If not set, the default HPAScalingRules for scale up and scale down are used.
 	// +optional
 	Behavior *autoscalingv2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
+}
+
+// ScalePolicy defines the policy for scaling the workloads.
+// Support HPA only for now.
+type ScalePolicy struct {
+	// HPA represents the configuration of the HorizontalPodAutoscaler.
+	HPA *HPAConfig `json:"hpa,omitempty"`
 }
 
 // MultiHostCommands represents leader & worker commands for multiple nodes scenarios.
@@ -101,11 +108,10 @@ type BackendRuntimeSpec struct {
 	// when it might take a long time to load data or warm a cache, than during steady-state operation.
 	// +optional
 	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
-	// ScalingPolicy represents the rules for scaling the backend based on the metrics,
-	// using HPA as the underlying horizontal scaler.
-	// If playground doesn't define the scalingPolicy, the default policy here will be used.
+	// ScalePolicy represents the rules for scaling the backend based on the metrics.
+	// If playground doesn't define the ScalePolicy, the defaulted policy here will be used.
 	// +optional
-	ScalingPolicy *ScalingPolicy `json:"scalingPolicy,omitempty"`
+	ScalePolicy *ScalePolicy `json:"scalePolicy,omitempty"`
 }
 
 // BackendRuntimeStatus defines the observed state of BackendRuntime
