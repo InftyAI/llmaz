@@ -47,6 +47,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &inferencev1alpha1.PlaygroundStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ResourceRequirements"):
 		return &inferencev1alpha1.ResourceRequirementsApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ScalingPolicy"):
+		return &inferencev1alpha1.ScalingPolicyApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Service"):
 		return &inferencev1alpha1.ServiceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceSpec"):

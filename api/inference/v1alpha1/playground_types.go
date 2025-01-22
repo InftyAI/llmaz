@@ -43,8 +43,8 @@ type PlaygroundSpec struct {
 	// +optional
 	BackendRuntimeConfig *BackendRuntimeConfig `json:"backendRuntimeConfig,omitempty"`
 	// ElasticConfig defines the configuration for elastic usage,
-	// e.g. the max/min replicas. Default to 0 ~ Inf+.
-	// This requires to install the HPA first or will not work.
+	// e.g. the max/min replicas.
+	// Note: this requires to install the HPA first or will report error.
 	// +optional
 	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
