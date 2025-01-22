@@ -21,23 +21,23 @@ import (
 	v2 "k8s.io/api/autoscaling/v2"
 )
 
-// ScalingPolicyApplyConfiguration represents a declarative configuration of the ScalingPolicy type for use
+// HPAConfigApplyConfiguration represents a declarative configuration of the HPAConfig type for use
 // with apply.
-type ScalingPolicyApplyConfiguration struct {
+type HPAConfigApplyConfiguration struct {
 	Metrics  []v2.MetricSpec                     `json:"metrics,omitempty"`
 	Behavior *v2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
-// ScalingPolicyApplyConfiguration constructs a declarative configuration of the ScalingPolicy type for use with
+// HPAConfigApplyConfiguration constructs a declarative configuration of the HPAConfig type for use with
 // apply.
-func ScalingPolicy() *ScalingPolicyApplyConfiguration {
-	return &ScalingPolicyApplyConfiguration{}
+func HPAConfig() *HPAConfigApplyConfiguration {
+	return &HPAConfigApplyConfiguration{}
 }
 
 // WithMetrics adds the given value to the Metrics field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Metrics field.
-func (b *ScalingPolicyApplyConfiguration) WithMetrics(values ...v2.MetricSpec) *ScalingPolicyApplyConfiguration {
+func (b *HPAConfigApplyConfiguration) WithMetrics(values ...v2.MetricSpec) *HPAConfigApplyConfiguration {
 	for i := range values {
 		b.Metrics = append(b.Metrics, values[i])
 	}
@@ -47,7 +47,7 @@ func (b *ScalingPolicyApplyConfiguration) WithMetrics(values ...v2.MetricSpec) *
 // WithBehavior sets the Behavior field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Behavior field is set to the value of the last call.
-func (b *ScalingPolicyApplyConfiguration) WithBehavior(value v2.HorizontalPodAutoscalerBehavior) *ScalingPolicyApplyConfiguration {
+func (b *HPAConfigApplyConfiguration) WithBehavior(value v2.HorizontalPodAutoscalerBehavior) *HPAConfigApplyConfiguration {
 	b.Behavior = &value
 	return b
 }

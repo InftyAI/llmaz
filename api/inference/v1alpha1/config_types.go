@@ -68,9 +68,9 @@ type ElasticConfig struct {
 	// Default to nil means there's no limit for the instance number.
 	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
-	// ScalingPolicy defines the HPA policies for scaling the workloads.
-	// If not defined, the default policy configured in backendRuntime will be used,
-	// otherwise, the policy here will overwrite the default policy.
+	// ScalePolicy defines the rules for scaling the workloads.
+	// If not defined, policy configured in backendRuntime will be used,
+	// otherwise, policy defined here will overwrite the defaulted ones.
 	// +optional
-	ScalingPolicy *ScalingPolicy `json:"scalingPolicy,omitempty"`
+	ScalePolicy *ScalePolicy `json:"scalePolicy,omitempty"`
 }

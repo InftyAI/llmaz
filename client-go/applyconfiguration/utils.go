@@ -39,6 +39,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &inferencev1alpha1.BackendRuntimeConfigApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ElasticConfig"):
 		return &inferencev1alpha1.ElasticConfigApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("HPAConfig"):
+		return &inferencev1alpha1.HPAConfigApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Playground"):
 		return &inferencev1alpha1.PlaygroundApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("PlaygroundSpec"):
@@ -47,8 +49,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &inferencev1alpha1.PlaygroundStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ResourceRequirements"):
 		return &inferencev1alpha1.ResourceRequirementsApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ScalingPolicy"):
-		return &inferencev1alpha1.ScalingPolicyApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ScalePolicy"):
+		return &inferencev1alpha1.ScalePolicyApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Service"):
 		return &inferencev1alpha1.ServiceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceSpec"):
