@@ -1,0 +1,17 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen2-0--5b
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen2-0--5b-gguf
+  backendRuntimeConfig:
+    name: llamacpp
+    args:
+      name: "default"
+      flags:
+        - -fa # use flash attention
+  elasticConfig:
+    minReplicas: 1
+    maxReplicas: 3

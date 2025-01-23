@@ -163,7 +163,18 @@ func (w *PlaygroundWrapper) BackendRuntimeLimit(r, v string) *PlaygroundWrapper 
 func (w *PlaygroundWrapper) ElasticConfig(minReplicas, maxReplicas int32) *PlaygroundWrapper {
 	w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{
 		MaxReplicas: ptr.To[int32](maxReplicas),
-		MinReplicas: minReplicas,
+		MinReplicas: ptr.To[int32](minReplicas),
 	}
+	return w
+}
+
+func (w *PlaygroundWrapper) HPA(config *inferenceapi.HPAConfig) *PlaygroundWrapper {
+	if w.Spec.ElasticConfig == nil {
+		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
+	}
+	if w.Spec.ElasticConfig.ScalePolicy == nil {
+		w.Spec.ElasticConfig.ScalePolicy = &inferenceapi.ScalePolicy{}
+	}
+	w.Spec.ElasticConfig.ScalePolicy.HPA = config
 	return w
 }

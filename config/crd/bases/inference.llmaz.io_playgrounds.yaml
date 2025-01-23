@@ -241,10 +241,11 @@ spec:
                     format: int32
                     type: integer
                   minReplicas:
+                    default: 1
                     description: |-
                       MinReplicas indicates the minimum number of inference workloads based on the traffic.
-                      Default to nil means we can scale down the instances to 1.
-                      If minReplicas set to 0, it requires to install serverless component at first.
+                      Default to 1.
+                      MinReplicas couldn't be 0 now, will support serverless in the future.
                     format: int32
                     type: integer
                   scalePolicy:
@@ -859,8 +860,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                required:
-                - minReplicas
                 type: object
               modelClaim:
                 description: |-

@@ -111,6 +111,30 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: true,
 		}),
+		ginkgo.Entry("hpa couldn't be nil once elasticConfig is not nil", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).HPA(nil).Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("minReplicas is 0 once elasticConfig is not nil", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).ElasticConfig(0, 10).Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("minReplicas is greater than maxReplicas", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).ElasticConfig(10, 1).Obj()
+			},
+			failed: true,
+		}),
+		ginkgo.Entry("minReplicas is equal with maxReplicas", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim("llama3-8b").Replicas(1).ElasticConfig(1, 1).Obj()
+			},
+			failed: true,
+		}),
 	)
 
 	type testDefaultingCase struct {
