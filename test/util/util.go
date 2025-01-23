@@ -45,6 +45,10 @@ func UpdateLwsToReady(ctx context.Context, k8sClient client.Client, name, namesp
 		}
 
 		changed := apimeta.SetStatusCondition(&workload.Status.Conditions, condition)
+		if workload.Status.Replicas != *workload.Spec.Replicas {
+			workload.Status.Replicas = *workload.Spec.Replicas
+			changed = true
+		}
 		if changed {
 			return k8sClient.Status().Update(ctx, workload)
 		}
