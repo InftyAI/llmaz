@@ -20,9 +20,9 @@ package v1alpha1
 // ElasticConfigApplyConfiguration represents a declarative configuration of the ElasticConfig type for use
 // with apply.
 type ElasticConfigApplyConfiguration struct {
-	MinReplicas *int32                         `json:"minReplicas,omitempty"`
-	MaxReplicas *int32                         `json:"maxReplicas,omitempty"`
-	ScalePolicy *ScalePolicyApplyConfiguration `json:"scalePolicy,omitempty"`
+	MinReplicas  *int32                          `json:"minReplicas,omitempty"`
+	MaxReplicas  *int32                          `json:"maxReplicas,omitempty"`
+	ScaleTrigger *ScaleTriggerApplyConfiguration `json:"scaleTrigger,omitempty"`
 }
 
 // ElasticConfigApplyConfiguration constructs a declarative configuration of the ElasticConfig type for use with
@@ -47,10 +47,10 @@ func (b *ElasticConfigApplyConfiguration) WithMaxReplicas(value int32) *ElasticC
 	return b
 }
 
-// WithScalePolicy sets the ScalePolicy field in the declarative configuration to the given value
+// WithScaleTrigger sets the ScaleTrigger field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ScalePolicy field is set to the value of the last call.
-func (b *ElasticConfigApplyConfiguration) WithScalePolicy(value *ScalePolicyApplyConfiguration) *ElasticConfigApplyConfiguration {
-	b.ScalePolicy = value
+// If called multiple times, the ScaleTrigger field is set to the value of the last call.
+func (b *ElasticConfigApplyConfiguration) WithScaleTrigger(value *ScaleTriggerApplyConfiguration) *ElasticConfigApplyConfiguration {
+	b.ScaleTrigger = value
 	return b
 }

@@ -34,10 +34,10 @@ type BackendRuntimeArg struct {
 	Flags []string `json:"flags,omitempty"`
 }
 
-// HPAConfig represents the configuration of the HorizontalPodAutoscaler.
+// HPATrigger represents the configuration of the HorizontalPodAutoscaler.
 // Inspired by kubernetes.io/pkg/apis/autoscaling/types.go#HorizontalPodAutoscalerSpec.
 // Note: HPA component should be installed in prior.
-type HPAConfig struct {
+type HPATrigger struct {
 	// metrics contains the specifications for which to use to calculate the
 	// desired replica count (the maximum replica count across all metrics will
 	// be used).  The desired replica count is calculated multiplying the
@@ -54,11 +54,10 @@ type HPAConfig struct {
 	Behavior *autoscalingv2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
-// ScalePolicy defines the policy for scaling the workloads.
-// Support HPA only for now.
-type ScalePolicy struct {
-	// HPA represents the configuration of the HorizontalPodAutoscaler.
-	HPA *HPAConfig `json:"hpa,omitempty"`
+// ScaleTrigger defines the scaler triggers to scale the workloads.
+type ScaleTrigger struct {
+	// HPA represents the trigger configuration of the HorizontalPodAutoscaler.
+	HPA *HPATrigger `json:"hpa,omitempty"`
 }
 
 // MultiHostCommands represents leader & worker commands for multiple nodes scenarios.
@@ -108,10 +107,11 @@ type BackendRuntimeSpec struct {
 	// when it might take a long time to load data or warm a cache, than during steady-state operation.
 	// +optional
 	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
-	// ScalePolicy represents the rules for scaling the backend based on the metrics.
-	// If playground doesn't define the ScalePolicy, the defaulted policy here will be used.
+	// ScaleTrigger represents a set of triggers to scale the workloads based on metrics,
+	// only one trigger cloud work at a time and only HPA is supported right now.
+	// If playground doesn't define the ScaleTrigger, the trigger defined here will be used.
 	// +optional
-	ScalePolicy *ScalePolicy `json:"scalePolicy,omitempty"`
+	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }
 
 // BackendRuntimeStatus defines the observed state of BackendRuntime

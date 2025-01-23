@@ -21,23 +21,23 @@ import (
 	v2 "k8s.io/api/autoscaling/v2"
 )
 
-// HPAConfigApplyConfiguration represents a declarative configuration of the HPAConfig type for use
+// HPATriggerApplyConfiguration represents a declarative configuration of the HPATrigger type for use
 // with apply.
-type HPAConfigApplyConfiguration struct {
+type HPATriggerApplyConfiguration struct {
 	Metrics  []v2.MetricSpec                     `json:"metrics,omitempty"`
 	Behavior *v2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
-// HPAConfigApplyConfiguration constructs a declarative configuration of the HPAConfig type for use with
+// HPATriggerApplyConfiguration constructs a declarative configuration of the HPATrigger type for use with
 // apply.
-func HPAConfig() *HPAConfigApplyConfiguration {
-	return &HPAConfigApplyConfiguration{}
+func HPATrigger() *HPATriggerApplyConfiguration {
+	return &HPATriggerApplyConfiguration{}
 }
 
 // WithMetrics adds the given value to the Metrics field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Metrics field.
-func (b *HPAConfigApplyConfiguration) WithMetrics(values ...v2.MetricSpec) *HPAConfigApplyConfiguration {
+func (b *HPATriggerApplyConfiguration) WithMetrics(values ...v2.MetricSpec) *HPATriggerApplyConfiguration {
 	for i := range values {
 		b.Metrics = append(b.Metrics, values[i])
 	}
@@ -47,7 +47,7 @@ func (b *HPAConfigApplyConfiguration) WithMetrics(values ...v2.MetricSpec) *HPAC
 // WithBehavior sets the Behavior field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Behavior field is set to the value of the last call.
-func (b *HPAConfigApplyConfiguration) WithBehavior(value v2.HorizontalPodAutoscalerBehavior) *HPAConfigApplyConfiguration {
+func (b *HPATriggerApplyConfiguration) WithBehavior(value v2.HorizontalPodAutoscalerBehavior) *HPATriggerApplyConfiguration {
 	b.Behavior = &value
 	return b
 }

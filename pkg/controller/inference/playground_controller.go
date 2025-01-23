@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"reflect"
 
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -30,6 +31,7 @@ import (
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -67,6 +69,7 @@ func NewPlaygroundReconciler(client client.Client, scheme *runtime.Scheme, recor
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=playgrounds,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=playgrounds/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=playgrounds/finalizers,verbs=update
+//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -117,15 +120,25 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		logger.Error(err, "failed to build inference Service")
 		return ctrl.Result{}, err
 	}
-
 	if err := setControllerReferenceForService(playground, serviceApplyConfiguration, r.Scheme); err != nil {
 		logger.Error(err, "failed to set OwnerReference for Service", "Service", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name))
 		return ctrl.Result{}, err
 	}
-
 	if err := util.Patch(ctx, r.Client, serviceApplyConfiguration); err != nil {
 		logger.Error(err, "failed to patch Service", "Service", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name))
 		return ctrl.Result{}, err
+	}
+
+	scalingConfiguration := buildScalingConfiguration(playground, backendRuntime)
+	if scalingConfiguration != nil {
+		if err := setControllerReferenceForScalingConfiguration(playground, scalingConfiguration, r.Scheme); err != nil {
+			logger.Error(err, "failed to set OwnerReference for scaling workload", "workload", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name), "kind", scalingConfiguration.Kind)
+			return ctrl.Result{}, err
+		}
+		if err := util.Patch(ctx, r.Client, scalingConfiguration); err != nil {
+			logger.Error(err, "failed to patch scaling workload", "workload", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name), "kind", scalingConfiguration.Kind)
+			return ctrl.Result{}, err
+		}
 	}
 
 	// Handle status.
@@ -511,5 +524,81 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 		WithUID(owner.GetUID()).
 		WithBlockOwnerDeletion(true).
 		WithController(true))
+	return nil
+}
+
+// buildScalingConfiguration supports HPA only now.
+func buildScalingConfiguration(playground *inferenceapi.Playground, backend *inferenceapi.BackendRuntime) *autoscalingv2.HorizontalPodAutoscaler {
+	if playground.Spec.ElasticConfig == nil {
+		return nil
+	}
+
+	// Handle HPA.
+	if (playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA != nil) ||
+		(backend.Spec.ScaleTrigger != nil && backend.Spec.ScaleTrigger.HPA != nil) {
+
+		hpa := &autoscalingv2.HorizontalPodAutoscaler{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: autoscalingv2.SchemeGroupVersion.String(),
+				Kind:       "HorizontalPodAutoscaler",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      playground.Name,
+				Namespace: playground.Namespace,
+			},
+			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+					APIVersion: inferenceapi.SchemeGroupVersion.String(),
+					Kind:       "Playground",
+					Name:       playground.Name,
+				},
+			},
+		}
+
+		hpa.Spec.MinReplicas = playground.Spec.ElasticConfig.MinReplicas
+		if playground.Spec.ElasticConfig.MaxReplicas == nil {
+			// The value is hardcoded, because maxReplicas is required by HPA.
+			hpa.Spec.MaxReplicas = 99999
+		} else {
+			hpa.Spec.MaxReplicas = *playground.Spec.ElasticConfig.MaxReplicas
+		}
+
+		if playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA == nil {
+			hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics
+			hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Behavior
+		} else {
+			hpa.Spec.Metrics = backend.Spec.ScaleTrigger.HPA.Metrics
+			hpa.Spec.Behavior = backend.Spec.ScaleTrigger.HPA.Behavior
+		}
+
+		return hpa
+	}
+
+	return nil
+}
+
+func setControllerReferenceForScalingConfiguration(owner metav1.Object, hpa *autoscalingv2.HorizontalPodAutoscaler, scheme *runtime.Scheme) error {
+	if hpa == nil {
+		return nil
+	}
+
+	ro, ok := owner.(runtime.Object)
+	if !ok {
+		return fmt.Errorf("%T is not a runtime.Object, cannot call SetOwnerReference", owner)
+	}
+	gvk, err := apiutil.GVKForObject(ro, scheme)
+	if err != nil {
+		return err
+	}
+	hpa.OwnerReferences = []metav1.OwnerReference{
+		{
+			APIVersion:         gvk.GroupVersion().String(),
+			Kind:               gvk.Kind,
+			Name:               owner.GetName(),
+			UID:                owner.GetUID(),
+			BlockOwnerDeletion: ptr.To[bool](true),
+			Controller:         ptr.To[bool](true),
+		},
+	}
 	return nil
 }

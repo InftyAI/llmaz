@@ -61,16 +61,18 @@ type ResourceRequirements struct {
 
 type ElasticConfig struct {
 	// MinReplicas indicates the minimum number of inference workloads based on the traffic.
-	// Default to nil means we can scale down the instances to 1.
-	// If minReplicas set to 0, it requires to install serverless component at first.
-	MinReplicas int32 `json:"minReplicas"`
+	// Default to 1.
+	// MinReplicas couldn't be 0 now, will support serverless in the future.
+	// +kubebuilder:default=1
+	// +optional
+	MinReplicas *int32 `json:"minReplicas,omitempty"`
 	// MaxReplicas indicates the maximum number of inference workloads based on the traffic.
 	// Default to nil means there's no limit for the instance number.
 	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
-	// ScalePolicy defines the rules for scaling the workloads.
-	// If not defined, policy configured in backendRuntime will be used,
-	// otherwise, policy defined here will overwrite the defaulted ones.
+	// ScaleTrigger defines a set of triggers to scale the workloads.
+	// If not defined, trigger configured in backendRuntime will be used,
+	// otherwise, trigger defined here will overwrite the defaulted ones.
 	// +optional
-	ScalePolicy *ScalePolicy `json:"scalePolicy,omitempty"`
+	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }

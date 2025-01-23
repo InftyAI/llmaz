@@ -21,20 +21,20 @@ spec:
         - --port
         - "8080"
     # TODO: not supported yet, see https://github.com/InftyAI/llmaz/issues/240.
-    - name: speculative-decoding
-      flags:
-        - -m
-        - "{{ .ModelPath }}"
-        - -md
-        - "{{ .DraftModelPath }}"
-        - --host
-        - "0.0.0.0"
-        - --port
-        - "8080"
-        - --draft-max
-        - "16"
-        - --draft-min
-        - "5"
+    # - name: speculative-decoding
+    #   flags:
+    #     - -m
+    #     - "{{ .ModelPath }}"
+    #     - -md
+    #     - "{{ .DraftModelPath }}"
+    #     - --host
+    #     - "0.0.0.0"
+    #     - --port
+    #     - "8080"
+    #     - --draft-max
+    #     - "16"
+    #     - --draft-min
+    #     - "5"
   resources:
     requests:
       cpu: 2
