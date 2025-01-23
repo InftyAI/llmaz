@@ -248,14 +248,15 @@ spec:
                       MinReplicas couldn't be 0 now, will support serverless in the future.
                     format: int32
                     type: integer
-                  scalePolicy:
+                  scaleTrigger:
                     description: |-
-                      ScalePolicy defines the rules for scaling the workloads.
-                      If not defined, policy configured in backendRuntime will be used,
-                      otherwise, policy defined here will overwrite the defaulted ones.
+                      ScaleTrigger defines a set of triggers to scale the workloads.
+                      If not defined, trigger configured in backendRuntime will be used,
+                      otherwise, trigger defined here will overwrite the defaulted ones.
                     properties:
                       hpa:
-                        description: HPA represents the configuration of the HorizontalPodAutoscaler.
+                        description: HPA represents the trigger configuration of the
+                          HorizontalPodAutoscaler.
                         properties:
                           behavior:
                             description: |-

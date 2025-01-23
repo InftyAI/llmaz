@@ -547,13 +547,14 @@ spec:
                       More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                     type: object
                 type: object
-              scalePolicy:
+              scaleTrigger:
                 description: |-
-                  ScalePolicy represents the rules for scaling the backend based on the metrics.
-                  If playground doesn't define the ScalePolicy, the defaulted policy here will be used.
+                  ScaleTrigger represents a set of triggers to scale the workloads based on metrics,
+                  only one trigger cloud work at a time and only HPA is supported right now.
+                  If playground doesn't define the ScaleTrigger, the trigger defined here will be used.
                 properties:
                   hpa:
-                    description: HPA represents the configuration of the HorizontalPodAutoscaler.
+                    description: HPA represents the trigger configuration of the HorizontalPodAutoscaler.
                     properties:
                       behavior:
                         description: |-

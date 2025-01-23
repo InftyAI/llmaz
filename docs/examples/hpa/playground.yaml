@@ -15,3 +15,12 @@ spec:
   elasticConfig:
     minReplicas: 1
     maxReplicas: 3
+    scaleTrigger:
+      hpa:
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                averageUtilization: 50
+                type: Utilization

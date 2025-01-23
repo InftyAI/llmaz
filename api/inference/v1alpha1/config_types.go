@@ -70,9 +70,9 @@ type ElasticConfig struct {
 	// Default to nil means there's no limit for the instance number.
 	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
-	// ScalePolicy defines the rules for scaling the workloads.
-	// If not defined, policy configured in backendRuntime will be used,
-	// otherwise, policy defined here will overwrite the defaulted ones.
+	// ScaleTrigger defines a set of triggers to scale the workloads.
+	// If not defined, trigger configured in backendRuntime will be used,
+	// otherwise, trigger defined here will overwrite the defaulted ones.
 	// +optional
-	ScalePolicy *ScalePolicy `json:"scalePolicy,omitempty"`
+	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }

@@ -1,4 +1,6 @@
-# How to autoscaling Playgrounds
+# Horizontal Scaling With Playgrounds
+
+We only support HPA right now, but will try to integrate with KEDA and Knative in the future.
 
 ## Install the Metric Server
 
@@ -10,7 +12,7 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 ## How to Use
 
-Set the Playground ElasticConfig like this:
+If your backendRuntime has already configured the `ScaleTrigger`, set the `playground.elasticConfig` like this:
 
 ```yaml
 spec:
@@ -19,14 +21,14 @@ spec:
     maxReplicas: 3
 ```
 
-If your backendRuntime has already configured the `ScalePolicy`, then it's working now. If not, you can set the scalingPolicy directly in Playground like this:
+If not, you can set the scaleTrigger directly in Playground like this:
 
 ```yaml
 spec:
   elasticConfig:
     minReplicas: 1
     maxReplicas: 3
-    scalePolicy:
+    scaleTrigger:
       hpa:
         metrics:
           - type: Resource

@@ -17,22 +17,22 @@ limitations under the License.
 
 package v1alpha1
 
-// ScalePolicyApplyConfiguration represents a declarative configuration of the ScalePolicy type for use
+// ScaleTriggerApplyConfiguration represents a declarative configuration of the ScaleTrigger type for use
 // with apply.
-type ScalePolicyApplyConfiguration struct {
-	HPA *HPAConfigApplyConfiguration `json:"hpa,omitempty"`
+type ScaleTriggerApplyConfiguration struct {
+	HPA *HPATriggerApplyConfiguration `json:"hpa,omitempty"`
 }
 
-// ScalePolicyApplyConfiguration constructs a declarative configuration of the ScalePolicy type for use with
+// ScaleTriggerApplyConfiguration constructs a declarative configuration of the ScaleTrigger type for use with
 // apply.
-func ScalePolicy() *ScalePolicyApplyConfiguration {
-	return &ScalePolicyApplyConfiguration{}
+func ScaleTrigger() *ScaleTriggerApplyConfiguration {
+	return &ScaleTriggerApplyConfiguration{}
 }
 
 // WithHPA sets the HPA field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the HPA field is set to the value of the last call.
-func (b *ScalePolicyApplyConfiguration) WithHPA(value *HPAConfigApplyConfiguration) *ScalePolicyApplyConfiguration {
+func (b *ScaleTriggerApplyConfiguration) WithHPA(value *HPATriggerApplyConfiguration) *ScaleTriggerApplyConfiguration {
 	b.HPA = value
 	return b
 }

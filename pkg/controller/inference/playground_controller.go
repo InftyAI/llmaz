@@ -534,8 +534,8 @@ func buildScalingConfiguration(playground *inferenceapi.Playground, backend *inf
 	}
 
 	// Handle HPA.
-	if (playground.Spec.ElasticConfig.ScalePolicy != nil && playground.Spec.ElasticConfig.ScalePolicy.HPA != nil) ||
-		(backend.Spec.ScalePolicy != nil && backend.Spec.ScalePolicy.HPA != nil) {
+	if (playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA != nil) ||
+		(backend.Spec.ScaleTrigger != nil && backend.Spec.ScaleTrigger.HPA != nil) {
 
 		hpa := &autoscalingv2.HorizontalPodAutoscaler{
 			TypeMeta: metav1.TypeMeta{
@@ -563,12 +563,12 @@ func buildScalingConfiguration(playground *inferenceapi.Playground, backend *inf
 			hpa.Spec.MaxReplicas = *playground.Spec.ElasticConfig.MaxReplicas
 		}
 
-		if playground.Spec.ElasticConfig.ScalePolicy != nil && playground.Spec.ElasticConfig.ScalePolicy.HPA == nil {
-			hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScalePolicy.HPA.Metrics
-			hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScalePolicy.HPA.Behavior
+		if playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA == nil {
+			hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics
+			hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Behavior
 		} else {
-			hpa.Spec.Metrics = backend.Spec.ScalePolicy.HPA.Metrics
-			hpa.Spec.Behavior = backend.Spec.ScalePolicy.HPA.Behavior
+			hpa.Spec.Metrics = backend.Spec.ScaleTrigger.HPA.Metrics
+			hpa.Spec.Behavior = backend.Spec.ScaleTrigger.HPA.Behavior
 		}
 
 		return hpa
