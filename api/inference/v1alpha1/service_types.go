@@ -56,12 +56,18 @@ const (
 type ServiceStatus struct {
 	// Conditions represents the Inference condition.
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	// Replicas track the replicas that have been created, whether ready or not.
+	Replicas int32 `json:"replicas"`
+	// Selector points to the string form of a label selector, the HPA will be
+	// able to autoscale your resource.
+	Selector string `json:"selector,omitempty"`
 }
 
 //+genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName={isvc}
+//+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
 
 // Service is the Schema for the services API
 type Service struct {

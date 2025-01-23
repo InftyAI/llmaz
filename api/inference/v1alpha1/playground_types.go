@@ -61,12 +61,17 @@ const (
 type PlaygroundStatus struct {
 	// Conditions represents the Inference condition.
 	Conditions []metav1.Condition `json:"conditions,omitempty"`
+	// Replicas track the replicas that have been created, whether ready or not.
+	Replicas int32 `json:"replicas"`
+	// Selector points to the string form of a label selector which will be used by HPA.
+	Selector string `json:"selector,omitempty"`
 }
 
 //+genclient
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName={pl}
+//+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
 
 // Playground is the Schema for the playgrounds API
 type Playground struct {

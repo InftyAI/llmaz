@@ -239,6 +239,15 @@ func modelAnnotations(service *inferenceapi.Service) map[string]string {
 }
 
 func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWorkerSet) {
+	defer func() {
+		if service.Status.Selector != workload.Status.HPAPodSelector {
+			service.Status.Selector = workload.Status.HPAPodSelector
+		}
+		if service.Status.Replicas != workload.Status.Replicas {
+			service.Status.Replicas = workload.Status.Replicas
+		}
+	}()
+
 	if apimeta.IsStatusConditionTrue(workload.Status.Conditions, string(lws.LeaderWorkerSetAvailable)) {
 		condition := metav1.Condition{
 			Type:    inferenceapi.ServiceAvailable,

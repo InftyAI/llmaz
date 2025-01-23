@@ -386,7 +386,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 					},
 					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
-						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "AbortProcessing", metav1.ConditionFalse)
+						validation.ValidatePlaygroundConditionEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "AbortProcessing", metav1.ConditionFalse)
 					},
 				},
 				{

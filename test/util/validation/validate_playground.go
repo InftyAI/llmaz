@@ -265,7 +265,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
-func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground, conditionType string, reason string, status metav1.ConditionStatus) {
+// Verify the condition field of status.
+func ValidatePlaygroundConditionEqualTo(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground, conditionType string, reason string, status metav1.ConditionStatus) {
 	testType := os.Getenv("TEST_TYPE")
 	timeout := util.IntegrationTimeout
 	interval := util.Interval
@@ -287,6 +288,41 @@ func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Clien
 				return fmt.Errorf("expected reason %q or status %q, but got %s", reason, status, format.Object(condition, 1))
 			}
 		}
+		return nil
+	}, timeout, interval).Should(gomega.Succeed())
+}
+
+// Verify the whole fields of status.
+func ValidatePlaygroundStatusEqualTo(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground, conditionType string, reason string, status metav1.ConditionStatus) {
+	testType := os.Getenv("TEST_TYPE")
+	timeout := util.IntegrationTimeout
+	interval := util.Interval
+
+	if testType == "E2E" {
+		timeout = util.E2ETimeout
+		interval = util.E2EInterval
+	}
+
+	ValidatePlaygroundConditionEqualTo(ctx, k8sClient, playground, conditionType, reason, status)
+
+	gomega.Eventually(func() error {
+		newPlayground := inferenceapi.Playground{}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &newPlayground); err != nil {
+			return err
+		}
+
+		service := inferenceapi.Service{}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &service); err != nil {
+			return errors.New("failed to get inferenceService")
+		}
+
+		if newPlayground.Status.Selector != service.Status.Selector {
+			return fmt.Errorf("expected selector %s, got %s", service.Status.Selector, newPlayground.Status.Selector)
+		}
+		if newPlayground.Status.Replicas != service.Status.Replicas {
+			return fmt.Errorf("expected replicas %d, got %d", service.Status.Replicas, newPlayground.Status.Replicas)
+		}
+
 		return nil
 	}, timeout, interval).Should(gomega.Succeed())
 }

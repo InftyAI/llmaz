@@ -16724,9 +16724,25 @@ spec:
                   - type
                   type: object
                 type: array
+              replicas:
+                description: Replicas track the replicas that have been created, whether
+                  ready or not.
+                format: int32
+                type: integer
+              selector:
+                description: |-
+                  Selector points to the string form of a label selector, the HPA will be
+                  able to autoscale your resource.
+                type: string
+            required:
+            - replicas
             type: object
         type: object
     served: true
     storage: true
     subresources:
+      scale:
+        labelSelectorPath: .status.selector
+        specReplicasPath: .spec.replicas
+        statusReplicasPath: .status.replicas
       status: {}

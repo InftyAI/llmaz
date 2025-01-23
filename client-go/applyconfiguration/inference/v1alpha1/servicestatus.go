@@ -25,6 +25,8 @@ import (
 // with apply.
 type ServiceStatusApplyConfiguration struct {
 	Conditions []v1.ConditionApplyConfiguration `json:"conditions,omitempty"`
+	Replicas   *int32                           `json:"replicas,omitempty"`
+	Selector   *string                          `json:"selector,omitempty"`
 }
 
 // ServiceStatusApplyConfiguration constructs a declarative configuration of the ServiceStatus type for use with
@@ -43,5 +45,21 @@ func (b *ServiceStatusApplyConfiguration) WithConditions(values ...*v1.Condition
 		}
 		b.Conditions = append(b.Conditions, *values[i])
 	}
+	return b
+}
+
+// WithReplicas sets the Replicas field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Replicas field is set to the value of the last call.
+func (b *ServiceStatusApplyConfiguration) WithReplicas(value int32) *ServiceStatusApplyConfiguration {
+	b.Replicas = &value
+	return b
+}
+
+// WithSelector sets the Selector field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Selector field is set to the value of the last call.
+func (b *ServiceStatusApplyConfiguration) WithSelector(value string) *ServiceStatusApplyConfiguration {
+	b.Selector = &value
 	return b
 }

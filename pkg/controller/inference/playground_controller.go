@@ -438,6 +438,17 @@ func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists 
 }
 
 func setPlaygroundCondition(playground *inferenceapi.Playground, service *inferenceapi.Service) (changed bool) {
+	defer func() {
+		if playground.Status.Selector != service.Status.Selector {
+			playground.Status.Selector = service.Status.Selector
+			changed = true
+		}
+		if playground.Status.Replicas != service.Status.Replicas {
+			playground.Status.Replicas = service.Status.Replicas
+			changed = true
+		}
+	}()
+
 	// For the start up or Playground is recovered from AbortProcessing.
 	if len(playground.Status.Conditions) == 0 || apimeta.IsStatusConditionFalse(playground.Status.Conditions, inferenceapi.PlaygroundProgressing) {
 		condition := metav1.Condition{
