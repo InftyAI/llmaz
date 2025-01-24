@@ -55,60 +55,66 @@ spec:
                   FamilyName represents the model type, like llama2, which will be auto injected
                   to the labels with the key of `llmaz.io/model-family-name`.
                 type: string
-              inferenceFlavors:
-                description: |-
-                  InferenceFlavors represents the accelerator requirements to serve the model.
-                  Flavors are fungible following the priority represented by the slice order.
-                items:
-                  description: |-
-                    Flavor defines the accelerator requirements for a model and the necessary parameters
-                    in autoscaling. Right now, it will be used in two places:
-                    - Pod scheduling with node selectors specified.
-                    - Cluster autoscaling with essential parameters provided.
-                  properties:
-                    name:
-                      description: Name represents the flavor name, which will be
-                        used in model claim.
-                      type: string
-                    nodeSelector:
-                      additionalProperties:
-                        type: string
+              inferenceConfig:
+                description: InferenceConfig represents the inference configurations
+                  for the model.
+                properties:
+                  flavors:
+                    description: |-
+                      Flavors represents the accelerator requirements to serve the model.
+                      Flavors are fungible following the priority represented by the slice order.
+                    items:
                       description: |-
-                        NodeSelector represents the node candidates for Pod placements, if a node doesn't
-                        meet the nodeSelector, it will be filtered out in the resourceFungibility scheduler plugin.
-                        If nodeSelector is empty, it means every node is a candidate.
+                        Flavor defines the accelerator requirements for a model and the necessary parameters
+                        in autoscaling. Right now, it will be used in two places:
+                        - Pod scheduling with node selectors specified.
+                        - Cluster autoscaling with essential parameters provided.
+                      properties:
+                        name:
+                          description: Name represents the flavor name, which will
+                            be used in model claim.
+                          type: string
+                        nodeSelector:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            NodeSelector represents the node candidates for Pod placements, if a node doesn't
+                            meet the nodeSelector, it will be filtered out in the resourceFungibility scheduler plugin.
+                            If nodeSelector is empty, it means every node is a candidate.
+                          type: object
+                        params:
+                          additionalProperties:
+                            type: string
+                          description: |-
+                            Params stores other useful parameters and will be consumed by cluster-autoscaler / Karpenter
+                            for autoscaling or be defined as model parallelism parameters like TP or PP size.
+                            E.g. with autoscaling, when scaling up nodes with 8x Nvidia A00, the parameter can be injected
+                            with <INSTANCE-TYPE: p4d.24xlarge> for AWS.
+                            Preset parameters: TP, PP, INSTANCE-TYPE.
+                          type: object
+                        requests:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: |-
+                            Requests defines the required accelerators to serve the model for each replica,
+                            like <nvidia.com/gpu: 8>. For multi-hosts cases, the requests here indicates
+                            the resource requirements for each replica, usually equals to the TP size.
+                            Not recommended to set the cpu and memory usage here:
+                            - if using playground, you can define the cpu/mem usage at backendConfig.
+                            - if using inference service, you can define the cpu/mem at the container resources.
+                            However, if you define the same accelerator requests at playground/service as well,
+                            the requests will be overwritten by the flavor requests.
+                          type: object
+                      required:
+                      - name
                       type: object
-                    params:
-                      additionalProperties:
-                        type: string
-                      description: |-
-                        Params stores other useful parameters and will be consumed by the autoscaling components
-                        like cluster-autoscaler, Karpenter.
-                        E.g. when scaling up nodes with 8x Nvidia A00, the parameter can be injected with
-                        instance-type: p4d.24xlarge for AWS.
-                      type: object
-                    requests:
-                      additionalProperties:
-                        anyOf:
-                        - type: integer
-                        - type: string
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                        x-kubernetes-int-or-string: true
-                      description: |-
-                        Requests defines the required accelerators to serve the model for each replica,
-                        like <nvidia.com/gpu: 8>. For multi-hosts cases, the requests here indicates
-                        the resource requirements for each replica. This may change in the future.
-                        Not recommended to set the cpu and memory usage here:
-                        - if using playground, you can define the cpu/mem usage at backendConfig.
-                        - if using inference service, you can define the cpu/mem at the container resources.
-                        However, if you define the same accelerator requests at playground/service as well,
-                        the requests here will be covered.
-                      type: object
-                  required:
-                  - name
-                  type: object
-                maxItems: 8
-                type: array
+                    maxItems: 8
+                    type: array
+                type: object
               source:
                 description: |-
                   Source represents the source of the model, there're several ways to load
@@ -158,8 +164,10 @@ spec:
                     type: object
                   uri:
                     description: |-
-                      URI represents a various kinds of model sources following the uri protocol, e.g.:
-                      - OSS: oss://<bucket>.<endpoint>/<path-to-your-model>
+                      URI represents a various kinds of model sources following the uri protocol, protocol://<address>, e.g.
+                      - oss://<bucket>.<endpoint>/<path-to-your-model>
+                      - ollama://llama3.3
+                      - host://<path-to-your-model>
                     type: string
                 type: object
             required:

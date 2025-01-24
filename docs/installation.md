@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-* Kubernetes version >= 1.27
-* Helm 3
+- Kubernetes version >= 1.27
+- Helm 3
 
 ## Install a released version
 
@@ -12,7 +12,7 @@
 ```cmd
 helm repo add inftyai https://inftyai.github.io/llmaz
 helm repo update
-helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.5
+helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.6
 ```
 
 ### Uninstall
@@ -59,27 +59,9 @@ kubectl delete crd \
     services.inference.llmaz.io
 ```
 
-### Install in a different namespace
-
-If you want to install llmaz controller in a different namespace, you should change the [values.global.yaml](../chart/values.global.yaml) like this:
-
-```yaml
-controllerManager:
-  manager:
-    args:
-      - --namespace=<your-namespace>
-```
-
-Then run:
-
-```cmd
-kubectl create ns <your-namespace> && kubens <your-namespace>
-make helm-install
-```
-
 ## Change configurations
 
-If you want to change the default configurations, such as `Replicas`, please change the values in [values.global.yaml](../chart/values.global.yaml), then run
+If you want to change the default configurations, please change the values in [values.global.yaml](../chart/values.global.yaml), then run
 
 ```cmd
 make helm-install

@@ -16647,7 +16647,7 @@ metadata:
   name: lws-controller-manager
   namespace: lws-system
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       control-plane: controller-manager
