@@ -164,8 +164,8 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 
 func ValidateModelFlavor(service *inferenceapi.Service, model *coreapi.OpenModel, workload *lws.LeaderWorkerSet) error {
 	flavorName := model.Spec.InferenceConfig.Flavors[0].Name
-	if len(service.Spec.ModelClaims.InferenceFlavorClaims) > 0 {
-		flavorName = service.Spec.ModelClaims.InferenceFlavorClaims[0]
+	if len(service.Spec.ModelClaims.InferenceFlavors) > 0 {
+		flavorName = service.Spec.ModelClaims.InferenceFlavors[0]
 	}
 
 	for _, flavor := range model.Spec.InferenceConfig.Flavors {

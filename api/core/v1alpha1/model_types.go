@@ -139,12 +139,12 @@ type ModelName string
 type ModelClaim struct {
 	// ModelName represents the name of the Model.
 	ModelName ModelName `json:"modelName,omitempty"`
-	// InferenceFlavorClaims represents a list of flavors with fungibility support
+	// InferenceFlavors represents a list of flavors with fungibility support
 	// to serve the model.
 	// If set, The flavor names should be a subset of the model configured flavors.
 	// If not set, Model configured flavors will be used by default.
 	// +optional
-	InferenceFlavorClaims []FlavorName `json:"inferenceFlavorClaims,omitempty"`
+	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
 }
 
 type ModelRole string
@@ -182,12 +182,12 @@ type ModelClaims struct {
 	// is draft model.
 	// +kubebuilder:validation:MinItems=1
 	Models []ModelRef `json:"models,omitempty"`
-	// InferenceFlavorClaims represents a list of flavors with fungibility supported
+	// InferenceFlavors represents a list of flavor names with fungibility supported
 	// to serve the model.
 	// - If not set, always apply with the 0-index model by default.
 	// - If set, will lookup the flavor names following the model orders.
 	// +optional
-	InferenceFlavorClaims []FlavorName `json:"inferenceFlavorClaims,omitempty"`
+	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
 }
 
 // ModelSpec defines the desired state of Model

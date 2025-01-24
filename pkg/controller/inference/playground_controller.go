@@ -207,7 +207,7 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	if playground.Spec.ModelClaim != nil {
 		claim = coreclientgo.ModelClaims().
 			WithModels(coreclientgo.ModelRef().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
-			WithInferenceFlavorClaims(playground.Spec.ModelClaim.InferenceFlavorClaims...)
+			WithInferenceFlavors(playground.Spec.ModelClaim.InferenceFlavors...)
 	} else {
 		mrs := []*coreclientgo.ModelRefApplyConfiguration{}
 		for _, model := range playground.Spec.ModelClaims.Models {
@@ -221,7 +221,7 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 
 		claim = coreclientgo.ModelClaims().
 			WithModels(mrs...).
-			WithInferenceFlavorClaims(playground.Spec.ModelClaims.InferenceFlavorClaims...)
+			WithInferenceFlavors(playground.Spec.ModelClaims.InferenceFlavors...)
 	}
 
 	spec.WithModelClaims(claim)
