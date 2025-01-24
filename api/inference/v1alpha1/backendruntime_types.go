@@ -28,7 +28,8 @@ import (
 type BackendRuntimeArg struct {
 	// Name represents the identifier of the backendRuntime argument.
 	// +kubebuilder:default=default
-	Name string `json:"name"`
+	// +optional
+	Name *string `json:"name,omitempty"`
 	// Flags represents all the preset configurations.
 	// Flag around with {{ .CONFIG }} is a configuration waiting for render.
 	Flags []string `json:"flags,omitempty"`
@@ -54,7 +55,19 @@ type HPATrigger struct {
 	Behavior *autoscalingv2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
-// ScaleTrigger defines the scaler triggers to scale the workloads.
+// NamedScaleTrigger defines the rules to scale the workloads.
+// Only one trigger cloud work at a time. The name is used to identify
+// the trigger in backendRuntime.
+type NamedScaleTrigger struct {
+	// Name represents the identifier of the scale trigger, e.g. some triggers defined for
+	// latency sensitive workloads, some are defined for throughput sensitive workloads.
+	Name string `json:"name,omitempty"`
+	// HPA represents the trigger configuration of the HorizontalPodAutoscaler.
+	HPA *HPATrigger `json:"hpa,omitempty"`
+}
+
+// ScaleTrigger defines the rules to scale the workloads.
+// Only one trigger cloud work at a time, mostly used in Playground.
 type ScaleTrigger struct {
 	// HPA represents the trigger configuration of the HorizontalPodAutoscaler.
 	HPA *HPATrigger `json:"hpa,omitempty"`
@@ -107,11 +120,10 @@ type BackendRuntimeSpec struct {
 	// when it might take a long time to load data or warm a cache, than during steady-state operation.
 	// +optional
 	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
-	// ScaleTrigger represents a set of triggers to scale the workloads based on metrics,
-	// only one trigger cloud work at a time and only HPA is supported right now.
-	// If playground doesn't define the ScaleTrigger, the trigger defined here will be used.
+	// ScaleTriggers represents a set of triggers preset to be used by Playground.
+	// If Playground not specify the scale trigger, the 0-index trigger will be used.
 	// +optional
-	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
+	ScaleTriggers []NamedScaleTrigger `json:"scaleTriggers,omitempty"`
 }
 
 // BackendRuntimeStatus defines the observed state of BackendRuntime

@@ -45,9 +45,9 @@ func (w *ServiceWrapper) Obj() *inferenceapi.Service {
 }
 
 func (w *ServiceWrapper) ModelClaims(modelNames []string, roles []string, flavorNames ...string) *ServiceWrapper {
-	models := []coreapi.ModelRefer{}
+	models := []coreapi.ModelRef{}
 	for i, name := range modelNames {
-		models = append(models, coreapi.ModelRefer{Name: coreapi.ModelName(name), Role: (*coreapi.ModelRole)(&roles[i])})
+		models = append(models, coreapi.ModelRef{Name: coreapi.ModelName(name), Role: (*coreapi.ModelRole)(&roles[i])})
 	}
 	w.Spec.ModelClaims = coreapi.ModelClaims{
 		Models: models,

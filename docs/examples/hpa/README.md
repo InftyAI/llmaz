@@ -12,7 +12,7 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 ## How to Use
 
-If your backendRuntime has already configured the `ScaleTrigger`, set the `playground.elasticConfig` like this:
+If your backendRuntime has already configured the `ScaleTriggers`, set the `playground.elasticConfig` like this:
 
 ```yaml
 spec:
@@ -21,7 +21,18 @@ spec:
     maxReplicas: 3
 ```
 
-If not, you can set the scaleTrigger directly in Playground like this:
+The 0-index trigger will be applied, or you can specify the trigger like this:
+
+```yaml
+spec:
+  elasticConfig:
+    minReplicas: 1
+    maxReplicas: 3
+    scaleTriggerRef:
+      name: <trigger-name>
+```
+
+If you want to change the target values, you can set the scaleTrigger directly in Playground like this:
 
 ```yaml
 spec:

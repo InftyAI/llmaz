@@ -51,6 +51,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &inferencev1alpha1.ResourceRequirementsApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ScaleTrigger"):
 		return &inferencev1alpha1.ScaleTriggerApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ScaleTriggerRef"):
+		return &inferencev1alpha1.ScaleTriggerRefApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Service"):
 		return &inferencev1alpha1.ServiceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceSpec"):
@@ -69,8 +71,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationcorev1alpha1.ModelClaimsApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelHub"):
 		return &applyconfigurationcorev1alpha1.ModelHubApplyConfiguration{}
-	case corev1alpha1.SchemeGroupVersion.WithKind("ModelRefer"):
-		return &applyconfigurationcorev1alpha1.ModelReferApplyConfiguration{}
+	case corev1alpha1.SchemeGroupVersion.WithKind("ModelRef"):
+		return &applyconfigurationcorev1alpha1.ModelRefApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSource"):
 		return &applyconfigurationcorev1alpha1.ModelSourceApplyConfiguration{}
 	case corev1alpha1.SchemeGroupVersion.WithKind("ModelSpec"):

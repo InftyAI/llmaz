@@ -24,8 +24,8 @@ import (
 // ModelClaimsApplyConfiguration represents a declarative configuration of the ModelClaims type for use
 // with apply.
 type ModelClaimsApplyConfiguration struct {
-	Models                []ModelReferApplyConfiguration `json:"models,omitempty"`
-	InferenceFlavorClaims []corev1alpha1.FlavorName      `json:"inferenceFlavorClaims,omitempty"`
+	Models                []ModelRefApplyConfiguration `json:"models,omitempty"`
+	InferenceFlavorClaims []corev1alpha1.FlavorName    `json:"inferenceFlavorClaims,omitempty"`
 }
 
 // ModelClaimsApplyConfiguration constructs a declarative configuration of the ModelClaims type for use with
@@ -37,7 +37,7 @@ func ModelClaims() *ModelClaimsApplyConfiguration {
 // WithModels adds the given value to the Models field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Models field.
-func (b *ModelClaimsApplyConfiguration) WithModels(values ...*ModelReferApplyConfiguration) *ModelClaimsApplyConfiguration {
+func (b *ModelClaimsApplyConfiguration) WithModels(values ...*ModelRefApplyConfiguration) *ModelClaimsApplyConfiguration {
 	for i := range values {
 		if values[i] == nil {
 			panic("nil value passed to WithModels")

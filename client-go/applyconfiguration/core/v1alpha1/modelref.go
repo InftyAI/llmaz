@@ -21,23 +21,23 @@ import (
 	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
-// ModelReferApplyConfiguration represents a declarative configuration of the ModelRefer type for use
+// ModelRefApplyConfiguration represents a declarative configuration of the ModelRef type for use
 // with apply.
-type ModelReferApplyConfiguration struct {
+type ModelRefApplyConfiguration struct {
 	Name *corev1alpha1.ModelName `json:"name,omitempty"`
 	Role *corev1alpha1.ModelRole `json:"role,omitempty"`
 }
 
-// ModelReferApplyConfiguration constructs a declarative configuration of the ModelRefer type for use with
+// ModelRefApplyConfiguration constructs a declarative configuration of the ModelRef type for use with
 // apply.
-func ModelRefer() *ModelReferApplyConfiguration {
-	return &ModelReferApplyConfiguration{}
+func ModelRef() *ModelRefApplyConfiguration {
+	return &ModelRefApplyConfiguration{}
 }
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *ModelReferApplyConfiguration) WithName(value corev1alpha1.ModelName) *ModelReferApplyConfiguration {
+func (b *ModelRefApplyConfiguration) WithName(value corev1alpha1.ModelName) *ModelRefApplyConfiguration {
 	b.Name = &value
 	return b
 }
@@ -45,7 +45,7 @@ func (b *ModelReferApplyConfiguration) WithName(value corev1alpha1.ModelName) *M
 // WithRole sets the Role field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Role field is set to the value of the last call.
-func (b *ModelReferApplyConfiguration) WithRole(value corev1alpha1.ModelRole) *ModelReferApplyConfiguration {
+func (b *ModelRefApplyConfiguration) WithRole(value corev1alpha1.ModelRole) *ModelRefApplyConfiguration {
 	b.Role = &value
 	return b
 }

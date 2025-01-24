@@ -33,3 +33,22 @@ spec:
     limits:
       cpu: 4
       memory: 8Gi
+  scaleTriggers:
+    - name: hpa
+      hpa:
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 50
+    - name: hpa2
+      hpa:
+        metrics:
+          - type: Resource
+            resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 80

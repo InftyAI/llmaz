@@ -206,16 +206,16 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	var claim *coreclientgo.ModelClaimsApplyConfiguration
 	if playground.Spec.ModelClaim != nil {
 		claim = coreclientgo.ModelClaims().
-			WithModels(coreclientgo.ModelRefer().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
+			WithModels(coreclientgo.ModelRef().WithName(playground.Spec.ModelClaim.ModelName).WithRole(coreapi.MainRole)).
 			WithInferenceFlavorClaims(playground.Spec.ModelClaim.InferenceFlavorClaims...)
 	} else {
-		mrs := []*coreclientgo.ModelReferApplyConfiguration{}
+		mrs := []*coreclientgo.ModelRefApplyConfiguration{}
 		for _, model := range playground.Spec.ModelClaims.Models {
 			role := coreapi.MainRole
 			if model.Role != nil {
 				role = *model.Role
 			}
-			mr := coreclientgo.ModelRefer().WithName(model.Name).WithRole(role)
+			mr := coreclientgo.ModelRef().WithName(model.Name).WithRole(role)
 			mrs = append(mrs, mr)
 		}
 
@@ -534,44 +534,29 @@ func buildScalingConfiguration(playground *inferenceapi.Playground, backend *inf
 	}
 
 	// Handle HPA.
-	if (playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA != nil) ||
-		(backend.Spec.ScaleTrigger != nil && backend.Spec.ScaleTrigger.HPA != nil) {
-
-		hpa := &autoscalingv2.HorizontalPodAutoscaler{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: autoscalingv2.SchemeGroupVersion.String(),
-				Kind:       "HorizontalPodAutoscaler",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      playground.Name,
-				Namespace: playground.Namespace,
-			},
-			Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
-				ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
-					APIVersion: inferenceapi.SchemeGroupVersion.String(),
-					Kind:       "Playground",
-					Name:       playground.Name,
-				},
-			},
-		}
-
-		hpa.Spec.MinReplicas = playground.Spec.ElasticConfig.MinReplicas
-		if playground.Spec.ElasticConfig.MaxReplicas == nil {
-			// The value is hardcoded, because maxReplicas is required by HPA.
-			hpa.Spec.MaxReplicas = 99999
-		} else {
-			hpa.Spec.MaxReplicas = *playground.Spec.ElasticConfig.MaxReplicas
-		}
-
-		if playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA == nil {
-			hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics
-			hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Behavior
-		} else {
-			hpa.Spec.Metrics = backend.Spec.ScaleTrigger.HPA.Metrics
-			hpa.Spec.Behavior = backend.Spec.ScaleTrigger.HPA.Behavior
-		}
-
+	if playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA != nil {
+		hpa := newHPA(playground)
+		hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics
+		hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Behavior
 		return hpa
+	}
+
+	if len(backend.Spec.ScaleTriggers) > 0 {
+		hpa := newHPA(playground)
+		if playground.Spec.ElasticConfig.ScaleTriggerRef != nil {
+			for _, trigger := range backend.Spec.ScaleTriggers {
+				if trigger.Name == playground.Spec.ElasticConfig.ScaleTriggerRef.Name {
+					hpa.Spec.Metrics = trigger.HPA.Metrics
+					hpa.Spec.Behavior = trigger.HPA.Behavior
+					return hpa
+				}
+			}
+		} else {
+			// use the 0-index as the default value.
+			hpa.Spec.Metrics = backend.Spec.ScaleTriggers[0].HPA.Metrics
+			hpa.Spec.Behavior = backend.Spec.ScaleTriggers[0].HPA.Behavior
+			return hpa
+		}
 	}
 
 	return nil
@@ -601,4 +586,34 @@ func setControllerReferenceForScalingConfiguration(owner metav1.Object, hpa *aut
 		},
 	}
 	return nil
+}
+
+func newHPA(playground *inferenceapi.Playground) *autoscalingv2.HorizontalPodAutoscaler {
+	hpa := &autoscalingv2.HorizontalPodAutoscaler{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: autoscalingv2.SchemeGroupVersion.String(),
+			Kind:       "HorizontalPodAutoscaler",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      playground.Name,
+			Namespace: playground.Namespace,
+		},
+		Spec: autoscalingv2.HorizontalPodAutoscalerSpec{
+			ScaleTargetRef: autoscalingv2.CrossVersionObjectReference{
+				APIVersion: inferenceapi.SchemeGroupVersion.String(),
+				Kind:       "Playground",
+				Name:       playground.Name,
+			},
+		},
+	}
+
+	hpa.Spec.MinReplicas = playground.Spec.ElasticConfig.MinReplicas
+	if playground.Spec.ElasticConfig.MaxReplicas == nil {
+		// The value is hardcoded, because maxReplicas is required by HPA.
+		hpa.Spec.MaxReplicas = 99999
+	} else {
+		hpa.Spec.MaxReplicas = *playground.Spec.ElasticConfig.MaxReplicas
+	}
+
+	return hpa
 }

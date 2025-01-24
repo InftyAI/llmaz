@@ -20,6 +20,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/utils/ptr"
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 )
@@ -64,7 +65,7 @@ func (w *BackendRuntimeWrapper) Command(commands []string) *BackendRuntimeWrappe
 
 func (w *BackendRuntimeWrapper) Arg(name string, flags []string) *BackendRuntimeWrapper {
 	w.Spec.Args = append(w.Spec.Args, inferenceapi.BackendRuntimeArg{
-		Name:  name,
+		Name:  ptr.To[string](name),
 		Flags: flags,
 	})
 	return w
