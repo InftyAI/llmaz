@@ -63,8 +63,6 @@ spec:
                         description: Name represents the identifier of the backendRuntime
                           argument.
                         type: string
-                    required:
-                    - name
                     type: object
                   envs:
                     description: Envs represents the environments set to the container.
@@ -253,6 +251,7 @@ spec:
                       ScaleTrigger defines a set of triggers to scale the workloads.
                       If not defined, trigger configured in backendRuntime will be used,
                       otherwise, trigger defined here will overwrite the defaulted ones.
+                      ScaleTriggerRef and ScaleTrigger can't be set at the same time.
                     properties:
                       hpa:
                         description: HPA represents the trigger configuration of the
@@ -861,6 +860,19 @@ spec:
                             type: array
                         type: object
                     type: object
+                  scaleTriggerRef:
+                    description: |-
+                      ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime
+                      with tuned target value.
+                      ScaleTriggerRef and ScaleTrigger can't be set at the same time.
+                    properties:
+                      name:
+                        description: Name represents the scale trigger name defined
+                          in the backendRuntime.scaleTriggers.
+                        type: string
+                    required:
+                    - name
+                    type: object
                 type: object
               modelClaim:
                 description: |-
@@ -903,8 +915,7 @@ spec:
                       speculative decoding, then one model is main(target) model, another one
                       is draft model.
                     items:
-                      description: ModelRefer refers to a created Model with it's
-                        role.
+                      description: ModelRef refers to a created Model with it's role.
                       properties:
                         name:
                           description: Name represents the model name.

@@ -162,7 +162,7 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 				playground := wrapper.MakePlayground("playground", ns.Name).Replicas(1).Obj()
 				draftRole := coreapi.DraftRole
 				playground.Spec.ModelClaims = &coreapi.ModelClaims{
-					Models: []coreapi.ModelRefer{
+					Models: []coreapi.ModelRef{
 						{
 							Name: "llama3-405b",
 						},

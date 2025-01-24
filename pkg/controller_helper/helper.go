@@ -61,10 +61,10 @@ func FetchModelsByService(ctx context.Context, k8sClient client.Client, service 
 
 func FetchModelsByPlayground(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) (models []*coreapi.OpenModel, err error) {
 	mainRole := coreapi.MainRole
-	mrs := []coreapi.ModelRefer{}
+	mrs := []coreapi.ModelRef{}
 
 	if playground.Spec.ModelClaim != nil {
-		mrs = append(mrs, coreapi.ModelRefer{Name: playground.Spec.ModelClaim.ModelName, Role: &mainRole})
+		mrs = append(mrs, coreapi.ModelRef{Name: playground.Spec.ModelClaim.ModelName, Role: &mainRole})
 	} else {
 		mrs = playground.Spec.ModelClaims.Models
 	}
@@ -72,7 +72,7 @@ func FetchModelsByPlayground(ctx context.Context, k8sClient client.Client, playg
 	return fetchModels(ctx, k8sClient, mrs)
 }
 
-func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.ModelRefer) (models []*coreapi.OpenModel, err error) {
+func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.ModelRef) (models []*coreapi.OpenModel, err error) {
 	for _, mr := range mrs {
 		model := &coreapi.OpenModel{}
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {

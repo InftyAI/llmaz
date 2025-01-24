@@ -16,7 +16,9 @@ limitations under the License.
 
 package v1alpha1
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+)
 
 type BackendName string
 
@@ -59,6 +61,12 @@ type ResourceRequirements struct {
 	Requests corev1.ResourceList `json:"requests,omitempty"`
 }
 
+// ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime.
+type ScaleTriggerRef struct {
+	// Name represents the scale trigger name defined in the backendRuntime.scaleTriggers.
+	Name string `json:"name"`
+}
+
 type ElasticConfig struct {
 	// MinReplicas indicates the minimum number of inference workloads based on the traffic.
 	// Default to 1.
@@ -70,9 +78,15 @@ type ElasticConfig struct {
 	// Default to nil means there's no limit for the instance number.
 	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+	// ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime
+	// with tuned target value.
+	// ScaleTriggerRef and ScaleTrigger can't be set at the same time.
+	// +optional
+	ScaleTriggerRef *ScaleTriggerRef `json:"scaleTriggerRef,omitempty"`
 	// ScaleTrigger defines a set of triggers to scale the workloads.
 	// If not defined, trigger configured in backendRuntime will be used,
 	// otherwise, trigger defined here will overwrite the defaulted ones.
+	// ScaleTriggerRef and ScaleTrigger can't be set at the same time.
 	// +optional
 	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }

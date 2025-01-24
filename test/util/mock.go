@@ -16,7 +16,12 @@ limitations under the License.
 package util
 
 import (
+	"k8s.io/utils/ptr"
+
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
+	corev1 "k8s.io/api/core/v1"
+
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util/wrapper"
 )
@@ -52,4 +57,21 @@ func MockASampleBackendRuntime() *wrapper.BackendRuntimeWrapper {
 		Command([]string{"python3", "-m", "vllm.entrypoints.openai.api_server"}).
 		Arg("default", []string{"--model", "{{.ModelPath}}", "--served-model-name", "{{.ModelName}}", "--host", "0.0.0.0", "--port", "8080"}).
 		Request("cpu", "4").Limit("cpu", "4")
+}
+
+func MockASimpleHPATrigger() *inferenceapi.HPATrigger {
+	return &inferenceapi.HPATrigger{
+		Metrics: []autoscalingv2.MetricSpec{
+			{
+				Type: autoscalingv2.ResourceMetricSourceType,
+				Resource: &autoscalingv2.ResourceMetricSource{
+					Name: corev1.ResourceCPU,
+					Target: autoscalingv2.MetricTarget{
+						Type:               autoscalingv2.UtilizationMetricType,
+						AverageUtilization: ptr.To[int32](50),
+					},
+				},
+			},
+		},
+	}
 }

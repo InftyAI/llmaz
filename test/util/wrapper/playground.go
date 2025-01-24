@@ -73,9 +73,9 @@ func (w *PlaygroundWrapper) ModelClaim(modelName string, flavorNames ...string) 
 }
 
 func (w *PlaygroundWrapper) ModelClaims(modelNames []string, roles []string, flavorNames ...string) *PlaygroundWrapper {
-	models := []coreapi.ModelRefer{}
+	models := []coreapi.ModelRef{}
 	for i, name := range modelNames {
-		models = append(models, coreapi.ModelRefer{Name: coreapi.ModelName(name), Role: (*coreapi.ModelRole)(&roles[i])})
+		models = append(models, coreapi.ModelRef{Name: coreapi.ModelName(name), Role: (*coreapi.ModelRole)(&roles[i])})
 	}
 	w.Spec.ModelClaims = &coreapi.ModelClaims{
 		Models: models,
@@ -116,7 +116,7 @@ func (w *PlaygroundWrapper) BackendRuntimeArgs(name string, args []string) *Play
 	if w.Spec.BackendRuntimeConfig.Args == nil {
 		w.Spec.BackendRuntimeConfig.Args = &inferenceapi.BackendRuntimeArg{}
 	}
-	w.Spec.BackendRuntimeConfig.Args.Name = name
+	w.Spec.BackendRuntimeConfig.Args.Name = &name
 	w.Spec.BackendRuntimeConfig.Args.Flags = args
 	return w
 }
@@ -176,5 +176,16 @@ func (w *PlaygroundWrapper) HPA(config *inferenceapi.HPATrigger) *PlaygroundWrap
 		w.Spec.ElasticConfig.ScaleTrigger = &inferenceapi.ScaleTrigger{}
 	}
 	w.Spec.ElasticConfig.ScaleTrigger.HPA = config
+	return w
+}
+
+func (w *PlaygroundWrapper) ScaleTriggerRef(name string) *PlaygroundWrapper {
+	if w.Spec.ElasticConfig == nil {
+		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
+	}
+	if w.Spec.ElasticConfig.ScaleTriggerRef == nil {
+		w.Spec.ElasticConfig.ScaleTriggerRef = &inferenceapi.ScaleTriggerRef{}
+	}
+	w.Spec.ElasticConfig.ScaleTriggerRef.Name = name
 	return w
 }

@@ -88,10 +88,10 @@ func (w *BackendRuntimeWebhook) generateValidate(obj runtime.Object) field.Error
 
 	names := []string{}
 	for _, arg := range backend.Spec.Args {
-		if util.In(names, arg.Name) {
-			allErrs = append(allErrs, field.Forbidden(specPath.Child("args", "name"), fmt.Sprintf("duplicated name %s", arg.Name)))
+		if util.In(names, *arg.Name) {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("args", "name"), fmt.Sprintf("duplicated name %s", *arg.Name)))
 		}
-		names = append(names, arg.Name)
+		names = append(names, *arg.Name)
 	}
 	return allErrs
 }

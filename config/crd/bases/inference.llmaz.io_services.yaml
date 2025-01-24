@@ -64,8 +64,7 @@ spec:
                       speculative decoding, then one model is main(target) model, another one
                       is draft model.
                     items:
-                      description: ModelRefer refers to a created Model with it's
-                        role.
+                      description: ModelRef refers to a created Model with it's role.
                       properties:
                         name:
                           description: Name represents the model name.

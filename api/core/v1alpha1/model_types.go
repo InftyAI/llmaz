@@ -160,8 +160,8 @@ const (
 	LoraRole ModelRole = "lora"
 )
 
-// ModelRefer refers to a created Model with it's role.
-type ModelRefer struct {
+// ModelRef refers to a created Model with it's role.
+type ModelRef struct {
 	// Name represents the model name.
 	Name ModelName `json:"name"`
 	// Role represents the model role once more than one model is required.
@@ -181,7 +181,7 @@ type ModelClaims struct {
 	// speculative decoding, then one model is main(target) model, another one
 	// is draft model.
 	// +kubebuilder:validation:MinItems=1
-	Models []ModelRefer `json:"models,omitempty"`
+	Models []ModelRef `json:"models,omitempty"`
 	// InferenceFlavorClaims represents a list of flavors with fungibility supported
 	// to serve the model.
 	// - If not set, always apply with the 0-index model by default.

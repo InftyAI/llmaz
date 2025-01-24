@@ -62,7 +62,7 @@ func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models []*coreapi.OpenModel, multiNodes bool) ([]string, error) {
 	var argName string
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Args != nil {
-		argName = playground.Spec.BackendRuntimeConfig.Args.Name
+		argName = *playground.Spec.BackendRuntimeConfig.Args.Name
 	} else {
 		// Auto detect the args from model roles.
 		argName = DetectArgFrom(playground, multiNodes)
@@ -91,7 +91,7 @@ func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models 
 	}
 
 	for _, arg := range p.backendRuntime.Spec.Args {
-		if arg.Name == argName {
+		if *arg.Name == argName {
 			return renderFlags(arg.Flags, modelInfo)
 		}
 	}
