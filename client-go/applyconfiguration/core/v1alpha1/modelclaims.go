@@ -24,8 +24,8 @@ import (
 // ModelClaimsApplyConfiguration represents a declarative configuration of the ModelClaims type for use
 // with apply.
 type ModelClaimsApplyConfiguration struct {
-	Models                []ModelRefApplyConfiguration `json:"models,omitempty"`
-	InferenceFlavorClaims []corev1alpha1.FlavorName    `json:"inferenceFlavorClaims,omitempty"`
+	Models           []ModelRefApplyConfiguration `json:"models,omitempty"`
+	InferenceFlavors []corev1alpha1.FlavorName    `json:"inferenceFlavors,omitempty"`
 }
 
 // ModelClaimsApplyConfiguration constructs a declarative configuration of the ModelClaims type for use with
@@ -47,12 +47,12 @@ func (b *ModelClaimsApplyConfiguration) WithModels(values ...*ModelRefApplyConfi
 	return b
 }
 
-// WithInferenceFlavorClaims adds the given value to the InferenceFlavorClaims field in the declarative configuration
+// WithInferenceFlavors adds the given value to the InferenceFlavors field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the InferenceFlavorClaims field.
-func (b *ModelClaimsApplyConfiguration) WithInferenceFlavorClaims(values ...corev1alpha1.FlavorName) *ModelClaimsApplyConfiguration {
+// If called multiple times, values provided by each call will be appended to the InferenceFlavors field.
+func (b *ModelClaimsApplyConfiguration) WithInferenceFlavors(values ...corev1alpha1.FlavorName) *ModelClaimsApplyConfiguration {
 	for i := range values {
-		b.InferenceFlavorClaims = append(b.InferenceFlavorClaims, values[i])
+		b.InferenceFlavors = append(b.InferenceFlavors, values[i])
 	}
 	return b
 }
