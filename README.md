@@ -86,7 +86,7 @@ spec:
     modelName: opt-125m
 ```
 
-### Test
+### Verify
 
 #### Expose the service
 

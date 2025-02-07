@@ -6,6 +6,10 @@ A develop guidance for people who want to learn more about this project.
 
 ```structure
 llmaz # root
+├── bin # where the binaries locates, like the kustomize, ginkgo, etc.
+├── chart # where the helm chart locates
+├── cmd # where the main entry locates
+├── docs # where all the documents locate, like examples, installation guidance, etc.
 ├── llmaz # where the model loader logic locates
 ├── pkg # where the main logic for Kubernetes controllers locates
 ```
@@ -14,10 +18,8 @@ llmaz # root
 
 ### Core APIs
 
-**OpenModel**: `OpenModel` is mostly like to store the open sourced models as a cluster-scope object. We may need namespaced models in the future for tenant isolation. Usually, the cloud provider or model provider should set this object because they know models well, like the accelerators or the scaling primitives.
+See the [API Reference](./reference/core.v1alpha1.md) for more details.
 
 ### Inference APIs
 
-**Playground**: `Playground` is for easy usage, people who has little knowledge about cloud can quick deploy a large language model with minimal configurations. `Playground` is integrated with the SOTA inference engines already, like vLLM.
-
-**Service**: `Service` is the real inference workload, people has advanced configuration requirements can deploy with `Service` directly if `Playground` can not meet their demands like they have a customized inference engine, which hasn't been integrated with llmaz yet. Or they have different topology requirements to align with the Pods.
+See the [API Reference](./reference/inference.v1alpha1.md) for more details.
