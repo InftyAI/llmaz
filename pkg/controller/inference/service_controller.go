@@ -27,6 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
@@ -66,6 +67,7 @@ func NewServiceReconciler(client client.Client, scheme *runtime.Scheme, record r
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -87,13 +89,18 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
-	if err := setControllerReferenceForLWS(service, workloadApplyConfiguration, r.Scheme); err != nil {
+	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// TODO: handle fungibility
 
 	if err := util.Patch(ctx, r.Client, workloadApplyConfiguration); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// Create a service for the leader pods of the lws for loadbalancing.
+	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -280,8 +287,8 @@ func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWork
 	}
 }
 
-// setControllerReferenceForLWS set service as the owner reference for lws.
-func setControllerReferenceForLWS(owner metav1.Object, lws *applyconfigurationv1.LeaderWorkerSetApplyConfiguration, scheme *runtime.Scheme) error {
+// setControllerReferenceForWorkload set service as the owner reference for the workload.
+func setControllerReferenceForWorkload(owner metav1.Object, lws *applyconfigurationv1.LeaderWorkerSetApplyConfiguration, scheme *runtime.Scheme) error {
 	ro, ok := owner.(runtime.Object)
 	if !ok {
 		return fmt.Errorf("%T is not a runtime.Object, cannot call SetOwnerReference", owner)
@@ -297,5 +304,50 @@ func setControllerReferenceForLWS(owner metav1.Object, lws *applyconfigurationv1
 		WithUID(owner.GetUID()).
 		WithBlockOwnerDeletion(true).
 		WithController(true))
+	return nil
+}
+
+func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service) error {
+	log := ctrl.LoggerFrom(ctx)
+	// The load balancing service name.
+	svcName := service.Name + "-lb"
+
+	var svc corev1.Service
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: svcName, Namespace: service.Namespace}, &svc); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			return err
+		}
+		svc = corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      svcName,
+				Namespace: service.Namespace,
+			},
+			Spec: corev1.ServiceSpec{
+				Ports: []corev1.ServicePort{
+					{
+						Name:       "http",
+						Protocol:   corev1.ProtocolTCP,
+						Port:       modelSource.DEFAULT_BACKEND_PORT,
+						TargetPort: intstr.FromInt(modelSource.DEFAULT_BACKEND_PORT),
+					},
+				},
+				Selector: map[string]string{
+					lws.SetNameLabelKey: service.Name,
+					// the leader pod.
+					lws.WorkerIndexLabelKey: "0",
+				},
+			},
+		}
+
+		// Set the controller owner reference for garbage collection and reconciliation.
+		if err := ctrl.SetControllerReference(service, &svc, Scheme); err != nil {
+			return err
+		}
+		// create the service in the cluster
+		log.V(2).Info("Creating service.")
+		if err := k8sClient.Create(ctx, &svc); err != nil {
+			return err
+		}
+	}
 	return nil
 }

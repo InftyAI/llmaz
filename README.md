@@ -90,8 +90,10 @@ spec:
 
 #### Expose the service
 
+By default, llmaz will create a ClusterIP service named like `<service>-lb` for load balancing.
+
 ```cmd
-kubectl port-forward pod/opt-125m-0 8080:8080
+kubectl port-forward svc/opt-125m-lb 8080:8080
 ```
 
 #### Get registered models

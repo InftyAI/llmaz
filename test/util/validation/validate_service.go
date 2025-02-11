@@ -84,8 +84,12 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 				return err
 			}
 		}
-		return nil
 
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name + "-lb", Namespace: service.Namespace}, &corev1.Service{}); err != nil {
+			return err
+		}
+
+		return nil
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
