@@ -87,7 +87,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
-	if err := setControllerReferenceForLWS(service, workloadApplyConfiguration, r.Scheme); err != nil {
+	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -280,8 +280,8 @@ func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWork
 	}
 }
 
-// setControllerReferenceForLWS set service as the owner reference for lws.
-func setControllerReferenceForLWS(owner metav1.Object, lws *applyconfigurationv1.LeaderWorkerSetApplyConfiguration, scheme *runtime.Scheme) error {
+// setControllerReferenceForWorkload set service as the owner reference for the workload.
+func setControllerReferenceForWorkload(owner metav1.Object, lws *applyconfigurationv1.LeaderWorkerSetApplyConfiguration, scheme *runtime.Scheme) error {
 	ro, ok := owner.(runtime.Object)
 	if !ok {
 		return fmt.Errorf("%T is not a runtime.Object, cannot call SetOwnerReference", owner)
