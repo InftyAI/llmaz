@@ -21,7 +21,6 @@ assignees: ''
 **Environment**:
 
 - Kubernetes version (use `kubectl version`):
-- LWS version:
 - llmaz version (use `git describe --tags --dirty --always`):
 - Cloud provider or hardware configuration:
 - OS (e.g: `cat /etc/os-release`):

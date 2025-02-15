@@ -1,11 +1,6 @@
 run:
-  deadline: 5m
+  timeout: 5m
   allow-parallel-runners: true
-  dirs:
-    - api
-    - cmd
-    - pkg
-    - test
 
 issues:
   # don't skip warning about doc comments

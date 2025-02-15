@@ -260,6 +260,18 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 				return errors.New("command not right")
 			}
 		}
+
+		if models[0].Spec.InferenceConfig != nil && models[0].Spec.InferenceConfig.SharedMemorySize != nil {
+			if multiHost {
+				if *models[0].Spec.InferenceConfig.SharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
+					return fmt.Errorf("expected SharedMemorySize %s, got %s", models[0].Spec.InferenceConfig.SharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
+				}
+			}
+			if *models[0].Spec.InferenceConfig.SharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
+				return fmt.Errorf("expected SharedMemorySize %s, got %s", models[0].Spec.InferenceConfig.SharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
+			}
+		}
+
 		return nil
 
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())

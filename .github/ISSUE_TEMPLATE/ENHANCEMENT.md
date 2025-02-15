@@ -2,7 +2,7 @@
 name: Enhancement Request
 about: Suggest an enhancement to the llmaz project
 title: ''
-labels: kind/feature
+labels: feature
 assignees: ''
 
 ---
