@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -131,6 +132,9 @@ type InferenceConfig struct {
 	// +kubebuilder:validation:MaxItems=8
 	// +optional
 	Flavors []Flavor `json:"flavors,omitempty"`
+	// SharedMemorySize represents the size of /dev/shm required in the runtime of
+	// inference workload.
+	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
 }
 
 type ModelName string

@@ -107,6 +107,15 @@ func (w *ModelWrapper) Label(k, v string) *ModelWrapper {
 	return w
 }
 
+func (w *ModelWrapper) SharedMemorySize(v string) *ModelWrapper {
+	if w.Spec.InferenceConfig == nil {
+		w.Spec.InferenceConfig = &coreapi.InferenceConfig{}
+	}
+	value := resource.MustParse(v)
+	w.Spec.InferenceConfig.SharedMemorySize = &value
+	return w
+}
+
 func MakeFlavor(name string) *FlavorWrapper {
 	return &FlavorWrapper{
 		coreapi.Flavor{

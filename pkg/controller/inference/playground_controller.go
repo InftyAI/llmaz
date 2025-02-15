@@ -265,7 +265,7 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	if multiHost {
 		workload.LeaderWorkerTemplate.LeaderTemplate = &template
-		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(playground, backendRuntime)
+		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground, backendRuntime)
 	} else {
 		workload.LeaderWorkerTemplate.WorkerTemplate = template
 	}
@@ -366,12 +366,30 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 		},
 	}
 
+	// construct /dev/shm size
+	if models[0].Spec.InferenceConfig != nil && models[0].Spec.InferenceConfig.SharedMemorySize != nil {
+		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
+			Name: "dshm",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{
+					Medium:    corev1.StorageMediumMemory,
+					SizeLimit: models[0].Spec.InferenceConfig.SharedMemorySize,
+				},
+			},
+		})
+
+		template.Spec.Containers[0].VolumeMounts = append(template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+			Name:      "dshm",
+			MountPath: "/dev/shm",
+		})
+	}
+
 	return template, nil
 }
 
 // This is a copy of buildTemplate with some refactors, only used in multi-nodes cases.
 // Worker template has no args, no contain port.
-func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
+func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
 	parser := helper.NewBackendRuntimeParser(backendRuntime)
 
 	envs := parser.Envs()
@@ -421,6 +439,24 @@ func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *in
 				},
 			},
 		},
+	}
+
+	// construct /dev/shm size
+	if models[0].Spec.InferenceConfig != nil && models[0].Spec.InferenceConfig.SharedMemorySize != nil {
+		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
+			Name: "dshm",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{
+					Medium:    corev1.StorageMediumMemory,
+					SizeLimit: models[0].Spec.InferenceConfig.SharedMemorySize,
+				},
+			},
+		})
+
+		template.Spec.Containers[0].VolumeMounts = append(template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
+			Name:      "dshm",
+			MountPath: "/dev/shm",
+		})
 	}
 
 	return template
