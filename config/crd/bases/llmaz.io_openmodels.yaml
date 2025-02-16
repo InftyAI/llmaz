@@ -54,6 +54,7 @@ spec:
                     description: |-
                       Flavors represents the accelerator requirements to serve the model.
                       Flavors are fungible following the priority represented by the slice order.
+                      This is used both in Playground and Inference Service.
                     items:
                       description: |-
                         Flavor defines the accelerator requirements for a model and the necessary parameters
@@ -61,6 +62,23 @@ spec:
                         - Pod scheduling with node selectors specified.
                         - Cluster autoscaling with essential parameters provided.
                       properties:
+                        limits:
+                          additionalProperties:
+                            anyOf:
+                            - type: integer
+                            - type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
+                          description: |-
+                            Limits defines the required accelerators to serve the model for each replica,
+                            like <nvidia.com/gpu: 8>. For multi-hosts cases, the limits here indicates
+                            the resource requirements for each replica, usually equals to the TP size.
+                            Not recommended to set the cpu and memory usage here:
+                            - if using playground, you can define the cpu/mem usage at backendConfig.
+                            - if using inference service, you can define the cpu/mem at the container resources.
+                            However, if you define the same accelerator resources at playground/service as well,
+                            the resources will be overwritten by the flavor limit here.
+                          type: object
                         name:
                           description: Name represents the flavor name, which will
                             be used in model claim.
@@ -83,23 +101,6 @@ spec:
                             with <INSTANCE-TYPE: p4d.24xlarge> for AWS.
                             Preset parameters: TP, PP, INSTANCE-TYPE.
                           type: object
-                        requests:
-                          additionalProperties:
-                            anyOf:
-                            - type: integer
-                            - type: string
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                            x-kubernetes-int-or-string: true
-                          description: |-
-                            Requests defines the required accelerators to serve the model for each replica,
-                            like <nvidia.com/gpu: 8>. For multi-hosts cases, the requests here indicates
-                            the resource requirements for each replica, usually equals to the TP size.
-                            Not recommended to set the cpu and memory usage here:
-                            - if using playground, you can define the cpu/mem usage at backendConfig.
-                            - if using inference service, you can define the cpu/mem at the container resources.
-                            However, if you define the same accelerator requests at playground/service as well,
-                            the requests will be overwritten by the flavor requests.
-                          type: object
                       required:
                       - name
                       type: object
@@ -112,6 +113,8 @@ spec:
                     description: |-
                       SharedMemorySize represents the size of /dev/shm required in the runtime of
                       inference workload.
+                      This is only used in Playground. Inference Service can configure the shared memory
+                      directly in PodSpec.
                     pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                     x-kubernetes-int-or-string: true
                 type: object

@@ -10,13 +10,13 @@ spec:
   inferenceConfig:
     flavors:
       - name: a100-80gb
-        requests:
+        limits:
           nvidia.com/gpu: 8 # single node request
         params:
           TP: "8" # 8 GPUs per node, equal to nvidia.com/gpu
           PP: "2" # 2 nodes
   # - name: h100
-  #   requests:
+  #   limits:
   #     nvidia.com/gpu: 8 # single node request
   #   params:
   #     TP: "8"

@@ -101,16 +101,16 @@ type FlavorName string
 type Flavor struct {
 	// Name represents the flavor name, which will be used in model claim.
 	Name FlavorName `json:"name"`
-	// Requests defines the required accelerators to serve the model for each replica,
-	// like <nvidia.com/gpu: 8>. For multi-hosts cases, the requests here indicates
+	// Limits defines the required accelerators to serve the model for each replica,
+	// like <nvidia.com/gpu: 8>. For multi-hosts cases, the limits here indicates
 	// the resource requirements for each replica, usually equals to the TP size.
 	// Not recommended to set the cpu and memory usage here:
 	// - if using playground, you can define the cpu/mem usage at backendConfig.
 	// - if using inference service, you can define the cpu/mem at the container resources.
-	// However, if you define the same accelerator requests at playground/service as well,
-	// the requests will be overwritten by the flavor requests.
+	// However, if you define the same accelerator resources at playground/service as well,
+	// the resources will be overwritten by the flavor limit here.
 	// +optional
-	Requests v1.ResourceList `json:"requests,omitempty"`
+	Limits v1.ResourceList `json:"limits,omitempty"`
 	// NodeSelector represents the node candidates for Pod placements, if a node doesn't
 	// meet the nodeSelector, it will be filtered out in the resourceFungibility scheduler plugin.
 	// If nodeSelector is empty, it means every node is a candidate.
@@ -129,11 +129,15 @@ type Flavor struct {
 type InferenceConfig struct {
 	// Flavors represents the accelerator requirements to serve the model.
 	// Flavors are fungible following the priority represented by the slice order.
+	// This is used both in Playground and Inference Service.
 	// +kubebuilder:validation:MaxItems=8
 	// +optional
 	Flavors []Flavor `json:"flavors,omitempty"`
 	// SharedMemorySize represents the size of /dev/shm required in the runtime of
 	// inference workload.
+	// This is only used in Playground. Inference Service can configure the shared memory
+	// directly in PodSpec.
+	// +optional
 	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
 }
 

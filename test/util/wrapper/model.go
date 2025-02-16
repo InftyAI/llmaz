@@ -133,10 +133,10 @@ func (w *FlavorWrapper) Obj() *coreapi.Flavor {
 }
 
 func (w *FlavorWrapper) SetRequest(r, v string) *FlavorWrapper {
-	if w.Requests == nil {
-		w.Requests = map[v1.ResourceName]resource.Quantity{}
+	if w.Limits == nil {
+		w.Limits = map[v1.ResourceName]resource.Quantity{}
 	}
-	w.Requests[v1.ResourceName(r)] = resource.MustParse(v)
+	w.Limits[v1.ResourceName(r)] = resource.MustParse(v)
 	return w
 }
 

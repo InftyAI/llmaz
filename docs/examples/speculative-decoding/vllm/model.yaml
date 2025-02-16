@@ -10,7 +10,7 @@ spec:
   inferenceConfig:
     flavors:
       - name: a10 # gpu type
-        requests:
+        limits:
           nvidia.com/gpu: 1
 ---
 apiVersion: llmaz.io/v1alpha1

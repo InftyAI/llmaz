@@ -10,5 +10,5 @@ spec:
   inferenceConfig:
     flavors:
       - name: t4 # GPU type
-        requests:
+        limits:
           nvidia.com/gpu: 1

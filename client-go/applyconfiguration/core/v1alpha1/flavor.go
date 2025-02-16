@@ -26,7 +26,7 @@ import (
 // with apply.
 type FlavorApplyConfiguration struct {
 	Name         *corev1alpha1.FlavorName `json:"name,omitempty"`
-	Requests     *v1.ResourceList         `json:"requests,omitempty"`
+	Limits       *v1.ResourceList         `json:"limits,omitempty"`
 	NodeSelector map[string]string        `json:"nodeSelector,omitempty"`
 	Params       map[string]string        `json:"params,omitempty"`
 }
@@ -45,11 +45,11 @@ func (b *FlavorApplyConfiguration) WithName(value corev1alpha1.FlavorName) *Flav
 	return b
 }
 
-// WithRequests sets the Requests field in the declarative configuration to the given value
+// WithLimits sets the Limits field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Requests field is set to the value of the last call.
-func (b *FlavorApplyConfiguration) WithRequests(value v1.ResourceList) *FlavorApplyConfiguration {
-	b.Requests = &value
+// If called multiple times, the Limits field is set to the value of the last call.
+func (b *FlavorApplyConfiguration) WithLimits(value v1.ResourceList) *FlavorApplyConfiguration {
+	b.Limits = &value
 	return b
 }
 

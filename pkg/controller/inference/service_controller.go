@@ -201,8 +201,8 @@ func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenMode
 
 	for i, flavor := range model.Spec.InferenceConfig.Flavors {
 		if flavor.Name == flavorName {
-			requests := model.Spec.InferenceConfig.Flavors[i].Requests
-			for k, v := range requests {
+			limits := model.Spec.InferenceConfig.Flavors[i].Limits
+			for k, v := range limits {
 				if container.Resources.Requests == nil {
 					container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
 				}
