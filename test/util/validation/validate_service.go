@@ -174,9 +174,9 @@ func ValidateModelFlavor(service *inferenceapi.Service, model *coreapi.OpenModel
 
 	for _, flavor := range model.Spec.InferenceConfig.Flavors {
 		if flavor.Name == flavorName {
-			requests := flavor.Requests
+			limits := flavor.Limits
 			container := workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0]
-			for k, v := range requests {
+			for k, v := range limits {
 				if !container.Resources.Requests[k].Equal(v) {
 					return fmt.Errorf("unexpected request value %v, got %v", v, workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 				}
