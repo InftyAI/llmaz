@@ -75,7 +75,11 @@ type ScaleTrigger struct {
 
 // MultiHostCommands represents leader & worker commands for multiple nodes scenarios.
 type MultiHostCommands struct {
+	// Leader commands.
+	// +optional
 	Leader []string `json:"leader,omitempty"`
+	// Worker commands.
+	// +optional
 	Worker []string `json:"worker,omitempty"`
 }
 

@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 type BackendName string
@@ -35,16 +36,21 @@ type BackendRuntimeConfig struct {
 	// from the default version.
 	// +optional
 	Version *string `json:"version,omitempty"`
-	// Args represents the specified arguments of the backendRuntime,
-	// will be append to the backendRuntime.spec.Args.
-	Args *BackendRuntimeArg `json:"args,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
+
 	// Resources represents the resource requirements for backend, like cpu/mem,
 	// accelerators like GPU should not be defined here, but at the model flavors,
 	// or the values here will be overwritten.
 	Resources *ResourceRequirements `json:"resources,omitempty"`
+	// SharedMemorySize represents the size of /dev/shm required in the runtime of
+	// inference workload.
+	// +optional
+	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
+	// Args represents the specified arguments of the backendRuntime,
+	// will be append to the backendRuntime.spec.Args.
+	Args *BackendRuntimeArg `json:"args,omitempty"`
 }
 
 // TODO: Do not support DRA yet, we can support that once needed.

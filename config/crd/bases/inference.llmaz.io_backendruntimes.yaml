@@ -353,10 +353,12 @@ spec:
                   different roles.
                 properties:
                   leader:
+                    description: Leader commands.
                     items:
                       type: string
                     type: array
                   worker:
+                    description: Worker commands.
                     items:
                       type: string
                     type: array

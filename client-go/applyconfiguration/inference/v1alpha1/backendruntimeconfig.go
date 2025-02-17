@@ -20,16 +20,18 @@ package v1alpha1
 import (
 	inferencev1alpha1 "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	v1 "k8s.io/api/core/v1"
+	resource "k8s.io/apimachinery/pkg/api/resource"
 )
 
 // BackendRuntimeConfigApplyConfiguration represents a declarative configuration of the BackendRuntimeConfig type for use
 // with apply.
 type BackendRuntimeConfigApplyConfiguration struct {
-	Name      *inferencev1alpha1.BackendName          `json:"name,omitempty"`
-	Version   *string                                 `json:"version,omitempty"`
-	Args      *BackendRuntimeArgApplyConfiguration    `json:"args,omitempty"`
-	Envs      []v1.EnvVar                             `json:"envs,omitempty"`
-	Resources *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
+	Name             *inferencev1alpha1.BackendName          `json:"name,omitempty"`
+	Version          *string                                 `json:"version,omitempty"`
+	Args             *BackendRuntimeArgApplyConfiguration    `json:"args,omitempty"`
+	Envs             []v1.EnvVar                             `json:"envs,omitempty"`
+	Resources        *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
+	SharedMemorySize *resource.Quantity                      `json:"sharedMemorySize,omitempty"`
 }
 
 // BackendRuntimeConfigApplyConfiguration constructs a declarative configuration of the BackendRuntimeConfig type for use with
@@ -77,5 +79,13 @@ func (b *BackendRuntimeConfigApplyConfiguration) WithEnvs(values ...v1.EnvVar) *
 // If called multiple times, the Resources field is set to the value of the last call.
 func (b *BackendRuntimeConfigApplyConfiguration) WithResources(value *ResourceRequirementsApplyConfiguration) *BackendRuntimeConfigApplyConfiguration {
 	b.Resources = value
+	return b
+}
+
+// WithSharedMemorySize sets the SharedMemorySize field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the SharedMemorySize field is set to the value of the last call.
+func (b *BackendRuntimeConfigApplyConfiguration) WithSharedMemorySize(value resource.Quantity) *BackendRuntimeConfigApplyConfiguration {
+	b.SharedMemorySize = &value
 	return b
 }

@@ -18,7 +18,6 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -129,16 +128,9 @@ type Flavor struct {
 type InferenceConfig struct {
 	// Flavors represents the accelerator requirements to serve the model.
 	// Flavors are fungible following the priority represented by the slice order.
-	// This is used both in Playground and Inference Service.
 	// +kubebuilder:validation:MaxItems=8
 	// +optional
 	Flavors []Flavor `json:"flavors,omitempty"`
-	// SharedMemorySize represents the size of /dev/shm required in the runtime of
-	// inference workload.
-	// This is only used in Playground. Inference Service can configure the shared memory
-	// directly in PodSpec.
-	// +optional
-	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
 }
 
 type ModelName string

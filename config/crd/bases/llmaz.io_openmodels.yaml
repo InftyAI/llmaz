@@ -54,7 +54,6 @@ spec:
                     description: |-
                       Flavors represents the accelerator requirements to serve the model.
                       Flavors are fungible following the priority represented by the slice order.
-                      This is used both in Playground and Inference Service.
                     items:
                       description: |-
                         Flavor defines the accelerator requirements for a model and the necessary parameters
@@ -106,17 +105,6 @@ spec:
                       type: object
                     maxItems: 8
                     type: array
-                  sharedMemorySize:
-                    anyOf:
-                    - type: integer
-                    - type: string
-                    description: |-
-                      SharedMemorySize represents the size of /dev/shm required in the runtime of
-                      inference workload.
-                      This is only used in Playground. Inference Service can configure the shared memory
-                      directly in PodSpec.
-                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                    x-kubernetes-int-or-string: true
                 type: object
               source:
                 description: |-
