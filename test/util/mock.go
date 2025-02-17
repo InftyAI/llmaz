@@ -37,7 +37,6 @@ func MockASampleModel() *coreapi.OpenModel {
 		InferenceFlavors(
 			*wrapper.MakeFlavor("a100").SetRequest("nvidia.com/gpu", "1").Obj(),
 			*wrapper.MakeFlavor("a10").SetRequest("nvidia.com/gpu", "2").Obj()).
-		SharedMemorySize("1Gi").
 		Obj()
 }
 

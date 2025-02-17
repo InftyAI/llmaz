@@ -465,5 +465,32 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
+		ginkgo.Entry("Playground with shared memory size configured", &testValidatingCase{
+			makePlayground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(multiNodesModel.Name).Label(coreapi.ModelNameLabelKey, multiNodesModel.Name).
+					SharedMemorySize("1Gi").
+					Obj()
+			},
+			updates: []*update{
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundProgressing, "Pending", metav1.ConditionTrue)
+					},
+				},
+				{
+					updateFunc: func(playground *inferenceapi.Playground) {
+						util.UpdateLwsToReady(ctx, k8sClient, playground.Name, playground.Namespace)
+					},
+					checkFunc: func(ctx context.Context, k8sClient client.Client, playground *inferenceapi.Playground) {
+						validation.ValidatePlayground(ctx, k8sClient, playground)
+						validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+					},
+				},
+			},
+		}),
 	)
 })

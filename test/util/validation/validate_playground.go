@@ -261,14 +261,14 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			}
 		}
 
-		if models[0].Spec.InferenceConfig != nil && models[0].Spec.InferenceConfig.SharedMemorySize != nil {
+		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.SharedMemorySize != nil {
 			if multiHost {
-				if *models[0].Spec.InferenceConfig.SharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
-					return fmt.Errorf("expected SharedMemorySize %s, got %s", models[0].Spec.InferenceConfig.SharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
+				if *playground.Spec.BackendRuntimeConfig.SharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
+					return fmt.Errorf("expected SharedMemorySize %s, got %s", playground.Spec.BackendRuntimeConfig.SharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
 				}
 			}
-			if *models[0].Spec.InferenceConfig.SharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
-				return fmt.Errorf("expected SharedMemorySize %s, got %s", models[0].Spec.InferenceConfig.SharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
+			if *playground.Spec.BackendRuntimeConfig.SharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
+				return fmt.Errorf("expected SharedMemorySize %s, got %s", playground.Spec.BackendRuntimeConfig.SharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
 			}
 		}
 

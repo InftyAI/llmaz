@@ -17,15 +17,10 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	resource "k8s.io/apimachinery/pkg/api/resource"
-)
-
 // InferenceConfigApplyConfiguration represents a declarative configuration of the InferenceConfig type for use
 // with apply.
 type InferenceConfigApplyConfiguration struct {
-	Flavors          []FlavorApplyConfiguration `json:"flavors,omitempty"`
-	SharedMemorySize *resource.Quantity         `json:"sharedMemorySize,omitempty"`
+	Flavors []FlavorApplyConfiguration `json:"flavors,omitempty"`
 }
 
 // InferenceConfigApplyConfiguration constructs a declarative configuration of the InferenceConfig type for use with
@@ -44,13 +39,5 @@ func (b *InferenceConfigApplyConfiguration) WithFlavors(values ...*FlavorApplyCo
 		}
 		b.Flavors = append(b.Flavors, *values[i])
 	}
-	return b
-}
-
-// WithSharedMemorySize sets the SharedMemorySize field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the SharedMemorySize field is set to the value of the last call.
-func (b *InferenceConfigApplyConfiguration) WithSharedMemorySize(value resource.Quantity) *InferenceConfigApplyConfiguration {
-	b.SharedMemorySize = &value
 	return b
 }

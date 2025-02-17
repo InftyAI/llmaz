@@ -189,3 +189,12 @@ func (w *PlaygroundWrapper) ScaleTriggerRef(name string) *PlaygroundWrapper {
 	w.Spec.ElasticConfig.ScaleTriggerRef.Name = name
 	return w
 }
+
+func (w *PlaygroundWrapper) SharedMemorySize(v string) *PlaygroundWrapper {
+	if w.Spec.BackendRuntimeConfig == nil {
+		w = w.BackendRuntime("vllm")
+	}
+	value := resource.MustParse(v)
+	w.Spec.BackendRuntimeConfig.SharedMemorySize = &value
+	return w
+}

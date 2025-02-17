@@ -265,7 +265,7 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	if multiHost {
 		workload.LeaderWorkerTemplate.LeaderTemplate = &template
-		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground, backendRuntime)
+		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(playground, backendRuntime)
 	} else {
 		workload.LeaderWorkerTemplate.WorkerTemplate = template
 	}
@@ -367,13 +367,13 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	}
 
 	// construct /dev/shm size
-	if models[0].Spec.InferenceConfig != nil && models[0].Spec.InferenceConfig.SharedMemorySize != nil {
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.SharedMemorySize != nil {
 		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
 			Name: "dshm",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{
 					Medium:    corev1.StorageMediumMemory,
-					SizeLimit: models[0].Spec.InferenceConfig.SharedMemorySize,
+					SizeLimit: playground.Spec.BackendRuntimeConfig.SharedMemorySize,
 				},
 			},
 		})
@@ -389,7 +389,7 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 
 // This is a copy of buildTemplate with some refactors, only used in multi-nodes cases.
 // Worker template has no args, no contain port.
-func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
+func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
 	parser := helper.NewBackendRuntimeParser(backendRuntime)
 
 	envs := parser.Envs()
@@ -442,13 +442,13 @@ func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.P
 	}
 
 	// construct /dev/shm size
-	if models[0].Spec.InferenceConfig != nil && models[0].Spec.InferenceConfig.SharedMemorySize != nil {
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.SharedMemorySize != nil {
 		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
 			Name: "dshm",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{
 					Medium:    corev1.StorageMediumMemory,
-					SizeLimit: models[0].Spec.InferenceConfig.SharedMemorySize,
+					SizeLimit: playground.Spec.BackendRuntimeConfig.SharedMemorySize,
 				},
 			},
 		})
