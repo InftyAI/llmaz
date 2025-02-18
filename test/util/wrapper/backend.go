@@ -62,7 +62,7 @@ func (w *BackendRuntimeWrapper) Command(commands []string) *BackendRuntimeWrappe
 	return w
 }
 
-func (w *BackendRuntimeWrapper) Arg(name string, flags []string) *BackendRuntimeWrapper {
+func (w *BackendRuntimeWrapper) Arg(name string, args []string) *BackendRuntimeWrapper {
 	if w.Spec.RecommendedConfigs == nil {
 		w.Spec.RecommendedConfigs = []inferenceapi.RecommendedConfig{
 			{
@@ -70,9 +70,9 @@ func (w *BackendRuntimeWrapper) Arg(name string, flags []string) *BackendRuntime
 			},
 		}
 	}
-	for _, recommend := range w.Spec.RecommendedConfigs {
+	for i, recommend := range w.Spec.RecommendedConfigs {
 		if recommend.Name == name {
-			recommend.Args = flags
+			w.Spec.RecommendedConfigs[i].Args = args
 			break
 		}
 	}
