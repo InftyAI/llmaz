@@ -26,12 +26,14 @@ import (
 // BackendRuntimeConfigApplyConfiguration represents a declarative configuration of the BackendRuntimeConfig type for use
 // with apply.
 type BackendRuntimeConfigApplyConfiguration struct {
-	Name             *inferencev1alpha1.BackendName          `json:"name,omitempty"`
+	BackendName      *inferencev1alpha1.BackendName          `json:"backendName,omitempty"`
 	Version          *string                                 `json:"version,omitempty"`
-	Args             *BackendRuntimeArgApplyConfiguration    `json:"args,omitempty"`
 	Envs             []v1.EnvVar                             `json:"envs,omitempty"`
+	ConfigName       *string                                 `json:"configName,omitempty"`
+	Args             []string                                `json:"flags,omitempty"`
 	Resources        *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 	SharedMemorySize *resource.Quantity                      `json:"sharedMemorySize,omitempty"`
+	ScaleTrigger     *ScaleTriggerApplyConfiguration         `json:"scaleTrigger,omitempty"`
 }
 
 // BackendRuntimeConfigApplyConfiguration constructs a declarative configuration of the BackendRuntimeConfig type for use with
@@ -40,11 +42,11 @@ func BackendRuntimeConfig() *BackendRuntimeConfigApplyConfiguration {
 	return &BackendRuntimeConfigApplyConfiguration{}
 }
 
-// WithName sets the Name field in the declarative configuration to the given value
+// WithBackendName sets the BackendName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Name field is set to the value of the last call.
-func (b *BackendRuntimeConfigApplyConfiguration) WithName(value inferencev1alpha1.BackendName) *BackendRuntimeConfigApplyConfiguration {
-	b.Name = &value
+// If called multiple times, the BackendName field is set to the value of the last call.
+func (b *BackendRuntimeConfigApplyConfiguration) WithBackendName(value inferencev1alpha1.BackendName) *BackendRuntimeConfigApplyConfiguration {
+	b.BackendName = &value
 	return b
 }
 
@@ -56,20 +58,30 @@ func (b *BackendRuntimeConfigApplyConfiguration) WithVersion(value string) *Back
 	return b
 }
 
-// WithArgs sets the Args field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Args field is set to the value of the last call.
-func (b *BackendRuntimeConfigApplyConfiguration) WithArgs(value *BackendRuntimeArgApplyConfiguration) *BackendRuntimeConfigApplyConfiguration {
-	b.Args = value
-	return b
-}
-
 // WithEnvs adds the given value to the Envs field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Envs field.
 func (b *BackendRuntimeConfigApplyConfiguration) WithEnvs(values ...v1.EnvVar) *BackendRuntimeConfigApplyConfiguration {
 	for i := range values {
 		b.Envs = append(b.Envs, values[i])
+	}
+	return b
+}
+
+// WithConfigName sets the ConfigName field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ConfigName field is set to the value of the last call.
+func (b *BackendRuntimeConfigApplyConfiguration) WithConfigName(value string) *BackendRuntimeConfigApplyConfiguration {
+	b.ConfigName = &value
+	return b
+}
+
+// WithArgs adds the given value to the Args field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the Args field.
+func (b *BackendRuntimeConfigApplyConfiguration) WithArgs(values ...string) *BackendRuntimeConfigApplyConfiguration {
+	for i := range values {
+		b.Args = append(b.Args, values[i])
 	}
 	return b
 }
@@ -87,5 +99,13 @@ func (b *BackendRuntimeConfigApplyConfiguration) WithResources(value *ResourceRe
 // If called multiple times, the SharedMemorySize field is set to the value of the last call.
 func (b *BackendRuntimeConfigApplyConfiguration) WithSharedMemorySize(value resource.Quantity) *BackendRuntimeConfigApplyConfiguration {
 	b.SharedMemorySize = &value
+	return b
+}
+
+// WithScaleTrigger sets the ScaleTrigger field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ScaleTrigger field is set to the value of the last call.
+func (b *BackendRuntimeConfigApplyConfiguration) WithScaleTrigger(value *ScaleTriggerApplyConfiguration) *BackendRuntimeConfigApplyConfiguration {
+	b.ScaleTrigger = value
 	return b
 }

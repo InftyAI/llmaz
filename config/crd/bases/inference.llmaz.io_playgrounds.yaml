@@ -48,22 +48,23 @@ spec:
                 properties:
                   args:
                     description: |-
-                      Args represents the specified arguments of the backendRuntime,
-                      will be append to the backendRuntime.spec.Args.
-                    properties:
-                      flags:
-                        description: |-
-                          Flags represents all the preset configurations.
-                          Flag around with {{ .CONFIG }} is a configuration waiting for render.
-                        items:
-                          type: string
-                        type: array
-                      name:
-                        default: default
-                        description: Name represents the identifier of the backendRuntime
-                          argument.
-                        type: string
-                    type: object
+                      Args represents all the arguments for the command.
+                      Argument around with {{ .CONFIG }} is a configuration waiting for render.
+                      Args defined here will "append" the args in the recommendedConfig.
+                    items:
+                      type: string
+                    type: array
+                  backendName:
+                    default: vllm
+                    description: BackendName represents the inference backend under
+                      the hood, e.g. vLLM.
+                    type: string
+                  configName:
+                    description: |-
+                      ConfigName represents the recommended configuration name for the backend,
+                      It will be inferred from the models in the runtime if not specified, e.g. default,
+                      speculative-decoding or model-parallelism.
+                    type: string
                   envs:
                     description: Envs represents the environments set to the container.
                     items:
@@ -184,16 +185,12 @@ spec:
                       - name
                       type: object
                     type: array
-                  name:
-                    default: vllm
-                    description: Name represents the inference backend under the hood,
-                      e.g. vLLM.
-                    type: string
                   resources:
                     description: |-
                       Resources represents the resource requirements for backend, like cpu/mem,
                       accelerators like GPU should not be defined here, but at the model flavors,
                       or the values here will be overwritten.
+                      Resources defined here will "overwrite" the resources in the recommendedConfig.
                     properties:
                       limits:
                         additionalProperties:
@@ -220,47 +217,11 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
-                  sharedMemorySize:
-                    anyOf:
-                    - type: integer
-                    - type: string
-                    description: |-
-                      SharedMemorySize represents the size of /dev/shm required in the runtime of
-                      inference workload.
-                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                    x-kubernetes-int-or-string: true
-                  version:
-                    description: |-
-                      Version represents the backend version if you want a different one
-                      from the default version.
-                    type: string
-                type: object
-              elasticConfig:
-                description: |-
-                  ElasticConfig defines the configuration for elastic usage,
-                  e.g. the max/min replicas.
-                  Note: this requires to install the HPA first or will report error.
-                properties:
-                  maxReplicas:
-                    description: |-
-                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
-                      Default to nil means there's no limit for the instance number.
-                    format: int32
-                    type: integer
-                  minReplicas:
-                    default: 1
-                    description: |-
-                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
-                      Default to 1.
-                      MinReplicas couldn't be 0 now, will support serverless in the future.
-                    format: int32
-                    type: integer
                   scaleTrigger:
                     description: |-
-                      ScaleTrigger defines a set of triggers to scale the workloads.
-                      If not defined, trigger configured in backendRuntime will be used,
-                      otherwise, trigger defined here will overwrite the defaulted ones.
-                      ScaleTriggerRef and ScaleTrigger can't be set at the same time.
+                      ScaleTrigger defines the rules to scale the workloads.
+                      Only one trigger cloud work at a time, mostly used in Playground.
+                      ScaleTrigger defined here will "overwrite" the scaleTrigger in the recommendedConfig.
                     properties:
                       hpa:
                         description: HPA represents the trigger configuration of the
@@ -869,19 +830,41 @@ spec:
                             type: array
                         type: object
                     type: object
-                  scaleTriggerRef:
+                  sharedMemorySize:
+                    anyOf:
+                    - type: integer
+                    - type: string
                     description: |-
-                      ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime
-                      with tuned target value.
-                      ScaleTriggerRef and ScaleTrigger can't be set at the same time.
-                    properties:
-                      name:
-                        description: Name represents the scale trigger name defined
-                          in the backendRuntime.scaleTriggers.
-                        type: string
-                    required:
-                    - name
-                    type: object
+                      SharedMemorySize represents the size of /dev/shm required in the runtime of
+                      inference workload.
+                      SharedMemorySize defined here will "overwrite" the sharedMemorySize in the recommendedConfig.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  version:
+                    description: |-
+                      Version represents the backend version if you want a different one
+                      from the default version.
+                    type: string
+                type: object
+              elasticConfig:
+                description: |-
+                  ElasticConfig defines the configuration for elastic usage,
+                  e.g. the max/min replicas.
+                properties:
+                  maxReplicas:
+                    description: |-
+                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
+                      Default to nil means there's no limit for the instance number.
+                    format: int32
+                    type: integer
+                  minReplicas:
+                    default: 1
+                    description: |-
+                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
+                      Default to 1.
+                      MinReplicas couldn't be 0 now, will support serverless in the future.
+                    format: int32
+                    type: integer
                 type: object
               modelClaim:
                 description: |-

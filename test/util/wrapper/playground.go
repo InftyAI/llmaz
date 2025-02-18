@@ -97,7 +97,7 @@ func (w *PlaygroundWrapper) BackendRuntime(name string) *PlaygroundWrapper {
 		w.Spec.BackendRuntimeConfig = &inferenceapi.BackendRuntimeConfig{}
 	}
 	backendName := inferenceapi.BackendName(name)
-	w.Spec.BackendRuntimeConfig.Name = &backendName
+	w.Spec.BackendRuntimeConfig.BackendName = &backendName
 	return w
 }
 
@@ -109,15 +109,11 @@ func (w *PlaygroundWrapper) BackendRuntimeVersion(version string) *PlaygroundWra
 	return w
 }
 
-func (w *PlaygroundWrapper) BackendRuntimeArgs(name string, args []string) *PlaygroundWrapper {
+func (w *PlaygroundWrapper) BackendRuntimeArgs(args []string) *PlaygroundWrapper {
 	if w.Spec.BackendRuntimeConfig == nil {
 		w = w.BackendRuntime("vllm")
 	}
-	if w.Spec.BackendRuntimeConfig.Args == nil {
-		w.Spec.BackendRuntimeConfig.Args = &inferenceapi.BackendRuntimeArg{}
-	}
-	w.Spec.BackendRuntimeConfig.Args.Name = &name
-	w.Spec.BackendRuntimeConfig.Args.Flags = args
+	w.Spec.BackendRuntimeConfig.Args = args
 	return w
 }
 
@@ -161,32 +157,22 @@ func (w *PlaygroundWrapper) BackendRuntimeLimit(r, v string) *PlaygroundWrapper 
 }
 
 func (w *PlaygroundWrapper) ElasticConfig(minReplicas, maxReplicas int32) *PlaygroundWrapper {
-	w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{
-		MaxReplicas: ptr.To[int32](maxReplicas),
-		MinReplicas: ptr.To[int32](minReplicas),
+	if w.Spec.ElasticConfig == nil {
+		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
 	}
+	w.Spec.ElasticConfig.MaxReplicas = ptr.To[int32](maxReplicas)
+	w.Spec.ElasticConfig.MinReplicas = ptr.To[int32](minReplicas)
 	return w
 }
 
 func (w *PlaygroundWrapper) HPA(config *inferenceapi.HPATrigger) *PlaygroundWrapper {
-	if w.Spec.ElasticConfig == nil {
-		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
+	if w.Spec.BackendRuntimeConfig == nil {
+		w.Spec.BackendRuntimeConfig = &inferenceapi.BackendRuntimeConfig{}
 	}
-	if w.Spec.ElasticConfig.ScaleTrigger == nil {
-		w.Spec.ElasticConfig.ScaleTrigger = &inferenceapi.ScaleTrigger{}
+	if w.Spec.BackendRuntimeConfig.ScaleTrigger == nil {
+		w.Spec.BackendRuntimeConfig.ScaleTrigger = &inferenceapi.ScaleTrigger{}
 	}
-	w.Spec.ElasticConfig.ScaleTrigger.HPA = config
-	return w
-}
-
-func (w *PlaygroundWrapper) ScaleTriggerRef(name string) *PlaygroundWrapper {
-	if w.Spec.ElasticConfig == nil {
-		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
-	}
-	if w.Spec.ElasticConfig.ScaleTriggerRef == nil {
-		w.Spec.ElasticConfig.ScaleTriggerRef = &inferenceapi.ScaleTriggerRef{}
-	}
-	w.Spec.ElasticConfig.ScaleTriggerRef.Name = name
+	w.Spec.BackendRuntimeConfig.ScaleTrigger.HPA = config
 	return w
 }
 

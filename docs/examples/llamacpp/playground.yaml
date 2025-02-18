@@ -7,8 +7,7 @@ spec:
   modelClaim:
     modelName: qwen2-0--5b-gguf
   backendRuntimeConfig:
-    name: llamacpp
+    backendName: llamacpp
+    configName: default
     args:
-      name: "default"
-      flags:
-        - -fa # use flash attention
+      - -fa # use flash attention

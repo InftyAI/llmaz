@@ -13,42 +13,33 @@ spec:
     - echo "hello"
   image: busybox
   version: latest
-  args:
+  recommendedConfigs:
     - name: default
-      flags:
+      args:
         - mode
         - "default"
+      resources:
+        requests:
+          cpu: 4
+          memory: 8Gi
+        limits:
+          cpu: 4
+          memory: 8Gi
+      sharedMemorySize: 1Gi
+      scaleTrigger:
+        hpa:
+          metrics:
+            - type: Resource
+              resource:
+                name: cpu
+                target:
+                  type: Utilization
+                  averageUtilization: 20
     - name: speculative-decoding
-      flags:
+      args:
         - mode
         - "speculative-decoding"
     - name: fuz
-      flags:
+      args:
         - mode
         - "fuz"
-  resources:
-    requests:
-      cpu: 4
-      memory: 8Gi
-    limits:
-      cpu: 4
-      memory: 8Gi
-  scaleTriggers:
-    - name: hpa
-      hpa:
-        metrics:
-          - type: Resource
-            resource:
-              name: cpu
-              target:
-                type: Utilization
-                averageUtilization: 50
-    - name: hpa2
-      hpa:
-        metrics:
-          - type: Resource
-            resource:
-              name: cpu
-              target:
-                type: Utilization
-                averageUtilization: 80

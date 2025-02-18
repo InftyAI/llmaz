@@ -22,19 +22,33 @@ import (
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
-	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 )
 
 // TODO: add unit tests.
 type BackendRuntimeParser struct {
-	backendRuntime *inferenceapi.BackendRuntime
+	backendRuntime      *inferenceapi.BackendRuntime
+	models              []*coreapi.OpenModel
+	playground          *inferenceapi.Playground
+	recommendConfigName string
+	multiHost           bool
 }
 
-func NewBackendRuntimeParser(backendRuntime *inferenceapi.BackendRuntime) *BackendRuntimeParser {
-	return &BackendRuntimeParser{backendRuntime}
+func NewBackendRuntimeParser(backendRuntime *inferenceapi.BackendRuntime, models []*coreapi.OpenModel, playground *inferenceapi.Playground) *BackendRuntimeParser {
+	_, multiHost := helper.MultiHostInference(models[0], playground)
+	name := helper.RecommendedConfigName(playground, multiHost)
+	return &BackendRuntimeParser{
+		backendRuntime,
+		models,
+		playground,
+		name,
+		multiHost,
+	}
 }
 
 func (p *BackendRuntimeParser) Commands() []string {
@@ -59,16 +73,8 @@ func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 	return p.backendRuntime.Spec.Envs
 }
 
-func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models []*coreapi.OpenModel, multiNodes bool) ([]string, error) {
-	var argName string
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Args != nil {
-		argName = *playground.Spec.BackendRuntimeConfig.Args.Name
-	} else {
-		// Auto detect the args from model roles.
-		argName = DetectArgFrom(playground, multiNodes)
-	}
-
-	mainModel := models[0]
+func (p *BackendRuntimeParser) Args() ([]string, error) {
+	mainModel := p.models[0]
 
 	source := modelSource.NewModelSourceProvider(mainModel)
 	modelInfo := map[string]string{
@@ -76,8 +82,8 @@ func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models 
 		"ModelName": source.ModelName(),
 	}
 
-	if multiNodes {
-		flavors := FirstAssignedFlavor(mainModel, playground)
+	if p.multiHost {
+		flavors := helper.FirstAssignedFlavor(mainModel, p.playground)
 		if len(flavors) > 0 {
 			modelInfo["PP"] = flavors[0].Params["PP"]
 			modelInfo["TP"] = flavors[0].Params["TP"]
@@ -86,13 +92,13 @@ func (p *BackendRuntimeParser) Args(playground *inferenceapi.Playground, models 
 
 	// TODO: This is not that reliable because two models doesn't always means speculative-decoding.
 	// Revisit this later.
-	if len(models) > 1 {
-		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(models[1]).ModelPath()
+	if len(p.models) > 1 {
+		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(p.models[1]).ModelPath()
 	}
 
-	for _, arg := range p.backendRuntime.Spec.Args {
-		if *arg.Name == argName {
-			return renderFlags(arg.Flags, modelInfo)
+	for _, recommend := range p.backendRuntime.Spec.RecommendedConfigs {
+		if recommend.Name == p.recommendConfigName {
+			return renderFlags(recommend.Args, modelInfo)
 		}
 	}
 
@@ -108,8 +114,23 @@ func (p *BackendRuntimeParser) Version() string {
 	return p.backendRuntime.Spec.Version
 }
 
-func (p *BackendRuntimeParser) Resources() inferenceapi.ResourceRequirements {
-	return p.backendRuntime.Spec.Resources
+func (p *BackendRuntimeParser) Resources() *inferenceapi.ResourceRequirements {
+	for _, recommend := range p.backendRuntime.Spec.RecommendedConfigs {
+		if recommend.Name == p.recommendConfigName {
+			return recommend.Resources
+		}
+	}
+	// We should not reach here.
+	return nil
+}
+
+func (p *BackendRuntimeParser) SharedMemorySize() *resource.Quantity {
+	for _, recommend := range p.backendRuntime.Spec.RecommendedConfigs {
+		if recommend.Name == p.recommendConfigName {
+			return recommend.SharedMemorySize
+		}
+	}
+	return nil
 }
 
 func renderFlags(flags []string, modelInfo map[string]string) ([]string, error) {

@@ -78,20 +78,25 @@ func (w *BackendRuntimeWebhook) generateValidate(obj runtime.Object) field.Error
 	var allErrs field.ErrorList
 
 	// Validate resources.
-	for k, v := range backend.Spec.Resources.Limits {
-		if requestV, ok := backend.Spec.Resources.Requests[k]; ok {
-			if v.Cmp(requestV) == -1 {
-				allErrs = append(allErrs, field.Forbidden(specPath.Child("resources"), fmt.Sprintf("resource limit of %s is less than resource request", k)))
+	for _, recommend := range backend.Spec.RecommendedConfigs {
+		if recommend.Resources == nil {
+			continue
+		}
+		for k, v := range recommend.Resources.Limits {
+			if requestV, ok := recommend.Resources.Requests[k]; ok {
+				if v.Cmp(requestV) == -1 {
+					allErrs = append(allErrs, field.Forbidden(specPath.Child("resources"), fmt.Sprintf("resource limit of %s is less than resource request", k)))
+				}
 			}
 		}
 	}
 
 	names := []string{}
-	for _, arg := range backend.Spec.Args {
-		if util.In(names, *arg.Name) {
-			allErrs = append(allErrs, field.Forbidden(specPath.Child("args", "name"), fmt.Sprintf("duplicated name %s", *arg.Name)))
+	for _, recommend := range backend.Spec.RecommendedConfigs {
+		if util.In(names, recommend.Name) {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("args", "name"), fmt.Sprintf("duplicated name %s", recommend.Name)))
 		}
-		names = append(names, *arg.Name)
+		names = append(names, recommend.Name)
 	}
 	return allErrs
 }

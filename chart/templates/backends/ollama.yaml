@@ -13,24 +13,24 @@ spec:
     - -c
   image: ollama/ollama
   version: latest
-  # Do not edit the preset argument name unless you know what you're doing.
-  # Free to add more arguments with your requirements.
-  args:
-    - name: default
-      flags:
-        - "ollama serve &
-           while true; do output=$(ollama list 2>&1);
-           if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;
-           ollama run {{`{{ .ModelName }}`}};
-           while true;do sleep 60;done"
   envs:
     - name: OLLAMA_HOST
       value: 0.0.0.0:8080
-  resources:
-    requests:
-      cpu: 2
-      memory: 4Gi
-    limits:
-      cpu: 2
-      memory: 4Gi
+  # Do not edit the preset argument name unless you know what you're doing.
+  # Free to add more arguments with your requirements.
+  recommendedConfigs:
+    - name: default
+      args:
+        - "ollama serve &
+          while true; do output=$(ollama list 2>&1);
+          if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;
+          ollama run {{`{{ .ModelName }}`}};
+          while true;do sleep 60;done"
+      resources:
+        requests:
+          cpu: 2
+          memory: 4Gi
+        limits:
+          cpu: 2
+          memory: 4Gi
 {{- end }}
