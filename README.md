@@ -136,3 +136,5 @@ Join us for more discussions:
 ## Contributions
 
 All kinds of contributions are welcomed ! Please following [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+We also have an official fundraising venue through [OpenCollective](https://opencollective.com/inftyai/projects/llmaz). We'll use the fund transparently to support the development, maintenance, and adoption of our community.
