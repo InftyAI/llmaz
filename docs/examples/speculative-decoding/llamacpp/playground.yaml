@@ -14,11 +14,9 @@ spec:
       - name: llama2-7b-q2-k-gguf # the draft model
         role: draft
   backendRuntimeConfig:
-    name: llamacpp
+    backendName: llamacpp
     args:
-      name: "speculative-decoding"
-      flags:
-        - -fa # use flash attention
+      - -fa # use flash attention
     resources:
       requests:
         cpu: 4

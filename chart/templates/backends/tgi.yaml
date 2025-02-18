@@ -12,20 +12,20 @@ spec:
   version: 2.3.1
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
-  args:
+  recommendedConfigs:
     - name: default
-      flags:
+      args:
         - --model-id
         - "{{`{{ .ModelPath }}`}}"
         - --port
         - "8080"
-  resources:
-    requests:
-      cpu: 4
-      memory: 8Gi
-    limits:
-      cpu: 4
-      memory: 8Gi
+      resources:
+        requests:
+          cpu: 4
+          memory: 8Gi
+        limits:
+          cpu: 4
+          memory: 8Gi
   startupProbe:
     periodSeconds: 10
     failureThreshold: 30

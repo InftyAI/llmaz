@@ -47,7 +47,8 @@ import (
 	coreclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
 	inferenceclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/inference/v1alpha1"
 	helper "github.com/inftyai/llmaz/pkg/controller_helper"
-	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	backendruntime "github.com/inftyai/llmaz/pkg/controller_helper/backendruntime"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 	"github.com/inftyai/llmaz/pkg/util"
 )
 
@@ -106,8 +107,8 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	backendRuntimeName := inferenceapi.DefaultBackend
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Name != nil {
-		backendRuntimeName = *playground.Spec.BackendRuntimeConfig.Name
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.BackendName != nil {
+		backendRuntimeName = *playground.Spec.BackendRuntimeConfig.BackendName
 	}
 	backendRuntime := &inferenceapi.BackendRuntime{}
 	if err := r.Get(ctx, types.NamespacedName{Name: string(backendRuntimeName)}, backendRuntime); err != nil {
@@ -129,7 +130,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	scalingConfiguration := buildScalingConfiguration(playground, backendRuntime)
+	scalingConfiguration := buildScalingConfiguration(models, playground, backendRuntime)
 	if scalingConfiguration != nil {
 		if err := setControllerReferenceForScalingConfiguration(playground, scalingConfiguration, r.Scheme); err != nil {
 			logger.Error(err, "failed to set OwnerReference for scaling workload", "workload", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name), "kind", scalingConfiguration.Kind)
@@ -244,8 +245,7 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
 func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (lws.LeaderWorkerSetSpec, error) {
 	workload := lws.LeaderWorkerSetSpec{
-		// Use the default policy defined in lws.
-		StartupPolicy: lws.LeaderCreatedStartupPolicy,
+		StartupPolicy: lws.LeaderReadyStartupPolicy,
 		RolloutStrategy: lws.RolloutStrategy{
 			Type: lws.RollingUpdateStrategyType,
 		},
@@ -265,7 +265,7 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	if multiHost {
 		workload.LeaderWorkerTemplate.LeaderTemplate = &template
-		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(playground, backendRuntime)
+		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground, backendRuntime)
 	} else {
 		workload.LeaderWorkerTemplate.WorkerTemplate = template
 	}
@@ -274,33 +274,35 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 }
 
 func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime, multiHost bool) (corev1.PodTemplateSpec, error) {
-	parser := helper.NewBackendRuntimeParser(backendRuntime)
+	parser := backendruntime.NewBackendRuntimeParser(backendRuntime, models, playground)
 
-	commands := parser.Commands()
-	if multiHost {
-		commands = parser.LeaderCommands()
+	// envs
+	envs := parser.Envs()
+	if playground.Spec.BackendRuntimeConfig != nil {
+		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
 	}
 
-	args, err := parser.Args(playground, models, multiHost)
+	// args
+	args, err := parser.Args()
 	if err != nil {
 		return corev1.PodTemplateSpec{}, err
 	}
-	envs := parser.Envs()
-
 	if playground.Spec.BackendRuntimeConfig != nil {
-		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
-		if playground.Spec.BackendRuntimeConfig.Args != nil {
-			args = append(args, playground.Spec.BackendRuntimeConfig.Args.Flags...)
-		}
+		args = append(args, playground.Spec.BackendRuntimeConfig.Args...)
 	}
 
+	// resources
+	r := parser.Resources()
+	if r == nil {
+		r = &inferenceapi.ResourceRequirements{}
+	}
 	resources := corev1.ResourceRequirements{
-		Requests: parser.Resources().Requests,
-		Limits:   parser.Resources().Limits,
+		Requests: r.Requests,
+		Limits:   r.Limits,
 	}
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
-		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, parser.Resources().Limits)
-		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, parser.Resources().Requests)
+		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, r.Limits)
+		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, r.Requests)
 
 		resources = corev1.ResourceRequirements{
 			Limits:   limits,
@@ -308,26 +310,31 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 		}
 
 		// Make sure the limits are always greater than requests.
-		for k, v := range resources.Limits {
+		for k, v := range resources.Requests {
 			if k == corev1.ResourceCPU || k == corev1.ResourceMemory {
-				if v.Cmp(requests[k]) == -1 {
+				if v.Cmp(limits[k]) == 1 {
 					resources.Limits[k] = requests[k]
 				}
 			}
 		}
 	}
 
+	// image version
 	version := parser.Version()
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
 		version = *playground.Spec.BackendRuntimeConfig.Version
 	}
 
-	// Pod can not accept shell commands with args together, merge the args with the commands.
+	// commands
+	commands := parser.Commands()
 	if multiHost {
+		commands = parser.LeaderCommands()
+		// Pod can not accept shell commands with args together, merge the args with the commands.
 		commands = util.MergeArgsWithCommands(commands, args)
 		args = nil
 	}
 
+	// probe
 	var livenessProbe, readinessProbe, startupProbe *corev1.Probe
 	if backendRuntime.Spec.StartupProbe != nil {
 		startupProbe = backendRuntime.Spec.StartupProbe
@@ -366,14 +373,19 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 		},
 	}
 
-	// construct /dev/shm size
+	// sharedMemorySize
+	sharedMemorySize := parser.SharedMemorySize()
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.SharedMemorySize != nil {
+		sharedMemorySize = playground.Spec.BackendRuntimeConfig.SharedMemorySize
+	}
+	if sharedMemorySize != nil {
+		// construct /dev/shm size
 		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
 			Name: "dshm",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{
 					Medium:    corev1.StorageMediumMemory,
-					SizeLimit: playground.Spec.BackendRuntimeConfig.SharedMemorySize,
+					SizeLimit: sharedMemorySize,
 				},
 			},
 		})
@@ -389,21 +401,25 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 
 // This is a copy of buildTemplate with some refactors, only used in multi-nodes cases.
 // Worker template has no args, no contain port.
-func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
-	parser := helper.NewBackendRuntimeParser(backendRuntime)
+func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
+	parser := backendruntime.NewBackendRuntimeParser(backendRuntime, models, playground)
 
 	envs := parser.Envs()
 	if playground.Spec.BackendRuntimeConfig != nil {
 		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
 	}
 
+	r := parser.Resources()
+	if r == nil {
+		r = &inferenceapi.ResourceRequirements{}
+	}
 	resources := corev1.ResourceRequirements{
-		Requests: parser.Resources().Requests,
-		Limits:   parser.Resources().Limits,
+		Requests: r.Requests,
+		Limits:   r.Limits,
 	}
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
-		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, parser.Resources().Limits)
-		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, parser.Resources().Requests)
+		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, r.Limits)
+		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, r.Requests)
 
 		resources = corev1.ResourceRequirements{
 			Limits:   limits,
@@ -411,9 +427,9 @@ func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *in
 		}
 
 		// Make sure the limits are always greater than requests.
-		for k, v := range resources.Limits {
+		for k, v := range resources.Requests {
 			if k == corev1.ResourceCPU || k == corev1.ResourceMemory {
-				if v.Cmp(requests[k]) == -1 {
+				if v.Cmp(limits[k]) == 1 {
 					resources.Limits[k] = requests[k]
 				}
 			}
@@ -441,14 +457,18 @@ func buildWorkerTemplate(playground *inferenceapi.Playground, backendRuntime *in
 		},
 	}
 
-	// construct /dev/shm size
+	sharedMemorySize := parser.SharedMemorySize()
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.SharedMemorySize != nil {
+		sharedMemorySize = playground.Spec.BackendRuntimeConfig.SharedMemorySize
+	}
+	if sharedMemorySize != nil {
+		// construct /dev/shm size
 		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
 			Name: "dshm",
 			VolumeSource: corev1.VolumeSource{
 				EmptyDir: &corev1.EmptyDirVolumeSource{
 					Medium:    corev1.StorageMediumMemory,
-					SizeLimit: playground.Spec.BackendRuntimeConfig.SharedMemorySize,
+					SizeLimit: sharedMemorySize,
 				},
 			},
 		})
@@ -564,33 +584,28 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 }
 
 // buildScalingConfiguration supports HPA only now.
-func buildScalingConfiguration(playground *inferenceapi.Playground, backend *inferenceapi.BackendRuntime) *autoscalingv2.HorizontalPodAutoscaler {
+func buildScalingConfiguration(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backend *inferenceapi.BackendRuntime) *autoscalingv2.HorizontalPodAutoscaler {
 	if playground.Spec.ElasticConfig == nil {
 		return nil
 	}
 
-	// Handle HPA.
-	if playground.Spec.ElasticConfig.ScaleTrigger != nil && playground.Spec.ElasticConfig.ScaleTrigger.HPA != nil {
+	// Prefer the playground config.
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ScaleTrigger != nil {
 		hpa := newHPA(playground)
-		hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics
-		hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Behavior
+		hpa.Spec.Metrics = playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA.Metrics
+		hpa.Spec.Behavior = playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA.Behavior
 		return hpa
+
 	}
 
-	if len(backend.Spec.ScaleTriggers) > 0 {
-		hpa := newHPA(playground)
-		if playground.Spec.ElasticConfig.ScaleTriggerRef != nil {
-			for _, trigger := range backend.Spec.ScaleTriggers {
-				if trigger.Name == playground.Spec.ElasticConfig.ScaleTriggerRef.Name {
-					hpa.Spec.Metrics = trigger.HPA.Metrics
-					hpa.Spec.Behavior = trigger.HPA.Behavior
-					return hpa
-				}
-			}
-		} else {
-			// use the 0-index as the default value.
-			hpa.Spec.Metrics = backend.Spec.ScaleTriggers[0].HPA.Metrics
-			hpa.Spec.Behavior = backend.Spec.ScaleTriggers[0].HPA.Behavior
+	_, multiHost := helper.MultiHostInference(models[0], playground)
+	mode := helper.DetectArgFrom(playground, multiHost)
+
+	for _, recommend := range backend.Spec.RecommendedConfigs {
+		if recommend.Name == mode && recommend.ScaleTrigger != nil {
+			hpa := newHPA(playground)
+			hpa.Spec.Metrics = recommend.ScaleTrigger.HPA.Metrics
+			hpa.Spec.Behavior = recommend.ScaleTrigger.HPA.Behavior
 			return hpa
 		}
 	}

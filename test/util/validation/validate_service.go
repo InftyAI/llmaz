@@ -33,7 +33,7 @@ import (
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg"
-	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/model_source"
+	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 	"github.com/inftyai/llmaz/test/util"
 )
 

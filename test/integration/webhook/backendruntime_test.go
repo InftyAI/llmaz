@@ -23,6 +23,7 @@ import (
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
+	"github.com/inftyai/llmaz/test/util/wrapper"
 )
 
 var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
@@ -74,7 +75,7 @@ var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 		}),
 		ginkgo.Entry("BackendRuntime creation with limits less than requests", &testValidatingCase{
 			creationFunc: func() *inferenceapi.BackendRuntime {
-				return util.MockASampleBackendRuntime().Limit("cpu", "1").Obj()
+				return util.MockASampleBackendRuntime().Limit("default", "cpu", "1").Obj()
 			},
 			createFailed: true,
 		}),
@@ -84,11 +85,15 @@ var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 			},
 			createFailed: false,
 		}),
-		ginkgo.Entry("BackendRuntime creation with duplicated argument name", &testValidatingCase{
+		ginkgo.Entry("BackendRuntime creation with no resources", &testValidatingCase{
 			creationFunc: func() *inferenceapi.BackendRuntime {
-				return util.MockASampleBackendRuntime().Arg("default", []string{"foo", "bar"}).Obj()
+				return wrapper.MakeBackendRuntime("vllm").
+					Image("vllm/vllm-openai").Version("v0.6.0").
+					Command([]string{"python3", "-m", "vllm.entrypoints.openai.api_server"}).
+					Arg("default", []string{"--model", "{{.ModelPath}}", "--served-model-name", "{{.ModelName}}", "--host", "0.0.0.0", "--port", "8080"}).
+					Obj()
 			},
-			createFailed: true,
+			createFailed: false,
 		}),
 	)
 })

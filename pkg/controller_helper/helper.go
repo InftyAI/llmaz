@@ -33,6 +33,18 @@ const (
 	ModelParallelismArg    string = "model-parallelism"
 )
 
+func RecommendedConfigName(playground *inferenceapi.Playground, multiNodes bool) string {
+	var name string
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ConfigName != nil {
+		name = *playground.Spec.BackendRuntimeConfig.ConfigName
+	} else {
+		// Auto detect the args from model roles.
+		name = DetectArgFrom(playground, multiNodes)
+	}
+
+	return name
+}
+
 // DetectArgFrom wil auto detect the arg from model roles if not set explicitly.
 func DetectArgFrom(playground *inferenceapi.Playground, isMultiNodesInference bool) string {
 	if isMultiNodesInference {
@@ -91,7 +103,7 @@ func fetchModels(ctx context.Context, k8sClient client.Client, mrs []coreapi.Mod
 	return models, nil
 }
 
-// FirstAssignedFlavor will return the first assigned flavor of the model, always the 0-index flavor.
+// FirstAssignedFlavor will return the first assigned flavor of the model.
 func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Playground) []coreapi.Flavor {
 	var flavors []coreapi.FlavorName
 	if playground.Spec.ModelClaim != nil {
@@ -117,7 +129,7 @@ func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Play
 	return nil
 }
 
-// MultiHostInference returns two values, the first one is the TP size,
+// MultiHostInference returns two values, the first one is the PP size,
 // the second one is whether this is a multi-host inference.
 func MultiHostInference(model *coreapi.OpenModel, playground *inferenceapi.Playground) (int32, bool) {
 	flavors := FirstAssignedFlavor(model, playground)

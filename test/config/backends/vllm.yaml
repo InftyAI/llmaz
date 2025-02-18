@@ -58,9 +58,9 @@ spec:
   version: v0.6.0
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
-  args:
+  recommendedConfigs:
     - name: default
-      flags:
+      args:
         - --model
         - "{{ .ModelPath }}"
         - --served-model-name
@@ -69,8 +69,15 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
+      resources:
+        requests:
+          cpu: 4
+          memory: 8Gi
+        limits:
+          cpu: 4
+          memory: 8Gi
     - name: speculative-decoding
-      flags:
+      args:
         - --model
         - "{{ .ModelPath }}"
         - --served-model-name
@@ -86,7 +93,7 @@ spec:
         - -tp
         - "1"
     - name: model-parallelism
-      flags:
+      args:
         - --model
         - "{{ .ModelPath }}"
         - --served-model-name
@@ -99,13 +106,6 @@ spec:
         - "{{ .TP }}"
         - --pipeline-parallel-size
         - "{{ .PP }}"
-  resources:
-    requests:
-      cpu: 4
-      memory: 8Gi
-    limits:
-      cpu: 4
-      memory: 8Gi
   startupProbe:
     periodSeconds: 10
     failureThreshold: 30

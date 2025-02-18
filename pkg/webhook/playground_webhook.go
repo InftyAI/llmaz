@@ -141,7 +141,7 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 	}
 
 	if playground.Spec.ElasticConfig != nil {
-		if *playground.Spec.ElasticConfig.MinReplicas == 0 {
+		if playground.Spec.ElasticConfig.MinReplicas != nil && *playground.Spec.ElasticConfig.MinReplicas == 0 {
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("elasticConfig.minReplicas"), "minReplicas couldn't be 0"))
 		}
 
@@ -150,11 +150,11 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 				allErrs = append(allErrs, field.Invalid(specPath.Child("elasticConfig.scaleTrigger.hpa"), *playground.Spec.ElasticConfig.MinReplicas, "minReplicas must be less than maxReplicas"))
 			}
 		}
+	}
 
-		if playground.Spec.ElasticConfig.ScaleTrigger != nil {
-			if playground.Spec.ElasticConfig.ScaleTrigger.HPA == nil {
-				allErrs = append(allErrs, field.Forbidden(specPath.Child("elasticConfig.scaleTrigger.hpa"), "hpa couldn't be nil"))
-			}
+	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ScaleTrigger != nil {
+		if playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA == nil {
+			allErrs = append(allErrs, field.Forbidden(specPath.Child("backendRuntime.scaleTrigger.hpa"), "hpa couldn't be nil"))
 		}
 	}
 

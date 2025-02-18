@@ -194,7 +194,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with sglang", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRuntime("sglang").BackendRuntimeVersion("main").BackendRuntimeArgs("default", []string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntime("sglang").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
 					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
@@ -222,7 +222,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with llamacpp", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRuntime("llamacpp").BackendRuntimeVersion("main").BackendRuntimeArgs("default", []string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntime("llamacpp").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
 					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
@@ -250,7 +250,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with tgi", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRuntime("tgi").BackendRuntimeVersion("main").BackendRuntimeArgs("default", []string{"--model-id", "Qwen/Qwen2-0.5B-Instruct"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntime("tgi").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--model-id", "Qwen/Qwen2-0.5B-Instruct"}).BackendRuntimeEnv("FOO", "BAR").
 					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
@@ -278,7 +278,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with ollama", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRuntime("ollama").BackendRuntimeVersion("main").BackendRuntimeArgs("default", []string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntime("ollama").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--foo", "bar"}).BackendRuntimeEnv("FOO", "BAR").
 					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
@@ -306,7 +306,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("advance configured Playground with argName set", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					BackendRuntime("fake-backend").BackendRuntimeVersion("main").BackendRuntimeArgs("fuz", []string{"--model-id", "Qwen/Qwen2-0.5B-Instruct"}).BackendRuntimeEnv("FOO", "BAR").
+					BackendRuntime("fake-backend").BackendRuntimeVersion("main").BackendRuntimeArgs([]string{"--model-id", "Qwen/Qwen2-0.5B-Instruct"}).BackendRuntimeEnv("FOO", "BAR").
 					BackendRuntimeRequest("cpu", "1").BackendRuntimeLimit("cpu", "10").
 					Obj()
 			},
@@ -468,7 +468,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 		ginkgo.Entry("Playground with shared memory size configured", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(multiNodesModel.Name).Label(coreapi.ModelNameLabelKey, multiNodesModel.Name).
-					SharedMemorySize("1Gi").
+					SharedMemorySize("2Gi").
 					Obj()
 			},
 			updates: []*update{

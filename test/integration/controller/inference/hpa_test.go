@@ -98,7 +98,7 @@ var _ = ginkgo.Describe("hpa test", func() {
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, hpa); err != nil {
 								return err
 							}
-							if diff := cmp.Diff(playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics, hpa.Spec.Metrics); diff != "" {
+							if diff := cmp.Diff(playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA.Metrics, hpa.Spec.Metrics); diff != "" {
 								return fmt.Errorf("metrics not match: %s", diff)
 							}
 							return nil
@@ -129,7 +129,7 @@ var _ = ginkgo.Describe("hpa test", func() {
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: "fake-backend"}, backend); err != nil {
 								return err
 							}
-							if diff := cmp.Diff(backend.Spec.ScaleTriggers[0].HPA.Metrics, hpa.Spec.Metrics); diff != "" {
+							if diff := cmp.Diff(backend.Spec.RecommendedConfigs[0].ScaleTrigger.HPA.Metrics, hpa.Spec.Metrics); diff != "" {
 								return fmt.Errorf("metrics not match: %s", diff)
 							}
 							return nil
@@ -141,7 +141,8 @@ var _ = ginkgo.Describe("hpa test", func() {
 		ginkgo.Entry("playground with scaleTrigger overwrite backendRuntime's", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
-					ElasticConfig(1, 3).ScaleTriggerRef("hpa2").
+					ElasticConfig(1, 3).
+					HPA(util.MockASimpleHPATrigger()).
 					BackendRuntime("fake-backend").
 					Obj()
 			},
@@ -160,7 +161,7 @@ var _ = ginkgo.Describe("hpa test", func() {
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: "fake-backend"}, backend); err != nil {
 								return err
 							}
-							if diff := cmp.Diff(backend.Spec.ScaleTriggers[1].HPA.Metrics, hpa.Spec.Metrics); diff != "" {
+							if diff := cmp.Diff(util.MockASimpleHPATrigger().Metrics, hpa.Spec.Metrics); diff != "" {
 								return fmt.Errorf("metrics not match: %s", diff)
 							}
 							return nil

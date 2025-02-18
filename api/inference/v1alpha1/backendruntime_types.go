@@ -19,21 +19,9 @@ package v1alpha1
 import (
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-// BackendRuntimeArg is the preset arguments for easy to use.
-// Three preset names are provided: default, speculative-decoding, model-parallelism,
-// do not change the name.
-type BackendRuntimeArg struct {
-	// Name represents the identifier of the backendRuntime argument.
-	// +kubebuilder:default=default
-	// +optional
-	Name *string `json:"name,omitempty"`
-	// Flags represents all the preset configurations.
-	// Flag around with {{ .CONFIG }} is a configuration waiting for render.
-	Flags []string `json:"flags,omitempty"`
-}
 
 // HPATrigger represents the configuration of the HorizontalPodAutoscaler.
 // Inspired by kubernetes.io/pkg/apis/autoscaling/types.go#HorizontalPodAutoscalerSpec.
@@ -55,17 +43,6 @@ type HPATrigger struct {
 	Behavior *autoscalingv2.HorizontalPodAutoscalerBehavior `json:"behavior,omitempty"`
 }
 
-// NamedScaleTrigger defines the rules to scale the workloads.
-// Only one trigger cloud work at a time. The name is used to identify
-// the trigger in backendRuntime.
-type NamedScaleTrigger struct {
-	// Name represents the identifier of the scale trigger, e.g. some triggers defined for
-	// latency sensitive workloads, some are defined for throughput sensitive workloads.
-	Name string `json:"name,omitempty"`
-	// HPA represents the trigger configuration of the HorizontalPodAutoscaler.
-	HPA *HPATrigger `json:"hpa,omitempty"`
-}
-
 // ScaleTrigger defines the rules to scale the workloads.
 // Only one trigger cloud work at a time, mostly used in Playground.
 type ScaleTrigger struct {
@@ -83,6 +60,30 @@ type MultiHostCommands struct {
 	Worker []string `json:"worker,omitempty"`
 }
 
+// RecommendedConfig represents the recommended configurations for the backendRuntime,
+// user can choose one of them to apply.
+type RecommendedConfig struct {
+	// Name represents the identifier of the config.
+	Name string `json:"name"`
+	// Args represents all the arguments for the command.
+	// Argument around with {{ .CONFIG }} is a configuration waiting for render.
+	// +optional
+	Args []string `json:"args,omitempty"`
+	// Resources represents the resource requirements for backend, like cpu/mem,
+	// accelerators like GPU should not be defined here, but at the model flavors,
+	// or the values here will be overwritten.
+	// +optional
+	Resources *ResourceRequirements `json:"resources,omitempty"`
+	// SharedMemorySize represents the size of /dev/shm required in the runtime of
+	// inference workload.
+	// +optional
+	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
+	// ScaleTrigger defines the rules to scale the workloads.
+	// Only one trigger cloud work at a time.
+	// +optional
+	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
+}
+
 // BackendRuntimeSpec defines the desired state of BackendRuntime
 type BackendRuntimeSpec struct {
 	// Commands represents the default commands for the backendRuntime.
@@ -98,16 +99,9 @@ type BackendRuntimeSpec struct {
 	// Version represents the default version of the backendRuntime.
 	// It will be appended to the image as a tag.
 	Version string `json:"version"`
-	// Args represents the preset arguments of the backendRuntime.
-	// They can be appended or overwritten by the Playground backendRuntimeConfig.
-	Args []BackendRuntimeArg `json:"args,omitempty"`
 	// Envs represents the environments set to the container.
 	// +optional
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
-	// Resources represents the resource requirements for backendRuntime, like cpu/mem,
-	// accelerators like GPU should not be defined here, but at the model flavors,
-	// or the values here will be overwritten.
-	Resources ResourceRequirements `json:"resources"`
 	// Periodic probe of backend liveness.
 	// Backend will be restarted if the probe fails.
 	// Cannot be updated.
@@ -124,10 +118,9 @@ type BackendRuntimeSpec struct {
 	// when it might take a long time to load data or warm a cache, than during steady-state operation.
 	// +optional
 	StartupProbe *corev1.Probe `json:"startupProbe,omitempty"`
-	// ScaleTriggers represents a set of triggers preset to be used by Playground.
-	// If Playground not specify the scale trigger, the 0-index trigger will be used.
+	// RecommendedConfigs represents the recommended configurations for the backendRuntime.
 	// +optional
-	ScaleTriggers []NamedScaleTrigger `json:"scaleTriggers,omitempty"`
+	RecommendedConfigs []RecommendedConfig `json:"recommendedConfigs,omitempty"`
 }
 
 // BackendRuntimeStatus defines the observed state of BackendRuntime

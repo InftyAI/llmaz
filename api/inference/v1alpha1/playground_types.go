@@ -44,9 +44,20 @@ type PlaygroundSpec struct {
 	BackendRuntimeConfig *BackendRuntimeConfig `json:"backendRuntimeConfig,omitempty"`
 	// ElasticConfig defines the configuration for elastic usage,
 	// e.g. the max/min replicas.
-	// Note: this requires to install the HPA first or will report error.
-	// +optional
 	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
+}
+
+type ElasticConfig struct {
+	// MinReplicas indicates the minimum number of inference workloads based on the traffic.
+	// Default to 1.
+	// MinReplicas couldn't be 0 now, will support serverless in the future.
+	// +kubebuilder:default=1
+	// +optional
+	MinReplicas *int32 `json:"minReplicas,omitempty"`
+	// MaxReplicas indicates the maximum number of inference workloads based on the traffic.
+	// Default to nil means there's no limit for the instance number.
+	// +optional
+	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
 }
 
 const (

@@ -28,10 +28,10 @@ const (
 )
 
 type BackendRuntimeConfig struct {
-	// Name represents the inference backend under the hood, e.g. vLLM.
+	// BackendName represents the inference backend under the hood, e.g. vLLM.
 	// +kubebuilder:default=vllm
 	// +optional
-	Name *BackendName `json:"name,omitempty"`
+	BackendName *BackendName `json:"backendName,omitempty"`
 	// Version represents the backend version if you want a different one
 	// from the default version.
 	// +optional
@@ -39,18 +39,32 @@ type BackendRuntimeConfig struct {
 	// Envs represents the environments set to the container.
 	// +optional
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
-
+	// ConfigName represents the recommended configuration name for the backend,
+	// It will be inferred from the models in the runtime if not specified, e.g. default,
+	// speculative-decoding or model-parallelism.
+	ConfigName *string `json:"configName,omitempty"`
+	// Args represents all the arguments for the command.
+	// Argument around with {{ .CONFIG }} is a configuration waiting for render.
+	// +optional
+	// Args defined here will "append" the args in the recommendedConfig.
+	// +optional
+	Args []string `json:"args,omitempty"`
 	// Resources represents the resource requirements for backend, like cpu/mem,
 	// accelerators like GPU should not be defined here, but at the model flavors,
 	// or the values here will be overwritten.
+	// Resources defined here will "overwrite" the resources in the recommendedConfig.
+	// +optional
 	Resources *ResourceRequirements `json:"resources,omitempty"`
 	// SharedMemorySize represents the size of /dev/shm required in the runtime of
 	// inference workload.
+	// SharedMemorySize defined here will "overwrite" the sharedMemorySize in the recommendedConfig.
 	// +optional
 	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
-	// Args represents the specified arguments of the backendRuntime,
-	// will be append to the backendRuntime.spec.Args.
-	Args *BackendRuntimeArg `json:"args,omitempty"`
+	// ScaleTrigger defines the rules to scale the workloads.
+	// Only one trigger cloud work at a time, mostly used in Playground.
+	// ScaleTrigger defined here will "overwrite" the scaleTrigger in the recommendedConfig.
+	// +optional
+	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }
 
 // TODO: Do not support DRA yet, we can support that once needed.
@@ -65,34 +79,4 @@ type ResourceRequirements struct {
 	// More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 	// +optional
 	Requests corev1.ResourceList `json:"requests,omitempty"`
-}
-
-// ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime.
-type ScaleTriggerRef struct {
-	// Name represents the scale trigger name defined in the backendRuntime.scaleTriggers.
-	Name string `json:"name"`
-}
-
-type ElasticConfig struct {
-	// MinReplicas indicates the minimum number of inference workloads based on the traffic.
-	// Default to 1.
-	// MinReplicas couldn't be 0 now, will support serverless in the future.
-	// +kubebuilder:default=1
-	// +optional
-	MinReplicas *int32 `json:"minReplicas,omitempty"`
-	// MaxReplicas indicates the maximum number of inference workloads based on the traffic.
-	// Default to nil means there's no limit for the instance number.
-	// +optional
-	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
-	// ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime
-	// with tuned target value.
-	// ScaleTriggerRef and ScaleTrigger can't be set at the same time.
-	// +optional
-	ScaleTriggerRef *ScaleTriggerRef `json:"scaleTriggerRef,omitempty"`
-	// ScaleTrigger defines a set of triggers to scale the workloads.
-	// If not defined, trigger configured in backendRuntime will be used,
-	// otherwise, trigger defined here will overwrite the defaulted ones.
-	// ScaleTriggerRef and ScaleTrigger can't be set at the same time.
-	// +optional
-	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }

@@ -20,7 +20,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 )
@@ -64,26 +63,79 @@ func (w *BackendRuntimeWrapper) Command(commands []string) *BackendRuntimeWrappe
 }
 
 func (w *BackendRuntimeWrapper) Arg(name string, flags []string) *BackendRuntimeWrapper {
-	w.Spec.Args = append(w.Spec.Args, inferenceapi.BackendRuntimeArg{
-		Name:  ptr.To[string](name),
-		Flags: flags,
-	})
+	if w.Spec.RecommendedConfigs == nil {
+		w.Spec.RecommendedConfigs = []inferenceapi.RecommendedConfig{
+			{
+				Name: name,
+			},
+		}
+	}
+	for _, recommend := range w.Spec.RecommendedConfigs {
+		if recommend.Name == name {
+			recommend.Args = flags
+			break
+		}
+	}
 	return w
 }
 
-func (w *BackendRuntimeWrapper) Request(r, v string) *BackendRuntimeWrapper {
-	if w.Spec.Resources.Requests == nil {
-		w.Spec.Resources.Requests = corev1.ResourceList{}
+func (w *BackendRuntimeWrapper) Request(name, r, v string) *BackendRuntimeWrapper {
+	if w.Spec.RecommendedConfigs == nil {
+		w.Spec.RecommendedConfigs = []inferenceapi.RecommendedConfig{
+			{
+				Name: name,
+			},
+		}
 	}
-	w.Spec.Resources.Requests[corev1.ResourceName(r)] = resource.MustParse(v)
+	for i, recommend := range w.Spec.RecommendedConfigs {
+		if recommend.Name == name {
+			if w.Spec.RecommendedConfigs[i].Resources == nil {
+				w.Spec.RecommendedConfigs[i].Resources = &inferenceapi.ResourceRequirements{}
+			}
+			if w.Spec.RecommendedConfigs[i].Resources.Requests == nil {
+				w.Spec.RecommendedConfigs[i].Resources.Requests = corev1.ResourceList{}
+			}
+			w.Spec.RecommendedConfigs[i].Resources.Requests[corev1.ResourceName(r)] = resource.MustParse(v)
+			break
+		}
+	}
 	return w
 }
 
-func (w *BackendRuntimeWrapper) Limit(r, v string) *BackendRuntimeWrapper {
-	if w.Spec.Resources.Limits == nil {
-		w.Spec.Resources.Limits = corev1.ResourceList{}
+func (w *BackendRuntimeWrapper) Limit(name, r, v string) *BackendRuntimeWrapper {
+	if w.Spec.RecommendedConfigs == nil {
+		w.Spec.RecommendedConfigs = []inferenceapi.RecommendedConfig{
+			{
+				Name: name,
+			},
+		}
 	}
-	w.Spec.Resources.Limits[corev1.ResourceName(r)] = resource.MustParse(v)
+	for i, recommend := range w.Spec.RecommendedConfigs {
+		if recommend.Name == name {
+			if w.Spec.RecommendedConfigs[i].Resources.Limits == nil {
+				w.Spec.RecommendedConfigs[i].Resources.Limits = corev1.ResourceList{}
+			}
+			w.Spec.RecommendedConfigs[i].Resources.Limits[corev1.ResourceName(r)] = resource.MustParse(v)
+			break
+		}
+	}
+	return w
+}
+
+func (w *BackendRuntimeWrapper) SharedMemorySize(name, v string) *BackendRuntimeWrapper {
+	if w.Spec.RecommendedConfigs == nil {
+		w.Spec.RecommendedConfigs = []inferenceapi.RecommendedConfig{
+			{
+				Name: name,
+			},
+		}
+	}
+	for i, recommend := range w.Spec.RecommendedConfigs {
+		if recommend.Name == name {
+			value := resource.MustParse(v)
+			w.Spec.RecommendedConfigs[i].SharedMemorySize = &value
+		}
+	}
 	return w
 }
 
