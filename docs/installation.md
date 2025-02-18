@@ -12,7 +12,7 @@
 ```cmd
 helm repo add inftyai https://inftyai.github.io/llmaz
 helm repo update
-helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.6
+helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.7
 ```
 
 ### Uninstall

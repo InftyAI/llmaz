@@ -2,6 +2,16 @@ apiVersion: v1
 entries:
   llmaz:
   - apiVersion: v2
+    appVersion: 0.1.1
+    created: "2025-02-18T14:46:30.474789+08:00"
+    description: A Helm chart for llmaz
+    digest: b30ba8a78986cba95256d4869f4f5bd0bd79c5d25867497021b80ae5f1ee04f0
+    name: llmaz
+    type: application
+    urls:
+    - https://inftyai.github.io/llmaz/llmaz-0.0.7.tgz
+    version: 0.0.7
+  - apiVersion: v2
     appVersion: 0.1.0
     created: "2025-01-25T01:22:38.666093+08:00"
     description: A Helm chart for llmaz
@@ -61,4 +71,4 @@ entries:
     urls:
     - https://inftyai.github.io/llmaz/llmaz-0.0.1.tgz
     version: 0.0.1
-generated: "2025-01-25T01:22:38.647336+08:00"
+generated: "2025-02-18T14:46:30.460221+08:00"
