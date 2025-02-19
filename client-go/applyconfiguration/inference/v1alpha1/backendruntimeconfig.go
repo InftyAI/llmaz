@@ -1,5 +1,5 @@
 /*
-Copyright 2024.
+Copyright 2024 The InftyAI Team.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ type BackendRuntimeConfigApplyConfiguration struct {
 	Version          *string                                 `json:"version,omitempty"`
 	Envs             []v1.EnvVar                             `json:"envs,omitempty"`
 	ConfigName       *string                                 `json:"configName,omitempty"`
-	Args             []string                                `json:"flags,omitempty"`
+	Args             []string                                `json:"args,omitempty"`
 	Resources        *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 	SharedMemorySize *resource.Quantity                      `json:"sharedMemorySize,omitempty"`
 	ScaleTrigger     *ScaleTriggerApplyConfiguration         `json:"scaleTrigger,omitempty"`
