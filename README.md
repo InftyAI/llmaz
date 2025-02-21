@@ -36,7 +36,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 - **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
 - **SOTA Inference**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677)(WIP) to run on Kubernetes.
 - **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores. llmaz will automatically handle the model loading, requiring no effort from users.
-- **Multi-hosts Support**: llmaz supports both single-host and multi-hosts scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0.
+- **Multi-Host Support**: llmaz supports both single-host and multi-host scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0.
 - **Scaling Efficiency**: llmaz supports horizontal scaling with [HPA](./docs/examples/hpa/README.md) by default and will integrate with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) for smart scaling across different clouds.
 
 ## Quick Start
@@ -50,7 +50,7 @@ Read the [Installation](./docs/installation.md) for guidance.
 Here's a toy example for deploying `facebook/opt-125m`, all you need to do
 is to apply a `Model` and a `Playground`.
 
-If you're running on CPUs, you can refer to [llama.cpp](/docs/examples/llamacpp/README.md), or more examples [here](/docs/examples/README.md).
+If you're running on CPUs, you can refer to [llama.cpp](/docs/examples/llamacpp/README.md), or more [examples](/docs/examples/README.md) here.
 
 > Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic modelhub-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
