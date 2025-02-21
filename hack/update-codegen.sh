@@ -14,8 +14,8 @@ source "${CODEGEN_PKG}/kube_codegen.sh"
 
 # TODO: remove the workaround when the issue is solved in the code-generator
 # (https://github.com/kubernetes/code-generator/issues/165).
-# Here, we create the soft link named "x-k8s.io" to the parent directory of
-# LeaderWorkerSet to ensure the layout required by the kube_codegen.sh script.
+# Here, we create the soft link named "github.com" to the parent directory of
+# llmaz to ensure the layout required by the kube_codegen.sh script.
 mkdir -p github.com && ln -s ../.. github.com/inftyai
 trap "rm -r github.com" EXIT
 
