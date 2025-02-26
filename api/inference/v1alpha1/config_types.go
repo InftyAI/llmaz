@@ -41,12 +41,10 @@ type BackendRuntimeConfig struct {
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
 	// ConfigName represents the recommended configuration name for the backend,
 	// It will be inferred from the models in the runtime if not specified, e.g. default,
-	// speculative-decoding or model-parallelism.
+	// speculative-decoding.
 	ConfigName *string `json:"configName,omitempty"`
-	// Args represents all the arguments for the command.
-	// Argument around with {{ .CONFIG }} is a configuration waiting for render.
-	// +optional
-	// Args defined here will "append" the args in the recommendedConfig.
+	// Args defined here will "append" the args defined in the recommendedConfig,
+	// either explicitly configured in configName or inferred in the runtime.
 	// +optional
 	Args []string `json:"args,omitempty"`
 	// Resources represents the resource requirements for backend, like cpu/mem,
@@ -60,11 +58,6 @@ type BackendRuntimeConfig struct {
 	// SharedMemorySize defined here will "overwrite" the sharedMemorySize in the recommendedConfig.
 	// +optional
 	SharedMemorySize *resource.Quantity `json:"sharedMemorySize,omitempty"`
-	// ScaleTrigger defines the rules to scale the workloads.
-	// Only one trigger cloud work at a time, mostly used in Playground.
-	// ScaleTrigger defined here will "overwrite" the scaleTrigger in the recommendedConfig.
-	// +optional
-	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }
 
 // TODO: Do not support DRA yet, we can support that once needed.

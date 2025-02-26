@@ -152,8 +152,8 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 		}
 	}
 
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ScaleTrigger != nil {
-		if playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA == nil {
+	if playground.Spec.ElasticConfig != nil && playground.Spec.ElasticConfig.ScaleTrigger != nil {
+		if playground.Spec.ElasticConfig.ScaleTrigger.HPA == nil {
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("backendRuntime.scaleTrigger.hpa"), "hpa couldn't be nil"))
 		}
 	}

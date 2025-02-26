@@ -10,8 +10,3 @@ spec:
       role: main
     - name: opt-125m  # the draft model
       role: draft
-  backendRuntimeConfig:
-    resources:
-      limits:
-        cpu: 8
-        memory: "16Gi"

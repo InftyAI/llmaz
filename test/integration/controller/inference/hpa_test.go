@@ -98,7 +98,7 @@ var _ = ginkgo.Describe("hpa test", func() {
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, hpa); err != nil {
 								return err
 							}
-							if diff := cmp.Diff(playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA.Metrics, hpa.Spec.Metrics); diff != "" {
+							if diff := cmp.Diff(playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics, hpa.Spec.Metrics); diff != "" {
 								return fmt.Errorf("metrics not match: %s", diff)
 							}
 							return nil

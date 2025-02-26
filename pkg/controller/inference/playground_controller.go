@@ -490,10 +490,10 @@ func buildScalingConfiguration(models []*coreapi.OpenModel, playground *inferenc
 	}
 
 	// Prefer the playground config.
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ScaleTrigger != nil {
+	if playground.Spec.ElasticConfig != nil && playground.Spec.ElasticConfig.ScaleTrigger != nil {
 		hpa := newHPA(playground)
-		hpa.Spec.Metrics = playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA.Metrics
-		hpa.Spec.Behavior = playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA.Behavior
+		hpa.Spec.Metrics = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Metrics
+		hpa.Spec.Behavior = playground.Spec.ElasticConfig.ScaleTrigger.HPA.Behavior
 		return hpa
 
 	}

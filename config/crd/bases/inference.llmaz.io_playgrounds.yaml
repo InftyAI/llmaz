@@ -217,6 +217,41 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
+                  sharedMemorySize:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    description: |-
+                      SharedMemorySize represents the size of /dev/shm required in the runtime of
+                      inference workload.
+                      SharedMemorySize defined here will "overwrite" the sharedMemorySize in the recommendedConfig.
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
+                  version:
+                    description: |-
+                      Version represents the backend version if you want a different one
+                      from the default version.
+                    type: string
+                type: object
+              elasticConfig:
+                description: |-
+                  ElasticConfig defines the configuration for elastic usage,
+                  e.g. the max/min replicas.
+                properties:
+                  maxReplicas:
+                    description: |-
+                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
+                      Default to nil means there's no limit for the instance number.
+                    format: int32
+                    type: integer
+                  minReplicas:
+                    default: 1
+                    description: |-
+                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
+                      Default to 1.
+                      MinReplicas couldn't be 0 now, will support serverless in the future.
+                    format: int32
+                    type: integer
                   scaleTrigger:
                     description: |-
                       ScaleTrigger defines the rules to scale the workloads.
@@ -830,41 +865,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  sharedMemorySize:
-                    anyOf:
-                    - type: integer
-                    - type: string
-                    description: |-
-                      SharedMemorySize represents the size of /dev/shm required in the runtime of
-                      inference workload.
-                      SharedMemorySize defined here will "overwrite" the sharedMemorySize in the recommendedConfig.
-                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
-                    x-kubernetes-int-or-string: true
-                  version:
-                    description: |-
-                      Version represents the backend version if you want a different one
-                      from the default version.
-                    type: string
-                type: object
-              elasticConfig:
-                description: |-
-                  ElasticConfig defines the configuration for elastic usage,
-                  e.g. the max/min replicas.
-                properties:
-                  maxReplicas:
-                    description: |-
-                      MaxReplicas indicates the maximum number of inference workloads based on the traffic.
-                      Default to nil means there's no limit for the instance number.
-                    format: int32
-                    type: integer
-                  minReplicas:
-                    default: 1
-                    description: |-
-                      MinReplicas indicates the minimum number of inference workloads based on the traffic.
-                      Default to 1.
-                      MinReplicas couldn't be 0 now, will support serverless in the future.
-                    format: int32
-                    type: integer
                 type: object
               modelClaim:
                 description: |-

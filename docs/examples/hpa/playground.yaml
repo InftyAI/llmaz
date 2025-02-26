@@ -6,14 +6,14 @@ spec:
   replicas: 1
   modelClaim:
     modelName: qwen2-0--5b-gguf
-  elasticConfig:
-    minReplicas: 1
-    maxReplicas: 3
   backendRuntimeConfig:
     backendName: llamacpp
     configName: default
     args:
       - -fa # use flash attention
+  elasticConfig:
+    minReplicas: 1
+    maxReplicas: 3
     scaleTrigger:
       hpa:
         metrics:

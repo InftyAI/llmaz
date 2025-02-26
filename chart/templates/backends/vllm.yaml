@@ -27,6 +27,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
+      sharedMemorySize: 2Gi
       resources:
         requests:
           cpu: 4
@@ -50,20 +51,14 @@ spec:
         - "5"
         - -tp
         - "1"
-    - name: model-parallelism
-      args:
-        - --model
-        - "{{`{{ .ModelPath }}`}}"
-        - --served-model-name
-        - "{{`{{ .ModelName }}`}}"
-        - --host
-        - "0.0.0.0"
-        - --port
-        - "8080"
-        - --tensor-parallel-size
-        - "{{`{{ .TP }}`}}"
-        - --pipeline-parallel-size
-        - "{{`{{ .PP }}`}}"
+      sharedMemorySize: 2Gi
+      resources:
+        requests:
+          cpu: 4
+          memory: 8Gi
+        limits:
+          cpu: 8
+          memory: 16Gi
   startupProbe:
     periodSeconds: 10
     failureThreshold: 30
