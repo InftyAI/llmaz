@@ -253,27 +253,16 @@ func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi
 
 	workload.Replicas = playground.Spec.Replicas
 
-	nodeSize, multiHost := helper.MultiHostInference(models[0], playground)
-	if multiHost {
-		workload.LeaderWorkerTemplate.Size = &nodeSize
-	}
-
-	template, err := buildTemplate(models, playground, backendRuntime, multiHost)
+	template, err := buildTemplate(models, playground, backendRuntime)
 	if err != nil {
 		return lws.LeaderWorkerSetSpec{}, err
 	}
 
-	if multiHost {
-		workload.LeaderWorkerTemplate.LeaderTemplate = &template
-		workload.LeaderWorkerTemplate.WorkerTemplate = buildWorkerTemplate(models, playground, backendRuntime)
-	} else {
-		workload.LeaderWorkerTemplate.WorkerTemplate = template
-	}
-
+	workload.LeaderWorkerTemplate.WorkerTemplate = template
 	return workload, nil
 }
 
-func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime, multiHost bool) (corev1.PodTemplateSpec, error) {
+func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (corev1.PodTemplateSpec, error) {
 	parser := backendruntime.NewBackendRuntimeParser(backendRuntime, models, playground)
 
 	// envs
@@ -327,12 +316,6 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 
 	// commands
 	commands := parser.Commands()
-	if multiHost {
-		commands = parser.LeaderCommands()
-		// Pod can not accept shell commands with args together, merge the args with the commands.
-		commands = util.MergeArgsWithCommands(commands, args)
-		args = nil
-	}
 
 	// probe
 	var livenessProbe, readinessProbe, startupProbe *corev1.Probe
@@ -397,89 +380,6 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	}
 
 	return template, nil
-}
-
-// This is a copy of buildTemplate with some refactors, only used in multi-nodes cases.
-// Worker template has no args, no contain port.
-func buildWorkerTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) corev1.PodTemplateSpec {
-	parser := backendruntime.NewBackendRuntimeParser(backendRuntime, models, playground)
-
-	envs := parser.Envs()
-	if playground.Spec.BackendRuntimeConfig != nil {
-		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
-	}
-
-	r := parser.Resources()
-	if r == nil {
-		r = &inferenceapi.ResourceRequirements{}
-	}
-	resources := corev1.ResourceRequirements{
-		Requests: r.Requests,
-		Limits:   r.Limits,
-	}
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Resources != nil {
-		limits := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Limits, r.Limits)
-		requests := util.MergeResources(playground.Spec.BackendRuntimeConfig.Resources.Requests, r.Requests)
-
-		resources = corev1.ResourceRequirements{
-			Limits:   limits,
-			Requests: requests,
-		}
-
-		// Make sure the limits are always greater than requests.
-		for k, v := range resources.Requests {
-			if k == corev1.ResourceCPU || k == corev1.ResourceMemory {
-				if v.Cmp(limits[k]) == 1 {
-					resources.Limits[k] = requests[k]
-				}
-			}
-		}
-	}
-
-	version := parser.Version()
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
-		version = *playground.Spec.BackendRuntimeConfig.Version
-	}
-
-	template := corev1.PodTemplateSpec{
-		Spec: corev1.PodSpec{
-			// TODO: should we support image pull secret here?
-			// TODO: support readiness/liveness
-			Containers: []corev1.Container{
-				{
-					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
-					Image:     parser.Image(version),
-					Resources: resources,
-					Command:   parser.WorkerCommands(),
-					Env:       envs,
-				},
-			},
-		},
-	}
-
-	sharedMemorySize := parser.SharedMemorySize()
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.SharedMemorySize != nil {
-		sharedMemorySize = playground.Spec.BackendRuntimeConfig.SharedMemorySize
-	}
-	if sharedMemorySize != nil {
-		// construct /dev/shm size
-		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-			Name: "dshm",
-			VolumeSource: corev1.VolumeSource{
-				EmptyDir: &corev1.EmptyDirVolumeSource{
-					Medium:    corev1.StorageMediumMemory,
-					SizeLimit: sharedMemorySize,
-				},
-			},
-		})
-
-		template.Spec.Containers[0].VolumeMounts = append(template.Spec.Containers[0].VolumeMounts, corev1.VolumeMount{
-			Name:      "dshm",
-			MountPath: "/dev/shm",
-		})
-	}
-
-	return template
 }
 
 func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceWithSameNameExists bool) (changed bool) {
@@ -598,9 +498,7 @@ func buildScalingConfiguration(models []*coreapi.OpenModel, playground *inferenc
 
 	}
 
-	_, multiHost := helper.MultiHostInference(models[0], playground)
-	mode := helper.DetectArgFrom(playground, multiHost)
-
+	mode := helper.DetectArgFrom(playground)
 	for _, recommend := range backend.Spec.RecommendedConfigs {
 		if recommend.Name == mode && recommend.ScaleTrigger != nil {
 			hpa := newHPA(playground)

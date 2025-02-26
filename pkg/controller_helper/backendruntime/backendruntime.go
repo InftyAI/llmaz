@@ -36,37 +36,20 @@ type BackendRuntimeParser struct {
 	models              []*coreapi.OpenModel
 	playground          *inferenceapi.Playground
 	recommendConfigName string
-	multiHost           bool
 }
 
 func NewBackendRuntimeParser(backendRuntime *inferenceapi.BackendRuntime, models []*coreapi.OpenModel, playground *inferenceapi.Playground) *BackendRuntimeParser {
-	_, multiHost := helper.MultiHostInference(models[0], playground)
-	name := helper.RecommendedConfigName(playground, multiHost)
+	name := helper.RecommendedConfigName(playground)
 	return &BackendRuntimeParser{
 		backendRuntime,
 		models,
 		playground,
 		name,
-		multiHost,
 	}
 }
 
 func (p *BackendRuntimeParser) Commands() []string {
 	return p.backendRuntime.Spec.Commands
-}
-
-func (p *BackendRuntimeParser) LeaderCommands() []string {
-	if p.backendRuntime.Spec.MultiHostCommands == nil {
-		return nil
-	}
-	return p.backendRuntime.Spec.MultiHostCommands.Leader
-}
-
-func (p *BackendRuntimeParser) WorkerCommands() []string {
-	if p.backendRuntime.Spec.MultiHostCommands == nil {
-		return nil
-	}
-	return p.backendRuntime.Spec.MultiHostCommands.Worker
 }
 
 func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
@@ -80,14 +63,6 @@ func (p *BackendRuntimeParser) Args() ([]string, error) {
 	modelInfo := map[string]string{
 		"ModelPath": source.ModelPath(),
 		"ModelName": source.ModelName(),
-	}
-
-	if p.multiHost {
-		flavors := helper.FirstAssignedFlavor(mainModel, p.playground)
-		if len(flavors) > 0 {
-			modelInfo["PP"] = flavors[0].Params["PP"]
-			modelInfo["TP"] = flavors[0].Params["TP"]
-		}
 	}
 
 	// TODO: This is not that reliable because two models doesn't always means speculative-decoding.

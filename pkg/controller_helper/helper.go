@@ -18,7 +18,6 @@ package helper
 
 import (
 	"context"
-	"strconv"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
@@ -30,27 +29,22 @@ import (
 const (
 	DefaultArg             string = "default"
 	SpeculativeDecodingArg string = "speculative-decoding"
-	ModelParallelismArg    string = "model-parallelism"
 )
 
-func RecommendedConfigName(playground *inferenceapi.Playground, multiNodes bool) string {
+func RecommendedConfigName(playground *inferenceapi.Playground) string {
 	var name string
 	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ConfigName != nil {
 		name = *playground.Spec.BackendRuntimeConfig.ConfigName
 	} else {
 		// Auto detect the args from model roles.
-		name = DetectArgFrom(playground, multiNodes)
+		name = DetectArgFrom(playground)
 	}
 
 	return name
 }
 
 // DetectArgFrom wil auto detect the arg from model roles if not set explicitly.
-func DetectArgFrom(playground *inferenceapi.Playground, isMultiNodesInference bool) string {
-	if isMultiNodesInference {
-		return ModelParallelismArg
-	}
-
+func DetectArgFrom(playground *inferenceapi.Playground) string {
 	if playground.Spec.ModelClaim != nil {
 		return DefaultArg
 	}
@@ -127,21 +121,4 @@ func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Play
 	}
 
 	return nil
-}
-
-// MultiHostInference returns two values, the first one is the PP size,
-// the second one is whether this is a multi-host inference.
-func MultiHostInference(model *coreapi.OpenModel, playground *inferenceapi.Playground) (int32, bool) {
-	flavors := FirstAssignedFlavor(model, playground)
-	// This is not valid for all cases, like SGLang uses TP for model parallelism.
-	// However, this is not a recommend way since TP requires more communication than PP.
-	// It's ok to support PP only at this moment.
-	if len(flavors) > 0 && flavors[0].Params["PP"] != "" {
-		size, err := strconv.Atoi(flavors[0].Params["PP"])
-		if err != nil {
-			return 0, false
-		}
-		return int32(size), true
-	}
-	return 0, false
 }
