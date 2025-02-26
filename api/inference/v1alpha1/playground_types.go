@@ -58,6 +58,11 @@ type ElasticConfig struct {
 	// Default to nil means there's no limit for the instance number.
 	// +optional
 	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+	// ScaleTrigger defines the rules to scale the workloads.
+	// Only one trigger cloud work at a time, mostly used in Playground.
+	// ScaleTrigger defined here will "overwrite" the scaleTrigger in the recommendedConfig.
+	// +optional
+	ScaleTrigger *ScaleTrigger `json:"scaleTrigger,omitempty"`
 }
 
 const (

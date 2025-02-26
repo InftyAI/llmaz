@@ -137,18 +137,24 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
-	if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil {
-		leaderWorkerTemplate.WithLeaderTemplate(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate)
+	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+		leaderWorkerTemplate.WithLeaderTemplate(*service.Spec.WorkloadTemplate.LeaderTemplate)
 	}
-	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate)
+	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.WorkerTemplate)
 
 	// The core logic to inject additional configurations.
 	injectModelProperties(leaderWorkerTemplate, models, service)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
-	spec.WithReplicas(*service.Spec.WorkloadTemplate.Replicas)
-	spec.LeaderWorkerTemplate.WithSize(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size)
+	spec.LeaderWorkerTemplate.WithSize(*service.Spec.WorkloadTemplate.Size)
+	spec.WithReplicas(*service.Spec.Replicas)
+	spec.WithRolloutStrategy(applyconfigurationv1.RolloutStrategy().WithType(service.Spec.RolloutStrategy.Type))
+	if service.Spec.RolloutStrategy.RollingUpdateConfiguration != nil {
+		spec.RolloutStrategy.RollingUpdateConfiguration.WithMaxSurge(service.Spec.RolloutStrategy.RollingUpdateConfiguration.MaxSurge)
+		spec.RolloutStrategy.RollingUpdateConfiguration.WithMaxUnavailable(service.Spec.RolloutStrategy.RollingUpdateConfiguration.MaxUnavailable)
+	}
+	spec.WithStartupPolicy(lws.LeaderReadyStartupPolicy)
 
 	workload.WithSpec(spec)
 	return workload

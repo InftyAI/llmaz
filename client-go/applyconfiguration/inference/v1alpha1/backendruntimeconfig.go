@@ -33,7 +33,6 @@ type BackendRuntimeConfigApplyConfiguration struct {
 	Args             []string                                `json:"args,omitempty"`
 	Resources        *ResourceRequirementsApplyConfiguration `json:"resources,omitempty"`
 	SharedMemorySize *resource.Quantity                      `json:"sharedMemorySize,omitempty"`
-	ScaleTrigger     *ScaleTriggerApplyConfiguration         `json:"scaleTrigger,omitempty"`
 }
 
 // BackendRuntimeConfigApplyConfiguration constructs a declarative configuration of the BackendRuntimeConfig type for use with
@@ -99,13 +98,5 @@ func (b *BackendRuntimeConfigApplyConfiguration) WithResources(value *ResourceRe
 // If called multiple times, the SharedMemorySize field is set to the value of the last call.
 func (b *BackendRuntimeConfigApplyConfiguration) WithSharedMemorySize(value resource.Quantity) *BackendRuntimeConfigApplyConfiguration {
 	b.SharedMemorySize = &value
-	return b
-}
-
-// WithScaleTrigger sets the ScaleTrigger field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ScaleTrigger field is set to the value of the last call.
-func (b *BackendRuntimeConfigApplyConfiguration) WithScaleTrigger(value *ScaleTriggerApplyConfiguration) *BackendRuntimeConfigApplyConfiguration {
-	b.ScaleTrigger = value
 	return b
 }

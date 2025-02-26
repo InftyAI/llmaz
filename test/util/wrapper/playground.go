@@ -166,13 +166,13 @@ func (w *PlaygroundWrapper) ElasticConfig(minReplicas, maxReplicas int32) *Playg
 }
 
 func (w *PlaygroundWrapper) HPA(config *inferenceapi.HPATrigger) *PlaygroundWrapper {
-	if w.Spec.BackendRuntimeConfig == nil {
-		w.Spec.BackendRuntimeConfig = &inferenceapi.BackendRuntimeConfig{}
+	if w.Spec.ElasticConfig == nil {
+		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
 	}
-	if w.Spec.BackendRuntimeConfig.ScaleTrigger == nil {
-		w.Spec.BackendRuntimeConfig.ScaleTrigger = &inferenceapi.ScaleTrigger{}
+	if w.Spec.ElasticConfig.ScaleTrigger == nil {
+		w.Spec.ElasticConfig.ScaleTrigger = &inferenceapi.ScaleTrigger{}
 	}
-	w.Spec.BackendRuntimeConfig.ScaleTrigger.HPA = config
+	w.Spec.ElasticConfig.ScaleTrigger.HPA = config
 	return w
 }
 

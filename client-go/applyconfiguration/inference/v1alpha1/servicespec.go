@@ -26,7 +26,9 @@ import (
 // with apply.
 type ServiceSpecApplyConfiguration struct {
 	ModelClaims      *corev1alpha1.ModelClaimsApplyConfiguration `json:"modelClaims,omitempty"`
-	WorkloadTemplate *v1.LeaderWorkerSetSpec                     `json:"workloadTemplate,omitempty"`
+	Replicas         *int32                                      `json:"replicas,omitempty"`
+	WorkloadTemplate *v1.LeaderWorkerTemplate                    `json:"workloadTemplate,omitempty"`
+	RolloutStrategy  *v1.RolloutStrategy                         `json:"rolloutStrategy,omitempty"`
 }
 
 // ServiceSpecApplyConfiguration constructs a declarative configuration of the ServiceSpec type for use with
@@ -43,10 +45,26 @@ func (b *ServiceSpecApplyConfiguration) WithModelClaims(value *corev1alpha1.Mode
 	return b
 }
 
+// WithReplicas sets the Replicas field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Replicas field is set to the value of the last call.
+func (b *ServiceSpecApplyConfiguration) WithReplicas(value int32) *ServiceSpecApplyConfiguration {
+	b.Replicas = &value
+	return b
+}
+
 // WithWorkloadTemplate sets the WorkloadTemplate field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the WorkloadTemplate field is set to the value of the last call.
-func (b *ServiceSpecApplyConfiguration) WithWorkloadTemplate(value v1.LeaderWorkerSetSpec) *ServiceSpecApplyConfiguration {
+func (b *ServiceSpecApplyConfiguration) WithWorkloadTemplate(value v1.LeaderWorkerTemplate) *ServiceSpecApplyConfiguration {
 	b.WorkloadTemplate = &value
+	return b
+}
+
+// WithRolloutStrategy sets the RolloutStrategy field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the RolloutStrategy field is set to the value of the last call.
+func (b *ServiceSpecApplyConfiguration) WithRolloutStrategy(value v1.RolloutStrategy) *ServiceSpecApplyConfiguration {
+	b.RolloutStrategy = &value
 	return b
 }

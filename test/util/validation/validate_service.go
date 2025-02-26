@@ -43,8 +43,8 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &workload); err != nil {
 			return errors.New("failed to get lws")
 		}
-		if *service.Spec.WorkloadTemplate.Replicas != *workload.Spec.Replicas {
-			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.WorkloadTemplate.Replicas, *workload.Spec.Replicas)
+		if *service.Spec.Replicas != *workload.Spec.Replicas {
+			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.Replicas, *workload.Spec.Replicas)
 		}
 
 		// TODO: multi-host
@@ -60,7 +60,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 
 		for index, model := range models {
 			// Validate injecting modelLoaders
-			if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.LeaderTemplate != nil {
+			if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
 				if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
 					return err
 				}
@@ -148,14 +148,14 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 			}
 		}
 
-		container := service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0]
+		container := service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0]
 		for _, v := range container.VolumeMounts {
 			if v.Name == modelSource.MODEL_VOLUME_NAME && v.MountPath != modelSource.CONTAINER_MODEL_PATH {
 				return fmt.Errorf("unexpected mount path, want %s, got %s", modelSource.CONTAINER_MODEL_PATH, v.MountPath)
 			}
 		}
 
-		for _, v := range service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes {
+		for _, v := range service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Volumes {
 			if v.Name == modelSource.MODEL_VOLUME_NAME {
 				if v.HostPath == nil || v.HostPath.Path != modelSource.HOST_CLUSTER_MODEL_PATH || *v.HostPath.Type != corev1.HostPathDirectoryOrCreate {
 					return errors.New("when using modelHub modelSource, the hostPath shouldn't be nil")
@@ -220,8 +220,8 @@ func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *
 		if err := k8sClient.List(ctx, &pods, podSelector, client.InNamespace(service.Namespace)); err != nil {
 			return err
 		}
-		if len(pods.Items) != int(*service.Spec.WorkloadTemplate.Replicas)*int(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size) {
-			return fmt.Errorf("pods number not right, want: %d, got: %d", int(*service.Spec.WorkloadTemplate.Replicas)*int(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.Size), len(pods.Items))
+		if len(pods.Items) != int(*service.Spec.Replicas)*int(*service.Spec.WorkloadTemplate.Size) {
+			return fmt.Errorf("pods number not right, want: %d, got: %d", int(*service.Spec.Replicas)*int(*service.Spec.WorkloadTemplate.Size), len(pods.Items))
 		}
 		return nil
 	}).Should(gomega.Succeed())

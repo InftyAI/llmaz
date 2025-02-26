@@ -113,7 +113,7 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 		}
 
 		// We only have to detect whether this is speculativeDecoding mode, so set the second argument to false is ok.
-		arg := helper.DetectArgFrom(playground, false)
+		arg := helper.DetectArgFrom(playground)
 		if arg == helper.SpeculativeDecodingArg {
 			if len(playground.Spec.ModelClaims.Models) != 2 {
 				allErrs = append(allErrs, field.Forbidden(specPath.Child("modelClaims", "models"), "only two models are allowed in speculativeDecoding mode"))
@@ -152,8 +152,8 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 		}
 	}
 
-	if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.ScaleTrigger != nil {
-		if playground.Spec.BackendRuntimeConfig.ScaleTrigger.HPA == nil {
+	if playground.Spec.ElasticConfig != nil && playground.Spec.ElasticConfig.ScaleTrigger != nil {
+		if playground.Spec.ElasticConfig.ScaleTrigger.HPA == nil {
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("backendRuntime.scaleTrigger.hpa"), "hpa couldn't be nil"))
 		}
 	}

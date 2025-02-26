@@ -10,9 +10,13 @@ HPA depends on the metric-server for scaling decisions, so we need to install it
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 ```
 
+If probe failed, it may because of enabled TLS, set `--kubelet-insecure-tls=true` to disable the TLS verification.
+
+```cmd
+
 ## How to Use
 
-If your backendRuntime has already configured the `ScaleTriggers`, set the `playground.elasticConfig` like this:
+If your backendRuntime has already configured the `scaleTrigger`, set the `playground.elasticConfig` like this:
 
 ```yaml
 spec:
@@ -21,18 +25,7 @@ spec:
     maxReplicas: 3
 ```
 
-The 0-index trigger will be applied, or you can specify the trigger like this:
-
-```yaml
-spec:
-  elasticConfig:
-    minReplicas: 1
-    maxReplicas: 3
-    scaleTriggerRef:
-      name: <trigger-name>
-```
-
-If you want to change the target values, you can set the scaleTrigger directly in Playground like this:
+Or you can set the `scaleTrigger` directly in Playground like this:
 
 ```yaml
 spec:

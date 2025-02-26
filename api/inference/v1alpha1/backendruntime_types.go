@@ -50,16 +50,6 @@ type ScaleTrigger struct {
 	HPA *HPATrigger `json:"hpa,omitempty"`
 }
 
-// MultiHostCommands represents leader & worker commands for multiple nodes scenarios.
-type MultiHostCommands struct {
-	// Leader commands.
-	// +optional
-	Leader []string `json:"leader,omitempty"`
-	// Worker commands.
-	// +optional
-	Worker []string `json:"worker,omitempty"`
-}
-
 // RecommendedConfig represents the recommended configurations for the backendRuntime,
 // user can choose one of them to apply.
 type RecommendedConfig struct {
@@ -89,10 +79,6 @@ type BackendRuntimeSpec struct {
 	// Commands represents the default commands for the backendRuntime.
 	// +optional
 	Commands []string `json:"commands,omitempty"`
-	// MultiHostCommands represents leader and worker commands for nodes with
-	// different roles.
-	// +optional
-	MultiHostCommands *MultiHostCommands `json:"multiHostCommands,omitempty"`
 	// Image represents the default image registry of the backendRuntime.
 	// It will work together with version to make up a real image.
 	Image string `json:"image"`
