@@ -48,9 +48,8 @@ spec:
                 properties:
                   args:
                     description: |-
-                      Args represents all the arguments for the command.
-                      Argument around with {{ .CONFIG }} is a configuration waiting for render.
-                      Args defined here will "append" the args in the recommendedConfig.
+                      Args defined here will "append" the args defined in the recommendedConfig,
+                      either explicitly configured in configName or inferred in the runtime.
                     items:
                       type: string
                     type: array
@@ -63,7 +62,7 @@ spec:
                     description: |-
                       ConfigName represents the recommended configuration name for the backend,
                       It will be inferred from the models in the runtime if not specified, e.g. default,
-                      speculative-decoding or model-parallelism.
+                      speculative-decoding.
                     type: string
                   envs:
                     description: Envs represents the environments set to the container.

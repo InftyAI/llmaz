@@ -417,8 +417,8 @@ var _ = ginkgo.Describe("playground controller test", func() {
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &service); err != nil {
 								return err
 							}
-							if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits.Cpu().CmpInt64(10) != 0 {
-								return fmt.Errorf("unexpected Cpu limit value, want %d, got %d", 10, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits.Cpu().Size())
+							if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits.Cpu().CmpInt64(10) != 0 {
+								return fmt.Errorf("unexpected Cpu limit value, want %d, got %d", 10, service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits.Cpu().Size())
 							}
 							return nil
 						}).Should(gomega.Succeed())

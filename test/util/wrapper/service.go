@@ -65,11 +65,10 @@ func (w *ServiceWrapper) ModelClaims(modelNames []string, roles []string, flavor
 }
 
 func (w *ServiceWrapper) WorkerTemplate() *ServiceWrapper {
-	w.Spec.WorkloadTemplate.RolloutStrategy = lws.RolloutStrategy{
+	w.Spec.RolloutStrategy = lws.RolloutStrategy{
 		Type: lws.RollingUpdateStrategyType,
 	}
-	w.Spec.WorkloadTemplate.StartupPolicy = lws.LeaderCreatedStartupPolicy
-	w.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate = corev1.PodTemplateSpec{
+	w.Spec.WorkloadTemplate.WorkerTemplate = corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
@@ -83,11 +82,11 @@ func (w *ServiceWrapper) WorkerTemplate() *ServiceWrapper {
 }
 
 func (w *ServiceWrapper) ContainerName(name string) *ServiceWrapper {
-	w.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name = name
+	w.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Name = name
 	return w
 }
 
 func (w *ServiceWrapper) InitContainerName(name string) *ServiceWrapper {
-	w.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers[0].Name = name
+	w.Spec.WorkloadTemplate.WorkerTemplate.Spec.InitContainers[0].Name = name
 	return w
 }

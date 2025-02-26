@@ -35,12 +35,16 @@ const (
 type ServiceSpec struct {
 	// ModelClaims represents multiple claims for different models.
 	ModelClaims coreapi.ModelClaims `json:"modelClaims,omitempty"`
-	// WorkloadTemplate defines the underlying workload layout and configuration.
-	// Note: the LWS spec might be twisted with various LWS instances to support
-	// accelerator fungibility or other cutting-edge researches.
-	// LWS supports both single-host and multi-host scenarios, for single host
-	// cases, only need to care about replicas, rolloutStrategy and workerTemplate.
-	WorkloadTemplate lws.LeaderWorkerSetSpec `json:"workloadTemplate"`
+	// Replicas represents the replica number of inference workloads.
+	// +kubebuilder:default=1
+	// +optional
+	Replicas *int32 `json:"replicas,omitempty"`
+	// WorkloadTemplate defines the template for leader/worker pods
+	WorkloadTemplate lws.LeaderWorkerTemplate `json:"workloadTemplate"`
+	// RolloutStrategy defines the strategy that will be applied to update replicas
+	// when a revision is made to the leaderWorkerTemplate.
+	// +optional
+	RolloutStrategy lws.RolloutStrategy `json:"rolloutStrategy,omitempty"`
 }
 
 const (

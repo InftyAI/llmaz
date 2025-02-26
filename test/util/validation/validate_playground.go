@@ -80,8 +80,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			return err
 		}
 
-		if *playground.Spec.Replicas != *service.Spec.WorkloadTemplate.Replicas {
-			return fmt.Errorf("expected replicas: %d, got %d", *playground.Spec.Replicas, *service.Spec.WorkloadTemplate.Replicas)
+		if *playground.Spec.Replicas != *service.Spec.Replicas {
+			return fmt.Errorf("expected replicas: %d, got %d", *playground.Spec.Replicas, *service.Spec.Replicas)
 		}
 
 		backendRuntimeName := inferenceapi.DefaultBackend
@@ -95,8 +95,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 
 		parser := backendruntime.NewBackendRuntimeParser(&backendRuntime, models, playground)
 
-		if service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
-			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Name)
+		if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Name != modelSource.MODEL_RUNNER_CONTAINER_NAME {
+			return fmt.Errorf("container name not right, want %s, got %s", modelSource.MODEL_RUNNER_CONTAINER_NAME, service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Name)
 		}
 
 		// compare fields both backendRuntime and playground can configure.
@@ -106,8 +106,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			sharedMemorySize = playground.Spec.BackendRuntimeConfig.SharedMemorySize
 		}
 		if sharedMemorySize != nil {
-			if *sharedMemorySize != *service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
-				return fmt.Errorf("expected SharedMemorySize %s, got %s", sharedMemorySize.String(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
+			if *sharedMemorySize != *service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit {
+				return fmt.Errorf("expected SharedMemorySize %s, got %s", sharedMemorySize.String(), service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Volumes[0].EmptyDir.SizeLimit.String())
 			}
 		}
 
@@ -119,13 +119,13 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			resources = playground.Spec.BackendRuntimeConfig.Resources
 		}
 		for k, v := range resources.Limits {
-			if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
-				return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
+			if !service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k].Equal(v) {
+				return fmt.Errorf("unexpected limits for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Resources.Limits[k])
 			}
 		}
 		for k, v := range resources.Requests {
-			if !service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
-				return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
+			if !service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k].Equal(v) {
+				return fmt.Errorf("unexpected requests for %s, want %v, got %v", k, v, service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Resources.Requests[k])
 			}
 		}
 
@@ -133,15 +133,15 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Version != nil {
 			version = *playground.Spec.BackendRuntimeConfig.Version
 		}
-		if parser.Image(version) != service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image {
-			return fmt.Errorf("expected container image %s, got %s", parser.Image(version), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Image)
+		if parser.Image(version) != service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Image {
+			return fmt.Errorf("expected container image %s, got %s", parser.Image(version), service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Image)
 		}
 
 		envs := parser.Envs()
 		if playground.Spec.BackendRuntimeConfig != nil && playground.Spec.BackendRuntimeConfig.Envs != nil {
 			envs = playground.Spec.BackendRuntimeConfig.Envs
 		}
-		if diff := cmp.Diff(envs, service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Env); diff != "" {
+		if diff := cmp.Diff(envs, service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Env); diff != "" {
 			return fmt.Errorf("unexpected envs")
 		}
 
@@ -154,30 +154,30 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 		}
 
 		for _, arg := range args {
-			if !slices.Contains(service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
+			if !slices.Contains(service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Args, arg) {
 				return fmt.Errorf("didn't contain arg: %s", arg)
 			}
 		}
 
 		// compare commands
-		if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+		if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
 			return errors.New("command not right")
 		}
 
 		// compare fields only can be configured in backend.
 
 		if backendRuntime.Spec.StartupProbe != nil {
-			if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].StartupProbe, *backendRuntime.Spec.StartupProbe); diff != "" {
+			if diff := cmp.Diff(*service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].StartupProbe, *backendRuntime.Spec.StartupProbe); diff != "" {
 				return fmt.Errorf("unexpected startupProbe")
 			}
 		}
 		if backendRuntime.Spec.LivenessProbe != nil {
-			if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].LivenessProbe, *backendRuntime.Spec.LivenessProbe); diff != "" {
+			if diff := cmp.Diff(*service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].LivenessProbe, *backendRuntime.Spec.LivenessProbe); diff != "" {
 				return fmt.Errorf("unexpected livenessProbe")
 			}
 		}
 		if backendRuntime.Spec.ReadinessProbe != nil {
-			if diff := cmp.Diff(*service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers[0].ReadinessProbe, *backendRuntime.Spec.ReadinessProbe); diff != "" {
+			if diff := cmp.Diff(*service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].ReadinessProbe, *backendRuntime.Spec.ReadinessProbe); diff != "" {
 				return fmt.Errorf("unexpected readinessProbe")
 			}
 		}

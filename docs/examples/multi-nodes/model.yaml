@@ -12,14 +12,3 @@ spec:
       - name: a100-80gb
         limits:
           nvidia.com/gpu: 8 # single node request
-        params:
-          TP: "8" # 8 GPUs per node, equal to nvidia.com/gpu
-          PP: "2" # 2 nodes
-  # - name: h100
-  #   limits:
-  #     nvidia.com/gpu: 8 # single node request
-  #   params:
-  #     TP: "8"
-  #     PP: "2"
-  #   nodeSelector:
-  #     gpu.h100: true

@@ -130,7 +130,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
-	scalingConfiguration := buildScalingConfiguration(models, playground, backendRuntime)
+	scalingConfiguration := buildScalingConfiguration(playground, backendRuntime)
 	if scalingConfiguration != nil {
 		if err := setControllerReferenceForScalingConfiguration(playground, scalingConfiguration, r.Scheme); err != nil {
 			logger.Error(err, "failed to set OwnerReference for scaling workload", "workload", fmt.Sprintf("%s/%s", playground.Namespace, playground.Name), "kind", scalingConfiguration.Kind)
@@ -232,6 +232,8 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	}
 
 	spec.WithWorkloadTemplate(template)
+	spec.WithReplicas(*playground.Spec.Replicas)
+	spec.WithRolloutStrategy(lws.RolloutStrategy{Type: lws.RollingUpdateStrategyType})
 	serviceApplyConfiguration.WithSpec(spec)
 
 	return serviceApplyConfiguration, nil
@@ -243,22 +245,16 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 // to cover both single-host and multi-host cases. There're some shortages for lws like can not force rolling
 // update when one replica failed, we'll fix this in the kubernetes upstream.
 // Model flavors will not be considered but in inferenceService controller to support accelerator fungibility.
-func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (lws.LeaderWorkerSetSpec, error) {
-	workload := lws.LeaderWorkerSetSpec{
-		StartupPolicy: lws.LeaderReadyStartupPolicy,
-		RolloutStrategy: lws.RolloutStrategy{
-			Type: lws.RollingUpdateStrategyType,
-		},
-	}
-
-	workload.Replicas = playground.Spec.Replicas
+func buildWorkloadTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backendRuntime *inferenceapi.BackendRuntime) (lws.LeaderWorkerTemplate, error) {
+	// workload size is 1 for now until we support multi-host in Playground.
+	workload := lws.LeaderWorkerTemplate{}
 
 	template, err := buildTemplate(models, playground, backendRuntime)
 	if err != nil {
-		return lws.LeaderWorkerSetSpec{}, err
+		return lws.LeaderWorkerTemplate{}, err
 	}
 
-	workload.LeaderWorkerTemplate.WorkerTemplate = template
+	workload.WorkerTemplate = template
 	return workload, nil
 }
 
@@ -484,7 +480,7 @@ func setControllerReferenceForService(owner metav1.Object, saf *inferenceclientg
 }
 
 // buildScalingConfiguration supports HPA only now.
-func buildScalingConfiguration(models []*coreapi.OpenModel, playground *inferenceapi.Playground, backend *inferenceapi.BackendRuntime) *autoscalingv2.HorizontalPodAutoscaler {
+func buildScalingConfiguration(playground *inferenceapi.Playground, backend *inferenceapi.BackendRuntime) *autoscalingv2.HorizontalPodAutoscaler {
 	if playground.Spec.ElasticConfig == nil {
 		return nil
 	}

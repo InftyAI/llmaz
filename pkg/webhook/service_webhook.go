@@ -64,14 +64,14 @@ func (w *ServiceWebhook) ValidateCreate(ctx context.Context, obj runtime.Object)
 	}
 
 	runnerContainerExists := false
-	for _, container := range service.Spec.WorkloadTemplate.LeaderWorkerTemplate.WorkerTemplate.Spec.Containers {
+	for _, container := range service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers {
 		if container.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			runnerContainerExists = true
 			break
 		}
 	}
 	if !runnerContainerExists {
-		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec.workloadTemplate.leaderWorkerTemplate.workerTemplate.spec.containers"), "model-runner container doesn't exist"))
+		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec.workloadTemplate.workerTemplate.spec.containers"), "model-runner container doesn't exist"))
 	}
 
 	return nil, allErrs.ToAggregate()

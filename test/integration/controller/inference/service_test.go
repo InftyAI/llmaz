@@ -107,7 +107,7 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 							if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, updateService); err != nil {
 								return err
 							}
-							updateService.Spec.WorkloadTemplate.Replicas = ptr.To[int32](3)
+							updateService.Spec.Replicas = ptr.To[int32](3)
 							if err := k8sClient.Update(ctx, updateService); err != nil {
 								return err
 							}
@@ -117,7 +117,7 @@ var _ = ginkgo.Describe("inferenceService controller test", func() {
 						// To make sure playground updated successfully.
 						newService := inferenceapi.Service{}
 						gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &newService)).To(gomega.Succeed())
-						gomega.Expect(*newService.Spec.WorkloadTemplate.Replicas).To(gomega.Equal(int32(3)))
+						gomega.Expect(*newService.Spec.Replicas).To(gomega.Equal(int32(3)))
 					},
 					checkFunc: func(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 						validation.ValidateService(ctx, k8sClient, service)
