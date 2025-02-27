@@ -149,10 +149,15 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
 	spec.LeaderWorkerTemplate.WithSize(*service.Spec.WorkloadTemplate.Size)
 	spec.WithReplicas(*service.Spec.Replicas)
-	spec.WithRolloutStrategy(applyconfigurationv1.RolloutStrategy().WithType(service.Spec.RolloutStrategy.Type))
-	if service.Spec.RolloutStrategy.RollingUpdateConfiguration != nil {
-		spec.RolloutStrategy.RollingUpdateConfiguration.WithMaxSurge(service.Spec.RolloutStrategy.RollingUpdateConfiguration.MaxSurge)
-		spec.RolloutStrategy.RollingUpdateConfiguration.WithMaxUnavailable(service.Spec.RolloutStrategy.RollingUpdateConfiguration.MaxUnavailable)
+	if service.Spec.RolloutStrategy != nil {
+		spec.WithRolloutStrategy(applyconfigurationv1.RolloutStrategy().WithType(service.Spec.RolloutStrategy.Type))
+		if service.Spec.RolloutStrategy.RollingUpdateConfiguration != nil {
+			spec.RolloutStrategy.WithRollingUpdateConfiguration(
+				applyconfigurationv1.RollingUpdateConfiguration().
+					WithMaxSurge(service.Spec.RolloutStrategy.RollingUpdateConfiguration.MaxSurge).
+					WithMaxUnavailable(service.Spec.RolloutStrategy.RollingUpdateConfiguration.MaxUnavailable),
+			)
+		}
 	}
 	spec.WithStartupPolicy(lws.LeaderReadyStartupPolicy)
 
