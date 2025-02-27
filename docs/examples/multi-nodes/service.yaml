@@ -3,10 +3,9 @@ kind: Service
 metadata:
   name: llama3-405b-instruct
 spec:
-  modelClaim:
-    modelName: llama3-405b-instruct
-    inferenceFlavors:
-      - a100-80gb # actually no need to specify this since we have only one flavor
+  modelClaims:
+    models:
+      - name: llama3-405b-instruct
   replicas: 2
   workloadTemplate:
     size: 2
@@ -17,7 +16,7 @@ spec:
           role: leader
       spec:
         containers:
-          - name: sglang-leader
+          - name: model-runner
             image: lmsysorg/sglang:latest
             env:
               - name: HUGGING_FACE_HUB_TOKEN
@@ -31,7 +30,7 @@ spec:
               - -m
               - sglang.launch_server
               - --model-path
-              - meta-llama/Meta-Llama-3.1-8B-Instruct
+              - /workspace/models/models--meta-llama--Meta-Llama-3.1-8B-Instruct
               - --tp
               - "2" # Size of Tensor Parallelism
               - --dist-init-addr
@@ -65,7 +64,7 @@ spec:
     workerTemplate:
       spec:
         containers:
-          - name: sglang-worker
+          - name: model-runner
             image: lmsysorg/sglang:latest
             env:
             - name: HUGGING_FACE_HUB_TOKEN
@@ -79,7 +78,7 @@ spec:
               - -m
               - sglang.launch_server
               - --model-path
-              - meta-llama/Meta-Llama-3.1-8B-Instruct
+              - /workspace/models/models--meta-llama--Meta-Llama-3.1-8B-Instruct
               - --tp
               - "2" # Size of Tensor Parallelism
               - --dist-init-addr

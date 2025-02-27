@@ -7,8 +7,3 @@ spec:
   source:
     modelHub:
       modelID: meta-llama/Llama-3.1-405B
-  inferenceConfig:
-    flavors:
-      - name: a100-80gb
-        limits:
-          nvidia.com/gpu: 8 # single node request
