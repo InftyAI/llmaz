@@ -19,6 +19,8 @@ package wrapper
 import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
@@ -65,9 +67,6 @@ func (w *ServiceWrapper) ModelClaims(modelNames []string, roles []string, flavor
 }
 
 func (w *ServiceWrapper) WorkerTemplate() *ServiceWrapper {
-	w.Spec.RolloutStrategy = lws.RolloutStrategy{
-		Type: lws.RollingUpdateStrategyType,
-	}
 	w.Spec.WorkloadTemplate.WorkerTemplate = corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
@@ -88,5 +87,32 @@ func (w *ServiceWrapper) ContainerName(name string) *ServiceWrapper {
 
 func (w *ServiceWrapper) InitContainerName(name string) *ServiceWrapper {
 	w.Spec.WorkloadTemplate.WorkerTemplate.Spec.InitContainers[0].Name = name
+	return w
+}
+
+func (w *ServiceWrapper) RolloutStrategy(typ string, maxUnavailable int, maxSurge int) *ServiceWrapper {
+	if w.Spec.RolloutStrategy == nil {
+		w.Spec.RolloutStrategy = &lws.RolloutStrategy{}
+	}
+	w.Spec.RolloutStrategy.Type = lws.RolloutStrategyType(typ)
+	w.Spec.RolloutStrategy.RollingUpdateConfiguration = &lws.RollingUpdateConfiguration{
+		MaxUnavailable: intstr.FromInt(maxUnavailable),
+		MaxSurge:       intstr.FromInt(maxSurge),
+	}
+	return w
+}
+
+func (w *ServiceWrapper) Size(size int32) *ServiceWrapper {
+	w.Spec.WorkloadTemplate.Size = ptr.To[int32](size)
+	return w
+}
+
+func (w *ServiceWrapper) Replicas(replicas int32) *ServiceWrapper {
+	w.Spec.Replicas = ptr.To[int32](replicas)
+	return w
+}
+
+func (w *ServiceWrapper) RestartPolicy(policy string) *ServiceWrapper {
+	w.Spec.WorkloadTemplate.RestartPolicy = lws.RestartPolicyType(policy)
 	return w
 }

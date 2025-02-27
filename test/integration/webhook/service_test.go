@@ -17,10 +17,12 @@ limitations under the License.
 package webhook
 
 import (
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
@@ -43,6 +45,32 @@ var _ = ginkgo.Describe("service default and validation", func() {
 	ginkgo.AfterEach(func() {
 		gomega.Expect(k8sClient.Delete(ctx, ns)).To(gomega.Succeed())
 	})
+
+	type testDefaultingCase struct {
+		service     func() *inferenceapi.Service
+		wantService func() *inferenceapi.Service
+	}
+	ginkgo.DescribeTable("Defaulting test",
+		func(tc *testDefaultingCase) {
+			svc := tc.service()
+			gomega.Expect(k8sClient.Create(ctx, svc)).To(gomega.Succeed())
+			gomega.Expect(svc).To(gomega.BeComparableTo(tc.wantService(),
+				cmpopts.IgnoreTypes(inferenceapi.ServiceStatus{}),
+				cmpopts.IgnoreFields(metav1.ObjectMeta{}, "UID", "ResourceVersion", "Generation", "CreationTimestamp", "ManagedFields")))
+		},
+		ginkgo.Entry("apply service rollingUpdate strategy", &testDefaultingCase{
+			service: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).WorkerTemplate().Obj()
+			},
+			wantService: func() *inferenceapi.Service {
+				return wrapper.MakeService("service-llama3-8b", ns.Name).
+					RolloutStrategy(string(lws.RollingUpdateStrategyType), 1, 0).
+					RestartPolicy("RecreateGroupOnPodRestart").
+					Replicas(1).Size(1).
+					WorkerTemplate().Obj()
+			},
+		}),
+	)
 
 	type testValidatingCase struct {
 		service func() *inferenceapi.Service

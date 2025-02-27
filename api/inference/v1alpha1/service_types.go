@@ -43,8 +43,9 @@ type ServiceSpec struct {
 	WorkloadTemplate lws.LeaderWorkerTemplate `json:"workloadTemplate"`
 	// RolloutStrategy defines the strategy that will be applied to update replicas
 	// when a revision is made to the leaderWorkerTemplate.
+	// +kubebuilder:default:={type: "RollingUpdate", rollingUpdateConfiguration: {"maxUnavailable": 1, "maxSurge": 0}}
 	// +optional
-	RolloutStrategy lws.RolloutStrategy `json:"rolloutStrategy,omitempty"`
+	RolloutStrategy *lws.RolloutStrategy `json:"rolloutStrategy,omitempty"`
 }
 
 const (
