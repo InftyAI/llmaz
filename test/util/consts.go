@@ -23,4 +23,6 @@ const (
 	Interval           = time.Millisecond * 250
 	E2ETimeout         = 5 * time.Minute
 	E2EInterval        = 1 * time.Second
+
+	VllmImageVersion = "v0.7.3"
 )

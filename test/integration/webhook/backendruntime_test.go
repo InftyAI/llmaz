@@ -88,7 +88,7 @@ var _ = ginkgo.Describe("BackendRuntime default and validation", func() {
 		ginkgo.Entry("BackendRuntime creation with no resources", &testValidatingCase{
 			creationFunc: func() *inferenceapi.BackendRuntime {
 				return wrapper.MakeBackendRuntime("vllm").
-					Image("vllm/vllm-openai").Version("v0.6.0").
+					Image("vllm/vllm-openai").Version(util.VllmImageVersion).
 					Command([]string{"python3", "-m", "vllm.entrypoints.openai.api_server"}).
 					Arg("default", []string{"--model", "{{.ModelPath}}", "--served-model-name", "{{.ModelName}}", "--host", "0.0.0.0", "--port", "8080"}).
 					Obj()
