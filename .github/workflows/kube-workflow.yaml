@@ -1,5 +1,8 @@
 name: Event Workflow
 
+env:
+  GH_DEBUG: api
+
 on:
   issues:
     types:
