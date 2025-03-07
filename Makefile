@@ -68,6 +68,7 @@ GIT_TAG ?= $(shell git describe --tags --dirty --always)
 IMG ?= $(IMAGE_REPO):$(GIT_TAG)
 BUILDER_IMAGE ?= golang:$(GO_VERSION)
 KIND_CLUSTER_NAME ?= kind
+CGO_ENABLED ?= 0
 
 LOADER_IMAGE_TAG ?= $(GIT_TAG)
 LOADER_IMAGE_REPO = inftyai/model-loader
