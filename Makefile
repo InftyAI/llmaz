@@ -1,8 +1,8 @@
 include Makefile-deps.mk
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.28.3
-ENVTEST_LWS_VERSION = v0.4.0
+ENVTEST_K8S_VERSION = 1.32.0
+ENVTEST_LWS_VERSION = v0.5.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -46,7 +46,8 @@ PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 ARTIFACTS ?= $(PROJECT_DIR)/bin
 GINKGO_VERSION ?= $(shell go list -m -f '{{.Version}}' github.com/onsi/ginkgo/v2)
 GO_VERSION := $(shell awk '/^go /{print $$2}' go.mod|head -n1)
-E2E_KIND_VERSION ?= kindest/node:v1.30.0
+E2E_KIND_NODE_VERSION ?= kindest/node:v1.32.2
+E2E_KIND_VERSION ?= v0.27.0
 USE_EXISTING_CLUSTER ?= false
 
 GINKGO = $(shell pwd)/bin/ginkgo
@@ -129,7 +130,7 @@ test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
 .PHONY: test-e2e
 # FIXME: we should install lws CRD.
 test-e2e: kustomize manifests fmt vet envtest ginkgo kind-image-build
-	E2E_KIND_VERSION=$(E2E_KIND_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) KUSTOMIZE=$(KUSTOMIZE) GINKGO=$(GINKGO) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) ENVTEST_LWS_VERSION=$(ENVTEST_LWS_VERSION) ./hack/e2e-test.sh
+	E2E_KIND_NODE_VERSION=$(E2E_KIND_NODE_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) KUSTOMIZE=$(KUSTOMIZE) GINKGO=$(GINKGO) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) ENVTEST_LWS_VERSION=$(ENVTEST_LWS_VERSION) ./hack/e2e-test.sh
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
 GOLANGCI_LINT_VERSION ?= v1.63.4
@@ -207,7 +208,7 @@ loader-image-push: loader-image-build
 KIND = $(shell pwd)/bin/kind
 .PHONY: kind
 kind:
-	@GOBIN=$(PROJECT_DIR)/bin GO111MODULE=on go install sigs.k8s.io/kind@v0.23.0
+	@GOBIN=$(PROJECT_DIR)/bin GO111MODULE=on go install sigs.k8s.io/kind@${E2E_KIND_VERSION}
 
 .PHONY: kind-image-build
 kind-image-build: PLATFORMS=linux/amd64
