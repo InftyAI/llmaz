@@ -29,7 +29,7 @@ function cleanup {
 function startup {
     if [ $USE_EXISTING_CLUSTER == 'false' ]
     then
-        $KIND create cluster --name $KIND_CLUSTER_NAME --image $E2E_KIND_VERSION --config ./hack/kind-config.yaml
+        $KIND create cluster --name $KIND_CLUSTER_NAME --image $E2E_KIND_NODE_VERSION --config ./hack/kind-config.yaml
     fi
 }
 function kind_load {
