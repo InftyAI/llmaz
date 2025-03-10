@@ -120,6 +120,9 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 		},
 	}
 
+	// We have exactly one container in the template.Spec.Containers.
+	spreadEnvToInitContainer(template.Spec.Containers[0].Env, initContainer)
+
 	switch p.protocol {
 	case OSS:
 		initContainer.Env = append(

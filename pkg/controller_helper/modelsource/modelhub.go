@@ -75,6 +75,9 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 		},
 	}
 
+	// We have exactly one container in the template.Spec.Containers.
+	spreadEnvToInitContainer(template.Spec.Containers[0].Env, initContainer)
+
 	// This is related to the model loader logics which will read the environment when loading models weights.
 	initContainer.Env = append(
 		initContainer.Env,
@@ -156,4 +159,8 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 			EmptyDir: &corev1.EmptyDirVolumeSource{},
 		},
 	})
+}
+
+func spreadEnvToInitContainer(containerEnv []corev1.EnvVar, initContainer *corev1.Container) {
+	initContainer.Env = append(initContainer.Env, containerEnv...)
 }

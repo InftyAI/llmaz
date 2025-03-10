@@ -19,6 +19,9 @@ package modelSource
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
+
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/wrapper"
@@ -66,6 +69,63 @@ func Test_ModelSourceProvider(t *testing.T) {
 			if tc.wantModelPath != provider.ModelPath() {
 				t.Fatalf("unexpected model path, want %s, got %s", tc.wantModelPath, provider.ModelPath())
 			}
+		})
+	}
+}
+
+func TestEnvInjectModelLoader(t *testing.T) {
+	tests := []struct {
+		name     string
+		provider ModelSourceProvider
+		template *corev1.PodTemplateSpec
+	}{
+		{
+			name: "Spread container env to initContiner using modelhub",
+			provider: &ModelHubProvider{
+				modelName: "test-model",
+			},
+			template: &corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "model-runner",
+							Image: "vllm:test",
+							Env: []corev1.EnvVar{
+								{Name: "http_proxy", Value: "1.1.1.1:1234"},
+								{Name: "https_proxy", Value: "1.1.1.1:1234"},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "Spread container env to initContiner using objstores",
+			provider: &URIProvider{
+				modelName: "test-model",
+			},
+			template: &corev1.PodTemplateSpec{
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "model-runner",
+							Image: "vllm:test",
+							Env: []corev1.EnvVar{
+								{Name: "http_proxy", Value: "1.1.1.1:1234"},
+								{Name: "https_proxy", Value: "1.1.1.1:1234"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.provider.InjectModelLoader(tt.template, 0)
+			initContainer := tt.template.Spec.InitContainers[0]
+			assert.Subset(t, initContainer.Env, tt.template.Spec.Containers[0].Env)
 		})
 	}
 }
