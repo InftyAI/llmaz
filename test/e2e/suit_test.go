@@ -30,6 +30,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
@@ -49,6 +50,7 @@ const (
 
 var cfg *rest.Config
 var k8sClient client.Client
+var clientgoClient kubernetes.Interface
 var ctx context.Context
 var cancel context.CancelFunc
 
@@ -84,6 +86,10 @@ var _ = BeforeSuite(func() {
 	k8sClient, err = client.New(cfg, client.Options{Scheme: scheme.Scheme})
 	Expect(err).NotTo(HaveOccurred())
 	Expect(k8sClient).NotTo(BeNil())
+
+	clientgoClient, err := kubernetes.NewForConfig(cfg)
+	Expect(err).NotTo(HaveOccurred())
+	Expect(clientgoClient).NotTo(BeNil())
 
 	readyForTesting(k8sClient)
 	Expect(os.Setenv("TEST_TYPE", "E2E")).Should(Succeed())
