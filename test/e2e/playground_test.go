@@ -17,12 +17,19 @@ limitations under the License.
 package e2e
 
 import (
+	"bytes"
+	"io"
+	"strings"
+
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
+
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	testing "sigs.k8s.io/lws/test/testutils"
 
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
@@ -111,6 +118,66 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
+	})
+	ginkgo.It("Deploy a huggingface model with customized backendRuntime, and preStop is worked", func() {
+		backendRuntime := wrapper.MakeBackendRuntime("llmaz-llamacpp").
+			Image("ghcr.io/ggerganov/llama.cpp").Version("server").
+			Command([]string{"./llama-server"}).
+			Lifecycle(&corev1.Lifecycle{
+				PreStop: &corev1.LifecycleHandler{
+					Exec: &corev1.ExecAction{
+						Command: []string{"/bin/sh", "-c", "echo 'preStop hook executed' >> /proc/1/fd/1"},
+					},
+				},
+			}).
+			Arg("default", []string{"-m", "{{.ModelPath}}", "--host", "0.0.0.0", "--port", "8080"}).
+			Request("default", "cpu", "2").Request("default", "memory", "4Gi").Limit("default", "cpu", "4").Limit("default", "memory", "4Gi").Obj()
+		gomega.Expect(k8sClient.Create(ctx, backendRuntime)).To(gomega.Succeed())
+
+		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		playground := wrapper.MakePlayground("qwen2-0-5b-gguf", ns.Name).ModelClaim("qwen2-0-5b-gguf").BackendRuntime("llmaz-llamacpp").Replicas(1).Obj()
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateService(ctx, k8sClient, service)
+		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		validation.ValidateServicePods(ctx, k8sClient, service)
+
+		gomega.Expect(k8sClient.Delete(ctx, playground)).To(gomega.Succeed())
+		podList := &corev1.PodList{}
+		listOps := &client.ListOptions{Namespace: playground.Namespace}
+		gomega.Eventually(func() bool {
+			err := k8sClient.List(ctx, podList, listOps)
+			if err != nil {
+				return false
+			}
+			for _, pod := range podList.Items {
+				req := clientgoClient.CoreV1().Pods(playground.Namespace).GetLogs(pod.Name, &corev1.PodLogOptions{})
+				podLogs, err := req.Stream(ctx)
+				if err != nil {
+					return false
+				}
+				defer podLogs.Close()
+
+				buf := new(bytes.Buffer)
+				_, err = io.Copy(buf, podLogs)
+				if err != nil {
+					return false
+				}
+				if strings.Contains(buf.String(), "preStop hook executed") {
+					return true
+				}
+			}
+			return false
+		}, timeout, interval).Should(gomega.BeTrue())
 	})
 	ginkgo.It("Deploy a huggingface model with llama.cpp, HPA enabled", func() {
 		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()

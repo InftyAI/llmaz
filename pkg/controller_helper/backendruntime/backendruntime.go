@@ -56,6 +56,10 @@ func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {
 	return p.backendRuntime.Spec.Envs
 }
 
+func (p *BackendRuntimeParser) Lifecycle() *corev1.Lifecycle {
+	return p.backendRuntime.Spec.Lifecycle
+}
+
 func (p *BackendRuntimeParser) Args() ([]string, error) {
 	mainModel := p.models[0]
 
