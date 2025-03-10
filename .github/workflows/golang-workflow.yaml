@@ -8,4 +8,4 @@ on:
 
 jobs:
   golang-ci:
-    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-golang-ci.yaml@v0.1.5
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-golang-ci.yaml@v0.1.6
