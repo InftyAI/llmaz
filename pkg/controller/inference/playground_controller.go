@@ -313,6 +313,9 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	// commands
 	commands := parser.Commands()
 
+	// lifecycle
+	lifecycle := parser.Lifecycle()
+
 	// probe
 	var livenessProbe, readinessProbe, startupProbe *corev1.Probe
 	if backendRuntime.Spec.StartupProbe != nil {
@@ -337,6 +340,7 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 					Command:   commands,
 					Args:      args,
 					Env:       envs,
+					Lifecycle: lifecycle,
 					Ports: []corev1.ContainerPort{
 						{
 							Name:          "http",

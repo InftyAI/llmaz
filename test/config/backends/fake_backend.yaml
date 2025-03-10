@@ -13,6 +13,19 @@ spec:
     - echo "hello"
   image: busybox
   version: latest
+  lifecycle:
+    postStart:
+      exec:
+        command:
+          - /bin/sh
+          - -c
+          - echo "Container started."
+    preStop:
+      exec:
+        command:
+          - /bin/sh
+          - -c
+          - echo "Container stopped."
   recommendedConfigs:
     - name: default
       args:

@@ -62,6 +62,11 @@ func (w *BackendRuntimeWrapper) Command(commands []string) *BackendRuntimeWrappe
 	return w
 }
 
+func (w *BackendRuntimeWrapper) Lifecycle(lifecycle *corev1.Lifecycle) *BackendRuntimeWrapper {
+	w.Spec.Lifecycle = lifecycle
+	return w
+}
+
 func (w *BackendRuntimeWrapper) Arg(name string, args []string) *BackendRuntimeWrapper {
 	if w.Spec.RecommendedConfigs == nil {
 		w.Spec.RecommendedConfigs = []inferenceapi.RecommendedConfig{
