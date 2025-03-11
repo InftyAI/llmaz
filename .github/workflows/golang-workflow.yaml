@@ -5,10 +5,7 @@ on:
     types:
       - opened
       - synchronize
-  issue_comment:
-    types:
-      - created
 
 jobs:
   golang-ci:
-    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-golang-ci.yaml@v0.1.7
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-golang-ci.yaml@v0.1.9
