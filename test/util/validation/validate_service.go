@@ -34,6 +34,7 @@ import (
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
+	pkgUtil "github.com/inftyai/llmaz/pkg/util"
 	"github.com/inftyai/llmaz/test/util"
 )
 
@@ -94,6 +95,12 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 }
 
 func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service) error {
+	if model.Spec.Source.URI != nil {
+		protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
+		if protocol == modelSource.Ollama {
+			return nil
+		}
+	}
 	if model.Spec.Source.ModelHub != nil || model.Spec.Source.URI != nil {
 		if len(template.Spec.InitContainers) == 0 {
 			return errors.New("no initContainer configured")
