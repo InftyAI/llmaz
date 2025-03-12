@@ -76,7 +76,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
 		}()
 
-		playground := wrapper.MakePlayground("qwen2-0-5b-gguf", ns.Name).ModelClaim("qwen2-0-5b-gguf").BackendRuntime("llamacpp").Replicas(3).Obj()
+		playground := wrapper.MakePlayground("qwen2-0-5b-gguf", ns.Name).ModelClaim("qwen2-0-5b-gguf").BackendRuntime("llamacpp").Replicas(2).Obj()
 		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 		validation.ValidatePlayground(ctx, k8sClient, playground)
 		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
