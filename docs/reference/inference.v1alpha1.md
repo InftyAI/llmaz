@@ -122,44 +122,6 @@ description: Generated API reference documentation for inference.llmaz.io/v1alph
 </tbody>
 </table>
 
-## `BackendRuntimeArg`     {#inference-llmaz-io-v1alpha1-BackendRuntimeArg}
-
-
-**Appears in:**
-
-- [BackendRuntimeConfig](#inference-llmaz-io-v1alpha1-BackendRuntimeConfig)
-
-- [BackendRuntimeSpec](#inference-llmaz-io-v1alpha1-BackendRuntimeSpec)
-
-
-<p>BackendRuntimeArg is the preset arguments for easy to use.
-Three preset names are provided: default, speculative-decoding, model-parallelism,
-do not change the name.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>name</code><br/>
-<code>string</code>
-</td>
-<td>
-   <p>Name represents the identifier of the backendRuntime argument.</p>
-</td>
-</tr>
-<tr><td><code>flags</code> <B>[Required]</B><br/>
-<code>[]string</code>
-</td>
-<td>
-   <p>Flags represents all the preset configurations.
-Flag around with {{ .CONFIG }} is a configuration waiting for render.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
 ## `BackendRuntimeConfig`     {#inference-llmaz-io-v1alpha1-BackendRuntimeConfig}
 
 
@@ -174,11 +136,11 @@ Flag around with {{ .CONFIG }} is a configuration waiting for render.</p>
 <tbody>
     
   
-<tr><td><code>name</code><br/>
+<tr><td><code>backendName</code><br/>
 <a href="#inference-llmaz-io-v1alpha1-BackendName"><code>BackendName</code></a>
 </td>
 <td>
-   <p>Name represents the inference backend under the hood, e.g. vLLM.</p>
+   <p>BackendName represents the inference backend under the hood, e.g. vLLM.</p>
 </td>
 </tr>
 <tr><td><code>version</code><br/>
@@ -189,14 +151,6 @@ Flag around with {{ .CONFIG }} is a configuration waiting for render.</p>
 from the default version.</p>
 </td>
 </tr>
-<tr><td><code>args</code> <B>[Required]</B><br/>
-<a href="#inference-llmaz-io-v1alpha1-BackendRuntimeArg"><code>BackendRuntimeArg</code></a>
-</td>
-<td>
-   <p>Args represents the specified arguments of the backendRuntime,
-will be append to the backendRuntime.spec.Args.</p>
-</td>
-</tr>
 <tr><td><code>envs</code><br/>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#envvar-v1-core"><code>[]k8s.io/api/core/v1.EnvVar</code></a>
 </td>
@@ -204,13 +158,40 @@ will be append to the backendRuntime.spec.Args.</p>
    <p>Envs represents the environments set to the container.</p>
 </td>
 </tr>
-<tr><td><code>resources</code> <B>[Required]</B><br/>
+<tr><td><code>configName</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>ConfigName represents the recommended configuration name for the backend,
+It will be inferred from the models in the runtime if not specified, e.g. default,
+speculative-decoding.</p>
+</td>
+</tr>
+<tr><td><code>args</code><br/>
+<code>[]string</code>
+</td>
+<td>
+   <p>Args defined here will &quot;append&quot; the args defined in the recommendedConfig,
+either explicitly configured in configName or inferred in the runtime.</p>
+</td>
+</tr>
+<tr><td><code>resources</code><br/>
 <a href="#inference-llmaz-io-v1alpha1-ResourceRequirements"><code>ResourceRequirements</code></a>
 </td>
 <td>
    <p>Resources represents the resource requirements for backend, like cpu/mem,
 accelerators like GPU should not be defined here, but at the model flavors,
-or the values here will be overwritten.</p>
+or the values here will be overwritten.
+Resources defined here will &quot;overwrite&quot; the resources in the recommendedConfig.</p>
+</td>
+</tr>
+<tr><td><code>sharedMemorySize</code><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity"><code>k8s.io/apimachinery/pkg/api/resource.Quantity</code></a>
+</td>
+<td>
+   <p>SharedMemorySize represents the size of /dev/shm required in the runtime of
+inference workload.
+SharedMemorySize defined here will &quot;overwrite&quot; the sharedMemorySize in the recommendedConfig.</p>
 </td>
 </tr>
 </tbody>
@@ -239,14 +220,6 @@ or the values here will be overwritten.</p>
    <p>Commands represents the default commands for the backendRuntime.</p>
 </td>
 </tr>
-<tr><td><code>multiHostCommands</code><br/>
-<a href="#inference-llmaz-io-v1alpha1-MultiHostCommands"><code>MultiHostCommands</code></a>
-</td>
-<td>
-   <p>MultiHostCommands represents leader and worker commands for nodes with
-different roles.</p>
-</td>
-</tr>
 <tr><td><code>image</code> <B>[Required]</B><br/>
 <code>string</code>
 </td>
@@ -263,14 +236,6 @@ It will work together with version to make up a real image.</p>
 It will be appended to the image as a tag.</p>
 </td>
 </tr>
-<tr><td><code>args</code> <B>[Required]</B><br/>
-<a href="#inference-llmaz-io-v1alpha1-BackendRuntimeArg"><code>[]BackendRuntimeArg</code></a>
-</td>
-<td>
-   <p>Args represents the preset arguments of the backendRuntime.
-They can be appended or overwritten by the Playground backendRuntimeConfig.</p>
-</td>
-</tr>
 <tr><td><code>envs</code><br/>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#envvar-v1-core"><code>[]k8s.io/api/core/v1.EnvVar</code></a>
 </td>
@@ -278,13 +243,11 @@ They can be appended or overwritten by the Playground backendRuntimeConfig.</p>
    <p>Envs represents the environments set to the container.</p>
 </td>
 </tr>
-<tr><td><code>resources</code> <B>[Required]</B><br/>
-<a href="#inference-llmaz-io-v1alpha1-ResourceRequirements"><code>ResourceRequirements</code></a>
+<tr><td><code>lifecycle</code><br/>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#lifecycle-v1-core"><code>k8s.io/api/core/v1.Lifecycle</code></a>
 </td>
 <td>
-   <p>Resources represents the resource requirements for backendRuntime, like cpu/mem,
-accelerators like GPU should not be defined here, but at the model flavors,
-or the values here will be overwritten.</p>
+   <p>Lifecycle represents hooks executed during the lifecycle of the container.</p>
 </td>
 </tr>
 <tr><td><code>livenessProbe</code><br/>
@@ -315,12 +278,11 @@ This can be used to provide different probe parameters at the beginning of a bac
 when it might take a long time to load data or warm a cache, than during steady-state operation.</p>
 </td>
 </tr>
-<tr><td><code>scaleTriggers</code><br/>
-<a href="#inference-llmaz-io-v1alpha1-NamedScaleTrigger"><code>[]NamedScaleTrigger</code></a>
+<tr><td><code>recommendedConfigs</code><br/>
+<a href="#inference-llmaz-io-v1alpha1-RecommendedConfig"><code>[]RecommendedConfig</code></a>
 </td>
 <td>
-   <p>ScaleTriggers represents a set of triggers preset to be used by Playground.
-If Playground not specify the scale trigger, the 0-index trigger will be used.</p>
+   <p>RecommendedConfigs represents the recommended configurations for the backendRuntime.</p>
 </td>
 </tr>
 </tbody>
@@ -383,23 +345,13 @@ MinReplicas couldn't be 0 now, will support serverless in the future.</p>
 Default to nil means there's no limit for the instance number.</p>
 </td>
 </tr>
-<tr><td><code>scaleTriggerRef</code><br/>
-<a href="#inference-llmaz-io-v1alpha1-ScaleTriggerRef"><code>ScaleTriggerRef</code></a>
-</td>
-<td>
-   <p>ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime
-with tuned target value.
-ScaleTriggerRef and ScaleTrigger can't be set at the same time.</p>
-</td>
-</tr>
 <tr><td><code>scaleTrigger</code><br/>
 <a href="#inference-llmaz-io-v1alpha1-ScaleTrigger"><code>ScaleTrigger</code></a>
 </td>
 <td>
-   <p>ScaleTrigger defines a set of triggers to scale the workloads.
-If not defined, trigger configured in backendRuntime will be used,
-otherwise, trigger defined here will overwrite the defaulted ones.
-ScaleTriggerRef and ScaleTrigger can't be set at the same time.</p>
+   <p>ScaleTrigger defines the rules to scale the workloads.
+Only one trigger cloud work at a time, mostly used in Playground.
+ScaleTrigger defined here will &quot;overwrite&quot; the scaleTrigger in the recommendedConfig.</p>
 </td>
 </tr>
 </tbody>
@@ -409,8 +361,6 @@ ScaleTriggerRef and ScaleTrigger can't be set at the same time.</p>
 
 
 **Appears in:**
-
-- [NamedScaleTrigger](#inference-llmaz-io-v1alpha1-NamedScaleTrigger)
 
 - [ScaleTrigger](#inference-llmaz-io-v1alpha1-ScaleTrigger)
 
@@ -445,73 +395,6 @@ more information about how each type of metric must respond.</p>
    <p>behavior configures the scaling behavior of the target
 in both Up and Down directions (scaleUp and scaleDown fields respectively).
 If not set, the default HPAScalingRules for scale up and scale down are used.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `MultiHostCommands`     {#inference-llmaz-io-v1alpha1-MultiHostCommands}
-
-
-**Appears in:**
-
-- [BackendRuntimeSpec](#inference-llmaz-io-v1alpha1-BackendRuntimeSpec)
-
-
-<p>MultiHostCommands represents leader &amp; worker commands for multiple nodes scenarios.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>leader</code> <B>[Required]</B><br/>
-<code>[]string</code>
-</td>
-<td>
-   <span class="text-muted">No description provided.</span></td>
-</tr>
-<tr><td><code>worker</code> <B>[Required]</B><br/>
-<code>[]string</code>
-</td>
-<td>
-   <span class="text-muted">No description provided.</span></td>
-</tr>
-</tbody>
-</table>
-
-## `NamedScaleTrigger`     {#inference-llmaz-io-v1alpha1-NamedScaleTrigger}
-
-
-**Appears in:**
-
-- [BackendRuntimeSpec](#inference-llmaz-io-v1alpha1-BackendRuntimeSpec)
-
-
-<p>NamedScaleTrigger defines the rules to scale the workloads.
-Only one trigger cloud work at a time. The name is used to identify
-the trigger in backendRuntime.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>name</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>Name represents the identifier of the scale trigger, e.g. some triggers defined for
-latency sensitive workloads, some are defined for throughput sensitive workloads.</p>
-</td>
-</tr>
-<tr><td><code>hpa</code> <B>[Required]</B><br/>
-<a href="#inference-llmaz-io-v1alpha1-HPATrigger"><code>HPATrigger</code></a>
-</td>
-<td>
-   <p>HPA represents the trigger configuration of the HorizontalPodAutoscaler.</p>
 </td>
 </tr>
 </tbody>
@@ -566,13 +449,12 @@ ModelClaims and modelClaim are exclusive configured.</p>
 under the hood, e.g. vLLM, which is the default backendRuntime.</p>
 </td>
 </tr>
-<tr><td><code>elasticConfig</code><br/>
+<tr><td><code>elasticConfig</code> <B>[Required]</B><br/>
 <a href="#inference-llmaz-io-v1alpha1-ElasticConfig"><code>ElasticConfig</code></a>
 </td>
 <td>
    <p>ElasticConfig defines the configuration for elastic usage,
-e.g. the max/min replicas.
-Note: this requires to install the HPA first or will report error.</p>
+e.g. the max/min replicas.</p>
 </td>
 </tr>
 </tbody>
@@ -618,6 +500,66 @@ Note: this requires to install the HPA first or will report error.</p>
 </tbody>
 </table>
 
+## `RecommendedConfig`     {#inference-llmaz-io-v1alpha1-RecommendedConfig}
+
+
+**Appears in:**
+
+- [BackendRuntimeSpec](#inference-llmaz-io-v1alpha1-BackendRuntimeSpec)
+
+
+<p>RecommendedConfig represents the recommended configurations for the backendRuntime,
+user can choose one of them to apply.</p>
+
+
+<table class="table">
+<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
+<tbody>
+    
+  
+<tr><td><code>name</code> <B>[Required]</B><br/>
+<code>string</code>
+</td>
+<td>
+   <p>Name represents the identifier of the config.</p>
+</td>
+</tr>
+<tr><td><code>args</code><br/>
+<code>[]string</code>
+</td>
+<td>
+   <p>Args represents all the arguments for the command.
+Argument around with {{ .CONFIG }} is a configuration waiting for render.</p>
+</td>
+</tr>
+<tr><td><code>resources</code><br/>
+<a href="#inference-llmaz-io-v1alpha1-ResourceRequirements"><code>ResourceRequirements</code></a>
+</td>
+<td>
+   <p>Resources represents the resource requirements for backend, like cpu/mem,
+accelerators like GPU should not be defined here, but at the model flavors,
+or the values here will be overwritten.</p>
+</td>
+</tr>
+<tr><td><code>sharedMemorySize</code><br/>
+<a href="https://pkg.go.dev/k8s.io/apimachinery/pkg/api/resource#Quantity"><code>k8s.io/apimachinery/pkg/api/resource.Quantity</code></a>
+</td>
+<td>
+   <p>SharedMemorySize represents the size of /dev/shm required in the runtime of
+inference workload.</p>
+</td>
+</tr>
+<tr><td><code>scaleTrigger</code><br/>
+<a href="#inference-llmaz-io-v1alpha1-ScaleTrigger"><code>ScaleTrigger</code></a>
+</td>
+<td>
+   <p>ScaleTrigger defines the rules to scale the workloads.
+Only one trigger cloud work at a time.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 ## `ResourceRequirements`     {#inference-llmaz-io-v1alpha1-ResourceRequirements}
 
 
@@ -625,7 +567,7 @@ Note: this requires to install the HPA first or will report error.</p>
 
 - [BackendRuntimeConfig](#inference-llmaz-io-v1alpha1-BackendRuntimeConfig)
 
-- [BackendRuntimeSpec](#inference-llmaz-io-v1alpha1-BackendRuntimeSpec)
+- [RecommendedConfig](#inference-llmaz-io-v1alpha1-RecommendedConfig)
 
 
 <p>TODO: Do not support DRA yet, we can support that once needed.</p>
@@ -664,6 +606,8 @@ More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-co
 
 - [ElasticConfig](#inference-llmaz-io-v1alpha1-ElasticConfig)
 
+- [RecommendedConfig](#inference-llmaz-io-v1alpha1-RecommendedConfig)
+
 
 <p>ScaleTrigger defines the rules to scale the workloads.
 Only one trigger cloud work at a time, mostly used in Playground.</p>
@@ -679,32 +623,6 @@ Only one trigger cloud work at a time, mostly used in Playground.</p>
 </td>
 <td>
    <p>HPA represents the trigger configuration of the HorizontalPodAutoscaler.</p>
-</td>
-</tr>
-</tbody>
-</table>
-
-## `ScaleTriggerRef`     {#inference-llmaz-io-v1alpha1-ScaleTriggerRef}
-
-
-**Appears in:**
-
-- [ElasticConfig](#inference-llmaz-io-v1alpha1-ElasticConfig)
-
-
-<p>ScaleTriggerRef refers to the configured scaleTrigger in the backendRuntime.</p>
-
-
-<table class="table">
-<thead><tr><th width="30%">Field</th><th>Description</th></tr></thead>
-<tbody>
-    
-  
-<tr><td><code>name</code> <B>[Required]</B><br/>
-<code>string</code>
-</td>
-<td>
-   <p>Name represents the scale trigger name defined in the backendRuntime.scaleTriggers.</p>
 </td>
 </tr>
 </tbody>
@@ -735,15 +653,26 @@ different accelerators for cost or performance considerations.</p>
    <p>ModelClaims represents multiple claims for different models.</p>
 </td>
 </tr>
-<tr><td><code>workloadTemplate</code> <B>[Required]</B><br/>
-<code>sigs.k8s.io/lws/api/leaderworkerset/v1.LeaderWorkerSetSpec</code>
+<tr><td><code>replicas</code><br/>
+<code>int32</code>
 </td>
 <td>
-   <p>WorkloadTemplate defines the underlying workload layout and configuration.
-Note: the LWS spec might be twisted with various LWS instances to support
-accelerator fungibility or other cutting-edge researches.
-LWS supports both single-host and multi-host scenarios, for single host
-cases, only need to care about replicas, rolloutStrategy and workerTemplate.</p>
+   <p>Replicas represents the replica number of inference workloads.</p>
+</td>
+</tr>
+<tr><td><code>workloadTemplate</code> <B>[Required]</B><br/>
+<code>sigs.k8s.io/lws/api/leaderworkerset/v1.LeaderWorkerTemplate</code>
+</td>
+<td>
+   <p>WorkloadTemplate defines the template for leader/worker pods</p>
+</td>
+</tr>
+<tr><td><code>rolloutStrategy</code><br/>
+<code>sigs.k8s.io/lws/api/leaderworkerset/v1.RolloutStrategy</code>
+</td>
+<td>
+   <p>RolloutStrategy defines the strategy that will be applied to update replicas
+when a revision is made to the leaderWorkerTemplate.</p>
 </td>
 </tr>
 </tbody>

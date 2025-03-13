@@ -74,19 +74,19 @@ in autoscaling. Right now, it will be used in two places:</p>
    <p>Name represents the flavor name, which will be used in model claim.</p>
 </td>
 </tr>
-<tr><td><code>requests</code><br/>
+<tr><td><code>limits</code><br/>
 <a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#resourcelist-v1-core"><code>k8s.io/api/core/v1.ResourceList</code></a>
 </td>
 <td>
-   <p>Requests defines the required accelerators to serve the model for each replica,
-like &lt;nvidia.com/gpu: 8&gt;. For multi-hosts cases, the requests here indicates
+   <p>Limits defines the required accelerators to serve the model for each replica,
+like &lt;nvidia.com/gpu: 8&gt;. For multi-hosts cases, the limits here indicates
 the resource requirements for each replica, usually equals to the TP size.
 Not recommended to set the cpu and memory usage here:</p>
 <ul>
 <li>if using playground, you can define the cpu/mem usage at backendConfig.</li>
 <li>if using inference service, you can define the cpu/mem at the container resources.
-However, if you define the same accelerator requests at playground/service as well,
-the requests will be overwritten by the flavor requests.</li>
+However, if you define the same accelerator resources at playground/service as well,
+the resources will be overwritten by the flavor limit here.</li>
 </ul>
 </td>
 </tr>
