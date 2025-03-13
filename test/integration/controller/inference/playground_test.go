@@ -455,7 +455,7 @@ var _ = ginkgo.Describe("playground controller test", func() {
 				},
 			},
 		}),
-		ginkgo.Entry("Playground with Playground with fake-backend", &testValidatingCase{
+		ginkgo.Entry("Playground with fake-backend", &testValidatingCase{
 			makePlayground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).ModelClaim(model.Name).Label(coreapi.ModelNameLabelKey, model.Name).
 					BackendRuntime("fake-backend").
