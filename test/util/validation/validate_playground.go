@@ -164,6 +164,11 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			return errors.New("command not right")
 		}
 
+		// compare lifecycle
+		if diff := cmp.Diff(parser.Lifecycle(), service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Lifecycle); diff != "" {
+			return errors.New("lifecycle not right")
+		}
+
 		// compare fields only can be configured in backend.
 
 		if backendRuntime.Spec.StartupProbe != nil {

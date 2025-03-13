@@ -88,6 +88,9 @@ type BackendRuntimeSpec struct {
 	// Envs represents the environments set to the container.
 	// +optional
 	Envs []corev1.EnvVar `json:"envs,omitempty"`
+	// Lifecycle represents hooks executed during the lifecycle of the container.
+	// +optional
+	Lifecycle *corev1.Lifecycle `json:"lifecycle,omitempty"`
 	// Periodic probe of backend liveness.
 	// Backend will be restarted if the probe fails.
 	// Cannot be updated.
