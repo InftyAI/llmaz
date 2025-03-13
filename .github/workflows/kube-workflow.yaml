@@ -19,6 +19,6 @@ on:
 
 jobs:
   event-handler:
-    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-as-kubernetes.yaml@v0.1.9
+    uses: kerthcet/github-workflow-as-kube/.github/workflows/workflow-as-kubernetes.yaml@v0.1.10
     secrets:
       AGENT_TOKEN: ${{ secrets.AGENT_TOKEN }}
