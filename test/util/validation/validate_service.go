@@ -326,41 +326,7 @@ func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg 
 	}).Should(gomega.Succeed())
 }
 
-func CheckOllamaServeAvaliable(localPort int) error {
-	url := fmt.Sprintf("http://localhost:%d/api/generate", localPort)
-	reqBody := `{"model":"qwen2:0.5b","prompt":"What is the capital city of China?","stream":false}`
-
-	// wait for ollama serve to download the model
-	time.Sleep(60 * time.Second)
-
-	fmt.Printf("url: %s, req body: %s\n", url, reqBody)
-	req, err := http.NewRequest("POST", url, strings.NewReader(reqBody))
-	if err != nil {
-		return err
-	}
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("error HTTP status code %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("error reading response: %v", err)
-	}
-
-	if !strings.Contains(strings.ToLower(string(body)), "beijing") {
-		return fmt.Errorf("error response body: %s", string(body))
-	}
-	return nil
-}
-
-func CheckLlamacppServeAvaliable(localPort int) error {
+func CheckServiceAvaliable(localPort int) error {
 	url := fmt.Sprintf("http://localhost:%d/completions", localPort)
 	reqBody := `{"prompt":"What is the capital city of China?","stream":false}`
 
@@ -374,7 +340,9 @@ func CheckLlamacppServeAvaliable(localPort int) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error HTTP status code %d", resp.StatusCode)
