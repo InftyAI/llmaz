@@ -48,8 +48,8 @@ func NewBackendRuntimeParser(backendRuntime *inferenceapi.BackendRuntime, models
 	}
 }
 
-func (p *BackendRuntimeParser) Commands() []string {
-	return p.backendRuntime.Spec.Commands
+func (p *BackendRuntimeParser) Command() []string {
+	return p.backendRuntime.Spec.Command
 }
 
 func (p *BackendRuntimeParser) Envs() []corev1.EnvVar {

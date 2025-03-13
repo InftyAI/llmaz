@@ -213,11 +213,11 @@ SharedMemorySize defined here will &quot;overwrite&quot; the sharedMemorySize in
 <tbody>
     
   
-<tr><td><code>commands</code><br/>
+<tr><td><code>command</code><br/>
 <code>[]string</code>
 </td>
 <td>
-   <p>Commands represents the default commands for the backendRuntime.</p>
+   <p>Command represents the default command for the backendRuntime.</p>
 </td>
 </tr>
 <tr><td><code>image</code> <B>[Required]</B><br/>

@@ -60,11 +60,11 @@ func In(strings []string, s string) bool {
 	return false
 }
 
-// MergeArgsWithCommands will merge the arguments with the commands, the arguments will be append
+// MergeArgsWithCommand will merge the arguments with the command, the arguments will be append
 // sequentially and separated with spaces. If the last command has "/n", it will be trimmed.
 // has "/n", it will be trimmed.
-func MergeArgsWithCommands(commands []string, args []string) []string {
+func MergeArgsWithCommand(command []string, args []string) []string {
 	fullArgs := strings.Join(args, " ")
-	commands[len(commands)-1] = fmt.Sprintf("%s %s", strings.TrimSuffix(commands[len(commands)-1], "\n"), fullArgs)
-	return commands
+	command[len(command)-1] = fmt.Sprintf("%s %s", strings.TrimSuffix(command[len(command)-1], "\n"), fullArgs)
+	return command
 }

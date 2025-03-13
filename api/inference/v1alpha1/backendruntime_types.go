@@ -76,9 +76,9 @@ type RecommendedConfig struct {
 
 // BackendRuntimeSpec defines the desired state of BackendRuntime
 type BackendRuntimeSpec struct {
-	// Commands represents the default commands for the backendRuntime.
+	// Command represents the default command for the backendRuntime.
 	// +optional
-	Commands []string `json:"commands,omitempty"`
+	Command []string `json:"command,omitempty"`
 	// Image represents the default image registry of the backendRuntime.
 	// It will work together with version to make up a real image.
 	Image string `json:"image"`

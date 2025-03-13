@@ -41,8 +41,8 @@ spec:
           spec:
             description: BackendRuntimeSpec defines the desired state of BackendRuntime
             properties:
-              commands:
-                description: Commands represents the default commands for the backendRuntime.
+              command:
+                description: Command represents the default command for the backendRuntime.
                 items:
                   type: string
                 type: array
