@@ -1,4 +1,4 @@
-# Proposal-27: LoRA Autoscaler
+# Proposal-287: LoRA Autoscaler
 
 <!--
 This is the title of your Proposal. Keep it short, simple, and descriptive. A good
