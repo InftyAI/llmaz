@@ -27,7 +27,6 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
@@ -245,7 +244,7 @@ func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *
 	}).Should(gomega.Succeed())
 }
 
-type CheckServiceAvailableFunc func(int) error
+type CheckServiceAvailableFunc func() error
 
 func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg *rest.Config, service *inferenceapi.Service, check CheckServiceAvailableFunc) {
 	gomega.Eventually(func() error {
@@ -278,7 +277,6 @@ func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg 
 		}
 
 		targetPort := targetPod.Spec.Containers[0].Ports[0].ContainerPort
-		localPort := 8080
 
 		stopChan, readyChan := make(chan struct{}, 1), make(chan struct{}, 1)
 		req := portForwardK8sClient.CoreV1().RESTClient().Post().
@@ -295,10 +293,12 @@ func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg 
 		dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", req.URL())
 
 		// create port forwarder
-		fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", localPort, targetPort)}, stopChan, readyChan, os.Stdout, os.Stderr)
+		fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", modelSource.DEFAULT_BACKEND_PORT, targetPort)}, stopChan, readyChan, os.Stdout, os.Stderr)
 		if err != nil {
 			return fmt.Errorf("creating port forwarder failed: %v", err)
 		}
+		// stop port forward when done
+		defer fw.Close()
 
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
@@ -317,20 +317,14 @@ func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg 
 			}
 		}()
 		<-readyChan
-		fmt.Printf("Port forwarding is ready. Local port has been forwarded to service %s (via pod %s) on port %d\n",
-			service.Name, targetPod.Name, targetPort)
-
-		time.Sleep(60 * time.Second)
-
-		return check(localPort)
+		return check()
 	}).Should(gomega.Succeed())
 }
 
-func CheckServiceAvaliable(localPort int) error {
-	url := fmt.Sprintf("http://localhost:%d/completions", localPort)
+func CheckServiceAvaliable() error {
+	url := fmt.Sprintf("http://localhost:%d/completions", modelSource.DEFAULT_BACKEND_PORT)
 	reqBody := `{"prompt":"What is the capital city of China?","stream":false}`
 
-	fmt.Printf("url: %s, req body: %s\n", url, reqBody)
 	req, err := http.NewRequest("POST", url, strings.NewReader(reqBody))
 	if err != nil {
 		return err
