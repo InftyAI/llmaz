@@ -91,6 +91,11 @@ spec:
                 format: int32
                 type: integer
               rolloutStrategy:
+                default:
+                  rollingUpdateConfiguration:
+                    maxSurge: 0
+                    maxUnavailable: 1
+                  type: RollingUpdate
                 description: |-
                   RolloutStrategy defines the strategy that will be applied to update replicas
                   when a revision is made to the leaderWorkerTemplate.
