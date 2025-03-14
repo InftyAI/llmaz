@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/created-by: llmaz
   name: vllm
 spec:
-  commands:
+  command:
     - python3
     - -m
     - vllm.entrypoints.openai.api_server

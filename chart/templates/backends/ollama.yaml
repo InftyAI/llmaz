@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/created-by: llmaz
   name: ollama
 spec:
-  commands:
+  command:
     - sh
     - -c
   image: ollama/ollama

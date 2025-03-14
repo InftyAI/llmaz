@@ -310,8 +310,8 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 		version = *playground.Spec.BackendRuntimeConfig.Version
 	}
 
-	// commands
-	commands := parser.Commands()
+	// command
+	command := parser.Command()
 
 	// lifecycle
 	lifecycle := parser.Lifecycle()
@@ -337,7 +337,7 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
 					Image:     parser.Image(version),
 					Resources: resources,
-					Command:   commands,
+					Command:   command,
 					Args:      args,
 					Env:       envs,
 					Lifecycle: lifecycle,

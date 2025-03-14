@@ -143,32 +143,32 @@ func TestIn(t *testing.T) {
 	}
 }
 
-func TestMergeArgsWithCommands(t *testing.T) {
+func TestMergeArgsWithCommand(t *testing.T) {
 	testCases := []struct {
-		name         string
-		commands     []string
-		args         []string
-		wantCommands []string
+		name        string
+		command     []string
+		args        []string
+		wantCommand []string
 	}{
 		{
-			name:         "commands with no line break",
-			commands:     []string{"run server"},
-			args:         []string{"--host", "localhost"},
-			wantCommands: []string{"run server --host localhost"},
+			name:        "command with no line break",
+			command:     []string{"run server"},
+			args:        []string{"--host", "localhost"},
+			wantCommand: []string{"run server --host localhost"},
 		},
 		{
-			name:         "commands with line break",
-			commands:     []string{"go", "run server\n"},
-			args:         []string{"--port", "8080"},
-			wantCommands: []string{"go", "run server --port 8080"},
+			name:        "command with line break",
+			command:     []string{"go", "run server\n"},
+			args:        []string{"--port", "8080"},
+			wantCommand: []string{"go", "run server --port 8080"},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			got := MergeArgsWithCommands(test.commands, test.args)
-			if diff := cmp.Diff(got, test.wantCommands); diff != "" {
-				t.Fatalf("unexpected commands: %s", diff)
+			got := MergeArgsWithCommand(test.command, test.args)
+			if diff := cmp.Diff(got, test.wantCommand); diff != "" {
+				t.Fatalf("unexpected command: %s", diff)
 			}
 		})
 	}

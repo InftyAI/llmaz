@@ -57,8 +57,8 @@ func (w *BackendRuntimeWrapper) Version(version string) *BackendRuntimeWrapper {
 	return w
 }
 
-func (w *BackendRuntimeWrapper) Command(commands []string) *BackendRuntimeWrapper {
-	w.Spec.Commands = commands
+func (w *BackendRuntimeWrapper) Command(command []string) *BackendRuntimeWrapper {
+	w.Spec.Command = command
 	return w
 }
 

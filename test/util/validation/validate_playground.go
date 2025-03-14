@@ -159,8 +159,8 @@ func ValidatePlayground(ctx context.Context, k8sClient client.Client, playground
 			}
 		}
 
-		// compare commands
-		if diff := cmp.Diff(parser.Commands(), service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
+		// compare command
+		if diff := cmp.Diff(parser.Command(), service.Spec.WorkloadTemplate.WorkerTemplate.Spec.Containers[0].Command); diff != "" {
 			return errors.New("command not right")
 		}
 
