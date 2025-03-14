@@ -91,7 +91,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
-		validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)
+		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
 	})
 	ginkgo.It("Deploy a huggingface model with customized backendRuntime", func() {
 		backendRuntime := wrapper.MakeBackendRuntime("llmaz-llamacpp").
@@ -117,7 +117,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
-		validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)
+		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
 	})
 	ginkgo.It("Deploy a huggingface model with llama.cpp, HPA enabled", func() {
 		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()

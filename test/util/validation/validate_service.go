@@ -246,79 +246,75 @@ func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *
 
 type CheckServiceAvailableFunc func() error
 
-func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg *rest.Config, service *inferenceapi.Service, check CheckServiceAvailableFunc) {
-	gomega.Eventually(func() error {
-		pods := corev1.PodList{}
-		podSelector := client.MatchingLabels(map[string]string{
-			lws.SetNameLabelKey: service.Name,
-		})
-		if err := k8sClient.List(ctx, &pods, podSelector, client.InNamespace(service.Namespace)); err != nil {
-			return err
+func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg *rest.Config, service *inferenceapi.Service, check CheckServiceAvailableFunc) error {
+	pods := corev1.PodList{}
+	podSelector := client.MatchingLabels(map[string]string{
+		lws.SetNameLabelKey: service.Name,
+	})
+	if err := k8sClient.List(ctx, &pods, podSelector, client.InNamespace(service.Namespace)); err != nil {
+		return err
+	}
+	if len(pods.Items) != int(*service.Spec.Replicas)*int(*service.Spec.WorkloadTemplate.Size) {
+		return fmt.Errorf("pods number not right, want: %d, got: %d", int(*service.Spec.Replicas)*int(*service.Spec.WorkloadTemplate.Size), len(pods.Items))
+	}
+
+	var targetPod *corev1.Pod
+	for i := range pods.Items {
+		if pods.Items[i].Status.Phase == corev1.PodRunning {
+			targetPod = &pods.Items[i]
+			break
 		}
-		if len(pods.Items) != int(*service.Spec.Replicas)*int(*service.Spec.WorkloadTemplate.Size) {
-			return fmt.Errorf("pods number not right, want: %d, got: %d", int(*service.Spec.Replicas)*int(*service.Spec.WorkloadTemplate.Size), len(pods.Items))
-		}
+	}
 
-		var targetPod *corev1.Pod
-		for i := range pods.Items {
-			if pods.Items[i].Status.Phase == corev1.PodRunning {
-				targetPod = &pods.Items[i]
-				break
-			}
-		}
+	if targetPod == nil {
+		return fmt.Errorf("no running pods found for service %s", service.Name)
+	}
 
-		if targetPod == nil {
-			return fmt.Errorf("no running pods found for service %s", service.Name)
-		}
+	portForwardK8sClient, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return fmt.Errorf("init port forward client failed: %w", err)
+	}
 
-		portForwardK8sClient, err := kubernetes.NewForConfig(cfg)
-		if err != nil {
-			return fmt.Errorf("init port forward client failed: %w", err)
-		}
+	targetPort := targetPod.Spec.Containers[0].Ports[0].ContainerPort
+	stopChan, readyChan := make(chan struct{}, 1), make(chan struct{}, 1)
+	req := portForwardK8sClient.CoreV1().RESTClient().Post().
+		Resource("pods").
+		Namespace(service.Namespace).
+		Name(targetPod.Name).
+		SubResource("portforward")
 
-		targetPort := targetPod.Spec.Containers[0].Ports[0].ContainerPort
+	transport, upgrader, err := spdy.RoundTripperFor(cfg)
+	if err != nil {
+		return fmt.Errorf("creating round tripper failed: %v", err)
+	}
 
-		stopChan, readyChan := make(chan struct{}, 1), make(chan struct{}, 1)
-		req := portForwardK8sClient.CoreV1().RESTClient().Post().
-			Resource("pods").
-			Namespace(service.Namespace).
-			Name(targetPod.Name).
-			SubResource("portforward")
+	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", req.URL())
+	// create port forwarder
+	fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", modelSource.DEFAULT_BACKEND_PORT, targetPort)}, stopChan, readyChan, os.Stdout, os.Stderr)
+	if err != nil {
+		return fmt.Errorf("creating port forwarder failed: %v", err)
+	}
+	// stop port forward when done
+	defer fw.Close()
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 
-		transport, upgrader, err := spdy.RoundTripperFor(cfg)
-		if err != nil {
-			return fmt.Errorf("creating round tripper failed: %v", err)
-		}
+	go func() {
+		<-signals
+		fmt.Println("Received termination signal, shutting down port forward...")
+		close(stopChan)
+	}()
 
-		dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", req.URL())
-
-		// create port forwarder
-		fw, err := portforward.New(dialer, []string{fmt.Sprintf("%d:%d", modelSource.DEFAULT_BACKEND_PORT, targetPort)}, stopChan, readyChan, os.Stdout, os.Stderr)
-		if err != nil {
-			return fmt.Errorf("creating port forwarder failed: %v", err)
-		}
-		// stop port forward when done
-		defer fw.Close()
-
-		signals := make(chan os.Signal, 1)
-		signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
-
-		go func() {
-			<-signals
-			fmt.Println("Received termination signal, shutting down port forward...")
+	// wait for port forward to be ready
+	go func() {
+		if err = fw.ForwardPorts(); err != nil {
+			fmt.Printf("Error forwarding ports: %v\n", err)
 			close(stopChan)
-		}()
-
-		// wait for port forward to be ready
-		go func() {
-			if err = fw.ForwardPorts(); err != nil {
-				fmt.Printf("Error forwarding ports: %v\n", err)
-				close(stopChan)
-			}
-		}()
-		<-readyChan
-		return check()
-	}).Should(gomega.Succeed())
+		}
+	}()
+	<-readyChan
+	gomega.Eventually(check()).Should(gomega.Succeed())
+	return nil
 }
 
 func CheckServiceAvaliable() error {
