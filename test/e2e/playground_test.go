@@ -63,7 +63,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		defer func() {
 			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
 		}()
-		playground := wrapper.MakePlayground("qwen2-0--5b", ns.Name).ModelClaim("qwen2-0--5b").BackendRuntime("llmaz-ollama").Replicas(1).Obj()
+		playground := wrapper.MakePlayground("qwen2-0--5b", ns.Name).ModelClaim("qwen2-0--5b").BackendRuntime("llmaz-ollama").BackendRuntimeEnv("OLLAMA_HOST", "0.0.0.0:8080").Replicas(1).Obj()
 		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 		validation.ValidatePlayground(ctx, k8sClient, playground)
 		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
@@ -91,6 +91,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
+		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
 	})
 	ginkgo.It("Deploy a huggingface model with customized backendRuntime", func() {
 		backendRuntime := wrapper.MakeBackendRuntime("llmaz-llamacpp").
@@ -116,6 +117,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
+		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
 	})
 	ginkgo.It("Deploy a huggingface model with llama.cpp, HPA enabled", func() {
 		model := wrapper.MakeModel("qwen2-0-5b-gguf").FamilyName("qwen2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("Qwen/Qwen2-0.5B-Instruct-GGUF", "qwen2-0_5b-instruct-q5_k_m.gguf", "", nil, nil).Obj()
