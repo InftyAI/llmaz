@@ -80,6 +80,10 @@ spec:
           capabilities:
             drop:
             - "ALL"
+        ports:
+        - containerPort: 8080
+          name: metrics
+          protocol: TCP
         livenessProbe:
           httpGet:
             path: /healthz
