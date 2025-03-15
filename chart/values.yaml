@@ -52,7 +52,7 @@ metricsService:
   - name: https
     port: 8443
     protocol: TCP
-    targetPort: https
+    targetPort: 8080
   type: ClusterIP
 webhookService:
   ports:
