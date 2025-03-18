@@ -11,7 +11,7 @@ metadata:
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
     control-plane: controller-manager
-  {{- include "chart.labels" . | nindent 4 }}
+    {{- include "chart.selectorLabels" . | nindent 4 }}
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -23,4 +23,5 @@ spec:
   selector:
     matchLabels:
       control-plane: controller-manager
+      {{- include "chart.selectorLabels" . | nindent 4 }}
 {{- end }}
