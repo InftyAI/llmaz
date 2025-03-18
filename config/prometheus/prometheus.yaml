@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus
+  namespace: system
+spec:
+  serviceAccountName: llmaz-prometheus
+  # Associated ServiceMonitor selector
+  serviceMonitorSelector:
+    # Need to match the label in ServiceMonitor
+    # https://github.com/kubernetes-sigs/jobset/blob/main/config/components/prometheus/monitor.yaml#L7
+    matchLabels:
+      control-plane: controller-manager
+  resources:
+    requests:
+      memory: 400Mi
+  enableAdminAPI: false
