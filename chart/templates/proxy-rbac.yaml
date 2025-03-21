@@ -3,7 +3,6 @@ kind: ClusterRole
 metadata:
   name: {{ include "chart.fullname" . }}-proxy-role
   labels:
-    app.kubernetes.io/component: kube-rbac-proxy
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
   {{- include "chart.labels" . | nindent 4 }}
@@ -26,7 +25,6 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ include "chart.fullname" . }}-proxy-rolebinding
   labels:
-    app.kubernetes.io/component: kube-rbac-proxy
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
   {{- include "chart.labels" . | nindent 4 }}

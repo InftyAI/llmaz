@@ -30,6 +30,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/filters"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
@@ -77,9 +78,18 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
+	// Metrics endpoint is enabled in 'config/default/kustomization.yaml'. The Metrics options configure the server.
+	// More info:
+	// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.1/pkg/metrics/server
+	// - https://book.kubebuilder.io/reference/metrics.html
+	metricsServerOptions := metricsserver.Options{
+		BindAddress:    metricsAddr,
+		SecureServing:  true,
+		FilterProvider: filters.WithAuthenticationAndAuthorization,
+	}
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
-		Metrics:                metricsserver.Options{BindAddress: metricsAddr},
+		Metrics:                metricsServerOptions,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "fbb36db9.llmaz.io",
