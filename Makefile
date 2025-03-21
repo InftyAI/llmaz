@@ -66,6 +66,7 @@ IMAGE_REGISTRY ?= inftyai
 IMAGE_NAME ?= llmaz
 IMAGE_REPO := $(IMAGE_REGISTRY)/$(IMAGE_NAME)
 GIT_TAG ?= $(shell git describe --tags --dirty --always)
+GOPROXY=${GOPROXY:-""}
 IMG ?= $(IMAGE_REPO):$(GIT_TAG)
 BUILDER_IMAGE ?= golang:$(GO_VERSION)
 KIND_CLUSTER_NAME ?= kind
@@ -176,6 +177,7 @@ run: manifests generate fmt vet ## Run a controller from your host.
 PLATFORMS ?= linux/arm64,linux/amd64,linux/s390x,linux/ppc64le
 .PHONY: docker-buildx
 docker-buildx: ## Build and push docker image for the manager for cross-platform support
+	export GOPROXY=$(GOPROXY)
 	# copy existing Dockerfile and insert --platform=${BUILDPLATFORM} into Dockerfile.cross, and preserve the original Dockerfile
 	sed -e '1 s/\(^FROM\)/FROM --platform=\$$\{BUILDPLATFORM\}/; t' -e ' 1,// s//FROM --platform=\$$\{BUILDPLATFORM\}/' Dockerfile > Dockerfile.cross
 	- $(CONTAINER_TOOL) buildx create --name project-v3-builder
