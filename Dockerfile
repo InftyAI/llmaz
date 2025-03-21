@@ -6,6 +6,8 @@ FROM ${BUILDER_IMAGE} AS builder
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 ARG CGO_ENABLED=0
+ARG GOPROXY=
+ENV GOPROXY=${GOPROXY}
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
