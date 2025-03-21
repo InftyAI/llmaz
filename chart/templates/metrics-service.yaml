@@ -3,10 +3,8 @@ kind: Service
 metadata:
   name: {{ include "chart.fullname" . }}-controller-manager-metrics-service
   labels:
-    app.kubernetes.io/component: kube-rbac-proxy
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
-    control-plane: controller-manager
   {{- include "chart.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.metricsService.type }}

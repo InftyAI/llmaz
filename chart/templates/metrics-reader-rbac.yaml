@@ -3,7 +3,6 @@ kind: ClusterRole
 metadata:
   name: {{ include "chart.fullname" . }}-metrics-reader
   labels:
-    app.kubernetes.io/component: kube-rbac-proxy
     app.kubernetes.io/created-by: llmaz
     app.kubernetes.io/part-of: llmaz
   {{- include "chart.labels" . | nindent 4 }}
@@ -12,3 +11,18 @@ rules:
   - /metrics
   verbs:
   - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "chart.fullname" . }}-metrics-reader-rolebinding
+  labels:
+  {{- include "chart.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: '{{ include "chart.fullname" . }}-metrics-reader'
+subjects:
+- kind: ServiceAccount
+  name: '{{ include "chart.fullname" . }}-controller-manager'
+  namespace: '{{ .Release.Namespace }}'
