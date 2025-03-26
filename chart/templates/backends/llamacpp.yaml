@@ -10,8 +10,8 @@ metadata:
 spec:
   command:
     - ./llama-server
-  image: ghcr.io/ggerganov/llama.cpp
-  version: server
+  image: {{ .Values.backendRuntime.llamacpp.image.repository }}
+  version: {{ .Values.backendRuntime.llamacpp.image.tag }}
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
   recommendedConfigs:

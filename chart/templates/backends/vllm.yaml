@@ -12,8 +12,8 @@ spec:
     - python3
     - -m
     - vllm.entrypoints.openai.api_server
-  image: vllm/vllm-openai
-  version: v0.7.3
+  image: {{ .Values.backendRuntime.vllm.image.repository }}
+  version: {{ .Values.backendRuntime.vllm.image.tag }}
   lifecycle:
     preStop:
       exec:
