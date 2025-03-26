@@ -160,7 +160,7 @@ func (w *PlaygroundWrapper) ElasticConfig(minReplicas, maxReplicas int32) *Playg
 	if w.Spec.ElasticConfig == nil {
 		w.Spec.ElasticConfig = &inferenceapi.ElasticConfig{}
 	}
-	w.Spec.ElasticConfig.MaxReplicas = ptr.To[int32](maxReplicas)
+	w.Spec.ElasticConfig.MaxReplicas = maxReplicas
 	w.Spec.ElasticConfig.MinReplicas = ptr.To[int32](minReplicas)
 	return w
 }

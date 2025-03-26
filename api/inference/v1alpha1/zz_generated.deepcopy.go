@@ -224,11 +224,6 @@ func (in *ElasticConfig) DeepCopyInto(out *ElasticConfig) {
 		*out = new(int32)
 		**out = **in
 	}
-	if in.MaxReplicas != nil {
-		in, out := &in.MaxReplicas, &out.MaxReplicas
-		*out = new(int32)
-		**out = **in
-	}
 	if in.ScaleTrigger != nil {
 		in, out := &in.ScaleTrigger, &out.ScaleTrigger
 		*out = new(ScaleTrigger)
