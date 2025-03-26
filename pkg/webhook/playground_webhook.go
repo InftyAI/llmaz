@@ -145,8 +145,8 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("elasticConfig.minReplicas"), "minReplicas couldn't be 0"))
 		}
 
-		if playground.Spec.ElasticConfig.MinReplicas != nil && playground.Spec.ElasticConfig.MaxReplicas != nil {
-			if *playground.Spec.ElasticConfig.MinReplicas >= *playground.Spec.ElasticConfig.MaxReplicas {
+		if playground.Spec.ElasticConfig.MinReplicas != nil {
+			if *playground.Spec.ElasticConfig.MinReplicas >= playground.Spec.ElasticConfig.MaxReplicas {
 				allErrs = append(allErrs, field.Invalid(specPath.Child("elasticConfig.scaleTrigger.hpa"), *playground.Spec.ElasticConfig.MinReplicas, "minReplicas must be less than maxReplicas"))
 			}
 		}

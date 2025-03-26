@@ -44,6 +44,7 @@ type PlaygroundSpec struct {
 	BackendRuntimeConfig *BackendRuntimeConfig `json:"backendRuntimeConfig,omitempty"`
 	// ElasticConfig defines the configuration for elastic usage,
 	// e.g. the max/min replicas.
+	// +optional
 	ElasticConfig *ElasticConfig `json:"elasticConfig,omitempty"`
 }
 
@@ -56,8 +57,9 @@ type ElasticConfig struct {
 	MinReplicas *int32 `json:"minReplicas,omitempty"`
 	// MaxReplicas indicates the maximum number of inference workloads based on the traffic.
 	// Default to nil means there's no limit for the instance number.
-	// +optional
-	MaxReplicas *int32 `json:"maxReplicas,omitempty"`
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Minimum:=1
+	MaxReplicas int32 `json:"maxReplicas,omitempty"`
 	// ScaleTrigger defines the rules to scale the workloads.
 	// Only one trigger cloud work at a time, mostly used in Playground.
 	// ScaleTrigger defined here will "overwrite" the scaleTrigger in the recommendedConfig.

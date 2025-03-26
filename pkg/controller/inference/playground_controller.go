@@ -557,12 +557,7 @@ func newHPA(playground *inferenceapi.Playground) *autoscalingv2.HorizontalPodAut
 	}
 
 	hpa.Spec.MinReplicas = playground.Spec.ElasticConfig.MinReplicas
-	if playground.Spec.ElasticConfig.MaxReplicas == nil {
-		// The value is hardcoded, because maxReplicas is required by HPA.
-		hpa.Spec.MaxReplicas = 99999
-	} else {
-		hpa.Spec.MaxReplicas = *playground.Spec.ElasticConfig.MaxReplicas
-	}
+	hpa.Spec.MaxReplicas = playground.Spec.ElasticConfig.MaxReplicas
 
 	return hpa
 }
