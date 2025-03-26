@@ -12,7 +12,8 @@
 ```cmd
 helm repo add inftyai https://inftyai.github.io/llmaz
 helm repo update
-helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.7
+LATEST=$(curl -s https://raw.githubusercontent.com/InftyAI/llmaz/main/index.yaml | yq eval '.entries.llmaz[0].version' -)
+helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version "$LATEST"
 ```
 
 ### Uninstall
