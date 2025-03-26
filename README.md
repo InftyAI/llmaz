@@ -69,7 +69,7 @@ spec:
   inferenceConfig:
     flavors:
       - name: default # Configure GPU type
-        requests:
+        limits:
           nvidia.com/gpu: 1
 ```
 
