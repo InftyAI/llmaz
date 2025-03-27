@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/created-by: llmaz
   name: tgi
 spec:
-  image: ghcr.io/huggingface/text-generation-inference
-  version: 2.3.1
+  image: {{ .Values.backendRuntime.tgi.image.repository }}
+  version: {{ .Values.backendRuntime.tgi.image.tag }}
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
   recommendedConfigs:

@@ -11,8 +11,8 @@ spec:
   command:
     - sh
     - -c
-  image: ollama/ollama
-  version: latest
+  image: {{ .Values.backendRuntime.ollama.image.repository }}
+  version: {{ .Values.backendRuntime.ollama.image.tag }}
   envs:
     - name: OLLAMA_HOST
       value: 0.0.0.0:8080

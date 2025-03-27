@@ -2,6 +2,29 @@ fullnameOverride: "llmaz"
 
 backendRuntime:
   install: true
+  llamacpp:
+    image:
+      repository: ghcr.io/ggerganov/llama.cpp
+      tag: server
+  ollama:
+    image:
+      repository: ollama/ollama
+      tag: latest
+  sglang:
+    image:
+      repository: lmsysorg/sglang
+      tag: v0.2.10-cu121
+  tgi:
+    image:
+      repository: ghcr.io/huggingface/text-generation-inference
+      tag: 2.3.1
+  vllm:
+    image:
+      repository: vllm/vllm-openai
+      tag: v0.7.3
 
 leaderWorkerSet:
   install: true
+  image:
+    repository: registry.k8s.io/lws/lws
+    tag: v0.5.0
