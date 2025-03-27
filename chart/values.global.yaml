@@ -5,3 +5,7 @@ backendRuntime:
 
 leaderWorkerSet:
   install: true
+
+prometheus:
+  # -- Whether to enable Prometheus metrics exporting.
+  enable: false

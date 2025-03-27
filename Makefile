@@ -285,6 +285,14 @@ envtest: $(ENVTEST) ## Download envtest-setup locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	test -s $(LOCALBIN)/setup-envtest || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@latest
 
+.PHONY: install-prometheus
+install-prometheus:
+	kubectl apply --server-side -k config/prometheus
+
+.PHONY: uninstall-prometheus
+uninstall-prometheus:
+	kubectl delete -k config/prometheus
+
 ##@Release
 
 .PHONY: artifacts
