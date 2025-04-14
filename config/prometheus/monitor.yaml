@@ -22,4 +22,5 @@ spec:
         insecureSkipVerify: true
   selector:
     matchLabels:
-      control-plane: controller-manager
+      app.kubernetes.io/created-by: llmaz
+      app.kubernetes.io/name: service
