@@ -38,6 +38,27 @@ func MergeResources(toMerge corev1.ResourceList, toBeMerged corev1.ResourceList)
 	return toMerge
 }
 
+// MergeEnvs merges two env var list and ensures that entries in BackendRuntimeConfig.Env take precedence.
+// This function takes two slices of corev1.EnvVar: 'base' and 'overrides'. It returns a new slice of corev1.EnvVar
+// where the 'overrides' values overwrite any duplicate names in 'base'.
+func MergeEnvs(base []corev1.EnvVar, overrides []corev1.EnvVar) []corev1.EnvVar {
+	envMap := make(map[string]corev1.EnvVar)
+
+	for _, env := range base {
+		envMap[env.Name] = env
+	}
+
+	for _, env := range overrides {
+		envMap[env.Name] = env
+	}
+
+	result := make([]corev1.EnvVar, 0, len(envMap))
+	for _, env := range envMap {
+		result = append(result, env)
+	}
+	return result
+}
+
 // MergeKVs will merge kvs in toBeMerged to toMerge.
 // If kvs exist in toMerge, they will be replaced.
 func MergeKVs(toMerge map[string]string, toBeMerged map[string]string) map[string]string {

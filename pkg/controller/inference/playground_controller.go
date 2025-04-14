@@ -264,7 +264,7 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	// envs
 	envs := parser.Envs()
 	if playground.Spec.BackendRuntimeConfig != nil {
-		envs = append(envs, playground.Spec.BackendRuntimeConfig.Envs...)
+		envs = util.MergeEnvs(envs, playground.Spec.BackendRuntimeConfig.Envs)
 	}
 
 	// args
