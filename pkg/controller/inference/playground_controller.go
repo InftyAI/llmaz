@@ -331,7 +331,6 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
 			// TODO: should we support image pull secret here?
-			// TODO: support readiness/liveness
 			Containers: []corev1.Container{
 				{
 					Name:      modelSource.MODEL_RUNNER_CONTAINER_NAME,
