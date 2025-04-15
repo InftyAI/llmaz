@@ -28,3 +28,7 @@ leaderWorkerSet:
   image:
     repository: registry.k8s.io/lws/lws
     tag: v0.5.0
+
+prometheus:
+  # -- Whether to enable Prometheus metrics exporting.
+  enable: false

@@ -1,2 +1,7 @@
+namespace: llmaz-system
+namePrefix: llmaz-
+
 resources:
 - monitor.yaml
+- prometheus.yaml
+- serviceaccount.yaml
