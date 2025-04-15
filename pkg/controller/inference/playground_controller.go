@@ -90,7 +90,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service); err == nil {
 		if !metav1.IsControlledBy(service, playground) {
 			logger.Info("failed to construct inference Service as a Service with the same exists", "Playground", klog.KObj(playground))
-			if changed := handleUnexpectedCondition(playground, true, true); changed {
+			if changed := handleUnexpectedCondition(playground, ServiceConflictCondition); changed {
 				err = r.Client.Status().Update(ctx, playground)
 			}
 			// if update successfully, err will be nil and we'll hanging here until Playground or Service deleted.
@@ -100,7 +100,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	models, err := helper.FetchModelsByPlayground(ctx, r.Client, playground)
 	if err != nil {
-		if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, false, false) {
+		if apierrors.IsNotFound(err) && handleUnexpectedCondition(playground, ModelMissingCondition) {
 			return ctrl.Result{}, r.Client.Status().Update(ctx, playground)
 		}
 		return ctrl.Result{}, err
@@ -381,28 +381,41 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 	return template, nil
 }
 
-func handleUnexpectedCondition(playground *inferenceapi.Playground, modelExists bool, serviceWithSameNameExists bool) (changed bool) {
-	// Put it in the first place as more serious.
-	if serviceWithSameNameExists {
-		condition := metav1.Condition{
-			Type:    inferenceapi.PlaygroundProgressing,
-			Status:  metav1.ConditionFalse,
-			Reason:  "AbortProcessing",
-			Message: "Playground owns the same name with an existing Service",
-		}
-		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
-	}
+type UnexpectedConditionType string
 
-	if !modelExists {
-		condition := metav1.Condition{
-			Type:    inferenceapi.PlaygroundProgressing,
-			Status:  metav1.ConditionFalse,
-			Reason:  "AbortProcessing",
-			Message: "Waiting for model creation",
-		}
-		return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+const (
+	ServiceConflictCondition UnexpectedConditionType = "ServiceConflict"
+	ModelMissingCondition    UnexpectedConditionType = "ModelMissing"
+)
+
+func handleUnexpectedCondition(playground *inferenceapi.Playground, unexpectedConditionType UnexpectedConditionType) bool {
+	switch unexpectedConditionType {
+	case ServiceConflictCondition:
+		return handleServiceConflictCondition(playground)
+	case ModelMissingCondition:
+		return handleModelMissingCondition(playground)
 	}
 	return false
+}
+
+func handleServiceConflictCondition(playground *inferenceapi.Playground) (changed bool) {
+	condition := metav1.Condition{
+		Type:    inferenceapi.PlaygroundProgressing,
+		Status:  metav1.ConditionFalse,
+		Reason:  "AbortProcessing",
+		Message: "Playground owns the same name with an existing Service",
+	}
+	return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
+}
+
+func handleModelMissingCondition(playground *inferenceapi.Playground) (changed bool) {
+	condition := metav1.Condition{
+		Type:    inferenceapi.PlaygroundProgressing,
+		Status:  metav1.ConditionFalse,
+		Reason:  "AbortProcessing",
+		Message: "Waiting for model creation",
+	}
+	return apimeta.SetStatusCondition(&playground.Status.Conditions, condition)
 }
 
 func setPlaygroundCondition(playground *inferenceapi.Playground, service *inferenceapi.Service) (changed bool) {
