@@ -17,7 +17,9 @@ Please do not remove items from the checklist
   - [ ] Run `PLATFORMS=linux/amd64 make image-push GIT_TAG=$VERSION` to build and push an image.
   - [ ] Run `make artifacts GIT_TAG=$VERSION` to generate the artifact.
 - [ ] Update helm chats and documents
-  - [ ] Update `chart/Chart.yaml` and `docs/installation.md`, the helm version is different with the app version.
+  - [ ] Update versions
+    - [ ] update `chart/Chart.yaml`, the helm version is different with the app version.
+    - [ ] update `docs/installation.md`
   - [ ] Run `make helm-package` to package the helm chart and update the index.yaml.
   - [ ] Submit a PR and merge it.
 - [ ] An OWNER [prepares a draft release](https://github.com/inftyai/llmaz/releases)
