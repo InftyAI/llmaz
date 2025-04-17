@@ -22,6 +22,5 @@ spec:
       insecureSkipVerify: true
   selector:
     matchLabels:
-      control-plane: controller-manager
     {{- include "chart.selectorLabels" . | nindent 6 }}
 {{- end }}
