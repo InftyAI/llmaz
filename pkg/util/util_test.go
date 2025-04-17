@@ -71,6 +71,101 @@ func TestMergeResources(t *testing.T) {
 	}
 }
 
+func TestMergeEnvs(t *testing.T) {
+	testCases := []struct {
+		name      string
+		base      []corev1.EnvVar
+		overrides []corev1.EnvVar
+		want      []corev1.EnvVar
+	}{
+		{
+			name: "overrides should overwrite base",
+			base: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "value2"},
+			},
+			overrides: []corev1.EnvVar{
+				{Name: "VAR2", Value: "new_value2"},
+				{Name: "VAR3", Value: "value3"},
+			},
+			want: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "new_value2"},
+				{Name: "VAR3", Value: "value3"},
+			},
+		},
+		{
+			name: "base has exclusive keys",
+			base: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+			},
+			overrides: []corev1.EnvVar{
+				{Name: "VAR2", Value: "value2"},
+			},
+			want: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "value2"},
+			},
+		},
+		{
+			name: "base is empty",
+			base: []corev1.EnvVar{},
+			overrides: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "value2"},
+			},
+			want: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "value2"},
+			},
+		},
+		{
+			name: "overrides is empty",
+			base: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "value2"},
+			},
+			overrides: []corev1.EnvVar{},
+			want: []corev1.EnvVar{
+				{Name: "VAR1", Value: "value1"},
+				{Name: "VAR2", Value: "value2"},
+			},
+		},
+		{
+			name:      "both base and overrides are empty",
+			base:      []corev1.EnvVar{},
+			overrides: []corev1.EnvVar{},
+			want:      []corev1.EnvVar{},
+		},
+		{
+			name:      "both base and overrides are nil",
+			base:      nil,
+			overrides: nil,
+			want:      []corev1.EnvVar{},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := MergeEnvs(tc.base, tc.overrides)
+
+			gotMap := make(map[string]string)
+			for _, env := range got {
+				gotMap[env.Name] = env.Value
+			}
+
+			wantMap := make(map[string]string)
+			for _, env := range tc.want {
+				wantMap[env.Name] = env.Value
+			}
+
+			if diff := cmp.Diff(gotMap, wantMap); diff != "" {
+				t.Fatalf("unexpected envs: %s", diff)
+			}
+		})
+	}
+}
+
 func TestMergeKVs(t *testing.T) {
 	testCases := []struct {
 		name       string
