@@ -23,5 +23,5 @@ spec:
   selector:
     matchLabels:
       control-plane: controller-manager
-      {{- include "chart.selectorLabels" . | nindent 4 }}
+    {{- include "chart.selectorLabels" . | nindent 6 }}
 {{- end }}

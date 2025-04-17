@@ -14,7 +14,7 @@ spec:
     # https://github.com/kubernetes-sigs/jobset/blob/main/config/components/prometheus/monitor.yaml#L7
     matchLabels:
       control-plane: controller-manager
-      {{- include "chart.selectorLabels" . | nindent 4 }}
+    {{- include "chart.selectorLabels" . | nindent 6 }}
   resources:
     requests:
       memory: 400Mi

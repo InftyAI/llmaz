@@ -1,4 +1,4 @@
-{{- if .Values.leaderWorkerSet.install -}}
+{{- if .Values.leaderWorkerSet.enable -}}
 apiVersion: v1
 kind: Namespace
 metadata:

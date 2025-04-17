@@ -1,7 +1,7 @@
 fullnameOverride: "llmaz"
 
 backendRuntime:
-  install: true
+  enable: true
   llamacpp:
     image:
       repository: ghcr.io/ggerganov/llama.cpp
@@ -24,7 +24,7 @@ backendRuntime:
       tag: v0.7.3
 
 leaderWorkerSet:
-  install: true
+  enable: true
   image:
     repository: registry.k8s.io/lws/lws
     tag: v0.5.0
