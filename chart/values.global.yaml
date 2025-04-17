@@ -27,5 +27,5 @@ leaderWorkerSet:
   enable: true
 
 prometheus:
-  # -- Whether to enable Prometheus metrics exporting.
-  enable: false
+  # Prometheus is required to enable smart routing.
+  enable: true
