@@ -1,7 +1,7 @@
 fullnameOverride: "llmaz"
 
 backendRuntime:
-  install: true
+  enable: true
   llamacpp:
     image:
       repository: ghcr.io/ggerganov/llama.cpp
@@ -24,11 +24,8 @@ backendRuntime:
       tag: v0.7.3
 
 leaderWorkerSet:
-  install: true
-  image:
-    repository: registry.k8s.io/lws/lws
-    tag: v0.5.0
+  enable: true
 
 prometheus:
-  # -- Whether to enable Prometheus metrics exporting.
-  enable: false
+  # Prometheus is required to enable smart routing.
+  enable: true

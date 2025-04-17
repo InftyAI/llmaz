@@ -1,4 +1,4 @@
-{{- if .Values.backendRuntime.install -}}
+{{- if .Values.backendRuntime.enable -}}
 apiVersion: inference.llmaz.io/v1alpha1
 kind: BackendRuntime
 metadata:

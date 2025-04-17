@@ -20,4 +20,4 @@ spec:
         insecureSkipVerify: true
   selector:
     matchLabels:
-      app.kubernetes.io/name: service
+      app.kubernetes.io/name: llmaz
