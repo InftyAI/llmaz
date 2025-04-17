@@ -241,6 +241,7 @@ spec:
                       MaxReplicas indicates the maximum number of inference workloads based on the traffic.
                       Default to nil means there's no limit for the instance number.
                     format: int32
+                    minimum: 1
                     type: integer
                   minReplicas:
                     default: 1
@@ -863,6 +864,8 @@ spec:
                             type: array
                         type: object
                     type: object
+                required:
+                - maxReplicas
                 type: object
               modelClaim:
                 description: |-

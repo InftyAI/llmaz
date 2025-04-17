@@ -16681,7 +16681,7 @@ spec:
         - --zap-log-level=2
         command:
         - /manager
-        image: {{ .Values.backendRuntime.image.repository }}:{{ .Values.backendRuntime.image.tag }}
+        image: registry.k8s.io/lws/lws:v0.5.0
         livenessProbe:
           httpGet:
             path: /healthz
