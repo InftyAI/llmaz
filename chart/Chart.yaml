@@ -19,3 +19,10 @@ version: 0.0.7
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: 0.1.1
+
+# add dependencies for the chart
+dependencies:
+  # add envoy gateway
+  - name: envoy-gateway
+    version: v1.3.2
+    repository: oci://docker.io/envoyproxy/gateway-helm
