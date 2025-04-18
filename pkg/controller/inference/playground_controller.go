@@ -42,6 +42,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
+	aigv1a1 "github.com/envoyproxy/ai-gateway/api/v1alpha1"
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	coreclientgo "github.com/inftyai/llmaz/client-go/applyconfiguration/core/v1alpha1"
@@ -147,6 +148,37 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if err := r.Client.Status().Update(ctx, playground); err != nil {
 		logger.Error(err, "failed to update Playground status", "Playground", klog.KObj(playground))
 		return ctrl.Result{}, err
+	}
+
+	// Handle ai gateway route and backend runtime.
+	gatewayExist, err := IsAIGatewayRouteExist(ctx, r.Client)
+	if err != nil {
+		logger.Error(err, "failed to check ai gateway route")
+		return ctrl.Result{}, err
+	}
+	if gatewayExist {
+		var aiServiceBackend aigv1a1.AIServiceBackend
+		if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &aiServiceBackend); err != nil {
+			if apierrors.IsNotFound(err) {
+				err = CreateAIServiceBackend(ctx, r.Client, playground.Name, playground.Namespace, modelSource.DEFAULT_BACKEND_PORT, "")
+				if err != nil {
+					logger.Error(err, "failed to create aiServiceBackend", "Playground", klog.KObj(playground))
+					return ctrl.Result{}, err
+				}
+				logger.Info("created aiServiceBackend", "Playground", klog.KObj(playground))
+			} else {
+				logger.Error(err, "failed to get aiServiceBackend", "Playground", klog.KObj(playground))
+				return ctrl.Result{}, err
+			}
+		} else {
+			// Update the aiServiceBackend if it exists.
+			// todo
+		}
+		err = UpdateAIGatewayRoute(ctx, r.Client, playground.Name, playground.Namespace, string(playground.Spec.ModelClaim.ModelName))
+		if err != nil {
+			logger.Error(err, "failed to update ai gateway route", "Playground", klog.KObj(playground))
+			return ctrl.Result{}, err
+		}
 	}
 
 	return ctrl.Result{}, nil
