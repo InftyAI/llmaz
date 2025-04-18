@@ -47,3 +47,15 @@ open-webui:
     enabled: false
   redis-cluster:
     enabled: false
+
+envoyAIGateway:
+  enable: true
+  # image:
+  #   repository: docker.io/envoyproxy/ai-gateway-testupstream
+  #   tag: latest
+
+envoyGateway:
+  enable: true
+  # image:
+  #   repository: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+  #   tag: v20231214-v1.0.0-140-gf544a46e

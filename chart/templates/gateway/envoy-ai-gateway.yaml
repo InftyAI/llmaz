@@ -1,3 +1,4 @@
+{{- if .Values.envoyAIGateway.enable -}}
 # source : https://github.com/envoyproxy/ai-gateway/blob/main/examples/basic/basic.yaml
 
 # Copyright Envoy AI Gateway Authors
@@ -313,3 +314,4 @@ spec:
       port: 80
       targetPort: 8080
   type: ClusterIP
+{{- end }}

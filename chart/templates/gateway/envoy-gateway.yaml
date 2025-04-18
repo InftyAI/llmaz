@@ -1,3 +1,4 @@
+{{- if .Values.envoyGateway.enable -}}
 # source: https://github.com/envoyproxy/gateway/blob/main/examples/kubernetes/quickstart.yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
