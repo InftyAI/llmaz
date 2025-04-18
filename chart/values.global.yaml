@@ -28,3 +28,16 @@ leaderWorkerSet:
   image:
     repository: registry.k8s.io/lws/lws
     tag: v0.5.0
+
+envoyAIGateway:
+  # ai gateway 
+  install: true
+  # image:
+  #   repository: docker.io/envoyproxy/ai-gateway-testupstream
+  #   tag: latest
+
+envoyGateway:
+  install: true
+  # image:
+  #   repository: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+  #   tag: v20231214-v1.0.0-140-gf544a46e
