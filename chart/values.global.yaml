@@ -25,6 +25,7 @@ backendRuntime:
 
 leaderWorkerSet:
   enable: true
+  deployInSharedNamespace: false
 
 prometheus:
   # Prometheus is required to enable smart routing.
