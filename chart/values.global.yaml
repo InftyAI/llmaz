@@ -25,6 +25,7 @@ backendRuntime:
 
 leaderWorkerSet:
   enabled: true
+  namespace: "llmaz-system"
 
 prometheus:
   # Prometheus is required to enable smart routing.
