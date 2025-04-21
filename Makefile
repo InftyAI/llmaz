@@ -321,6 +321,9 @@ helm-install: helm
 .PHONY: helm-upgrade
 helm-upgrade: image-push artifacts helm-install
 
+.PHONY: install-chatbot
+install-chatbot: helm-install
+
 .PHONY: helm-package
 helm-package: helm
 	# Make sure will alwasy start with a new line.

@@ -24,4 +24,4 @@ dependencies:
   - name: open-webui
     version: "6.4.0"
     repository: "https://helm.openwebui.com/"
-    condition: open-webui.enable
+    condition: open-webui.enabled
