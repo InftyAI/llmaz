@@ -1,7 +1,7 @@
 fullnameOverride: "llmaz"
 
 backendRuntime:
-  enable: true
+  enabled: true
   llamacpp:
     image:
       repository: ghcr.io/ggerganov/llama.cpp
@@ -24,8 +24,26 @@ backendRuntime:
       tag: v0.7.3
 
 leaderWorkerSet:
-  enable: true
+  enabled: true
 
 prometheus:
   # Prometheus is required to enable smart routing.
-  enable: true
+  enabled: true
+
+open-webui:
+  enabled: false
+  persistence:
+    enabled: false
+  enableOpenaiApi: true
+  openaiBaseApiUrl: "https://api.openai.com/v1"
+  extraEnvVars:
+  - name: OPENAI_API_KEY
+    value: "ChangeMe"
+  ollama:
+    enabled: false
+  pipelines:
+    enabled: false
+  tika:
+    enabled: false
+  redis-cluster:
+    enabled: false

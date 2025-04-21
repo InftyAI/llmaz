@@ -316,10 +316,13 @@ helm: manifests kustomize helmify
 
 .PHONY: helm-install
 helm-install: helm
-	helm upgrade --install llmaz ./chart -f ./chart/values.global.yaml
+	helm upgrade --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update
 
 .PHONY: helm-upgrade
 helm-upgrade: image-push artifacts helm-install
+
+.PHONY: install-chatbot
+install-chatbot: helm-install
 
 .PHONY: helm-package
 helm-package: helm
