@@ -160,7 +160,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		var aiServiceBackend aigv1a1.AIServiceBackend
 		if err := r.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, &aiServiceBackend); err != nil {
 			if apierrors.IsNotFound(err) {
-				err = CreateAIServiceBackend(ctx, r.Client, playground.Name, playground.Namespace, modelSource.DEFAULT_BACKEND_PORT, "")
+				err = CreateAIServiceBackend(ctx, r.Client, playground.Name, playground.Namespace, modelSource.DEFAULT_BACKEND_PORT)
 				if err != nil {
 					logger.Error(err, "failed to create aiServiceBackend", "Playground", klog.KObj(playground))
 					return ctrl.Result{}, err

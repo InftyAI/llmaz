@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // gateway related utils: currently only support envoy ai gateway
@@ -54,10 +55,9 @@ func IsAIGatewayRouteExist(ctx context.Context, client client.Client) (bool, err
 //     name: qwen2-0--5b-lb # model name
 //     kind: Service
 //     port: 8080
-func CreateAIServiceBackend(ctx context.Context, client client.Client, backendRefName, namespace string, port int, schemaName string) error {
-	if schemaName == "" {
-		schemaName = "OpenAI"
-	}
+func CreateAIServiceBackend(ctx context.Context, client client.Client, backendRefName, namespace string, port int) error {
+	kind := gwapiv1.Kind("Service")
+	portName := gwapiv1.PortNumber(port)
 	// create the AIServiceBackend
  	backend := &aigv1a1.AIServiceBackend{
 		ObjectMeta: metav1.ObjectMeta{
@@ -65,13 +65,13 @@ func CreateAIServiceBackend(ctx context.Context, client client.Client, backendRe
 			Namespace: namespace,
 		},
 		Spec: aigv1a1.AIServiceBackendSpec{
-			Schema: aigv1a1.AIServiceBackendSchema{
-				Name: schemaName,
+			APISchema: aigv1a1.VersionedAPISchema{
+				Name: aigv1a1.APISchemaOpenAI,
 			},
-			BackendRef: aigv1a1.AIServiceBackendRef{
-				Name: backendRefName,
-				Kind: "Service",
-				Port: port,
+			BackendRef: gwapiv1.BackendObjectReference{
+				Name: gwapiv1.ObjectName(backendRefName),
+				Kind: &kind,
+				Port: &portName,
 			},
 		},
 	}
@@ -108,20 +108,21 @@ func UpdateAIGatewayRoute(ctx context.Context, client client.Client, backendRefN
 			return nil
 		}
 	}
+	exact := gwapiv1.HeaderMatchExact
 	// if the rule does not exist, append it to the spec.rules list
 	rule := aigv1a1.AIGatewayRouteRule{
-		Matches: []aigv1a1.AIGatewayRouteMatch{
+		Matches: []aigv1a1.AIGatewayRouteRuleMatch{
 			{
-				Headers: []aigv1a1.AIGatewayRouteHeaderMatch{
+				Headers: []gwapiv1.HTTPHeaderMatch{
 					{
-						Type:  aigv1a1.HeaderMatchTypeExact,
+						Type:  &exact,
 						Name:  "x-ai-eg-model",
 						Value: modelName,
 					},
 				},
 			},
 		},
-		BackendRefs: []aigv1a1.AIGatewayRouteBackendRef{
+		BackendRefs: []aigv1a1.AIGatewayRouteRuleBackendRef{
 			{
 				Name: backendRefName,
 			},
