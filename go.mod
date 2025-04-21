@@ -116,3 +116,5 @@ require (
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.1 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 )
+
+replace github.com/google/cel-go => github.com/google/cel-go v0.22.1

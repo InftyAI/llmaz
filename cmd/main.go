@@ -34,12 +34,14 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 
+	aigv1a1 "github.com/envoyproxy/ai-gateway/api/v1alpha1"
 	corev1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/cert"
 	corecontroller "github.com/inftyai/llmaz/pkg/controller/core"
 	inferencecontroller "github.com/inftyai/llmaz/pkg/controller/inference"
 	"github.com/inftyai/llmaz/pkg/webhook"
+	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -56,6 +58,10 @@ func init() {
 	// Add support for lws.
 	utilruntime.Must(lws.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
+
+	// Add support for ai-gateway and envoy gateway.
+	utilruntime.Must(gwapiv1.Install(scheme))
+	utilruntime.Must(aigv1a1.AddToScheme(scheme))
 }
 
 func main() {

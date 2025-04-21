@@ -151,7 +151,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Handle ai gateway route and backend runtime.
-	gatewayExist, err := IsAIGatewayRouteExist(ctx, r.Client)
+	gatewayExist, routeName, err := GetDefaultAIGatewayRoute(ctx, r.Client, DefaultGatewayNamespace)
 	if err != nil {
 		logger.Error(err, "failed to check ai gateway route")
 		return ctrl.Result{}, err
@@ -174,7 +174,7 @@ func (r *PlaygroundReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			// Update the aiServiceBackend if it exists.
 			// todo
 		}
-		err = UpdateAIGatewayRoute(ctx, r.Client, playground.Name, playground.Namespace, string(playground.Spec.ModelClaim.ModelName))
+		err = UpdateAIGatewayRoute(ctx, r.Client, playground.Name, playground.Namespace, string(playground.Spec.ModelClaim.ModelName), routeName)
 		if err != nil {
 			logger.Error(err, "failed to update ai gateway route", "Playground", klog.KObj(playground))
 			return ctrl.Result{}, err

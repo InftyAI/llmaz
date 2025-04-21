@@ -49,13 +49,10 @@ open-webui:
     enabled: false
 
 envoyAIGateway:
-  enable: true
-  # image:
-  #   repository: docker.io/envoyproxy/ai-gateway-testupstream
-  #   tag: latest
+  enabled: true
 
 envoyGateway:
-  enable: true
-  # image:
-  #   repository: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
-  #   tag: v20231214-v1.0.0-140-gf544a46e
+  enabled: true
+  image:
+    repository: gcr.io/k8s-staging-gateway-api/echo-basic
+    tag: v20231214-v1.0.0-140-gf544a46e

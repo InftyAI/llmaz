@@ -1,4 +1,4 @@
-{{- if .Values.envoyGateway.enable -}}
+{{- if .Values.envoyGateway.enabled -}}
 # source: https://github.com/envoyproxy/gateway/blob/main/examples/kubernetes/quickstart.yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
@@ -56,7 +56,7 @@ spec:
     spec:
       serviceAccountName: backend
       containers:
-        - image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+        - image: {{ .Values.envoyGateway.image.repository }}:{{ .Values.envoyGateway.image.tag }}
           imagePullPolicy: IfNotPresent
           name: backend
           ports:

@@ -23,22 +23,40 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // gateway related utils: currently only support envoy ai gateway
 
-// IsAIGatewayRouteExist check if the AIGatewayRoute exist
-func IsAIGatewayRouteExist(ctx context.Context, client client.Client) (bool, error) {
-	var route aigv1a1.AIGatewayRoute
-	err := client.Get(ctx, types.NamespacedName{
-		Name:      "envoy-ai-gateway-basic",
-		Namespace: "default",
-	}, &route)
-	if err != nil {
-		return false, err
+var (
+	// TODO make it configurable
+	defaultGatewayName = "envoy-ai-gateway-basic"
+	// TODO make it configurable
+	DefaultGatewayNamespace = "default"
+)
+
+// GetDefaultAIGatewayRoute check if the AIGatewayRoute exist and return
+// the default one or the first one if multiple AIGatewayRoute exist
+func GetDefaultAIGatewayRoute (ctx context.Context, client runtimeClient.Client, namespace string) (bool, string, error) {
+	routeList := &aigv1a1.AIGatewayRouteList{}
+	opts := []runtimeClient.ListOption{
+		runtimeClient.InNamespace(namespace),
 	}
-	return true, nil
+
+	// list the AIGatewayRoute and get `envoy-ai-gateway-basic` object if exists
+	err := client.List(ctx, routeList, opts...)
+	if err != nil || len(routeList.Items) == 0 {
+		return false, "", err
+	}
+	
+	for _, route := range routeList.Items {
+		if route.Name == defaultGatewayName {
+			return true, defaultGatewayName, nil
+		}
+	}
+	// return the first one
+	return true, routeList.Items[0].Name, nil
 }
 
 // create a AIServiceBackend using playground model name
@@ -87,11 +105,11 @@ func CreateAIServiceBackend(ctx context.Context, client client.Client, backendRe
 // 	    value: qwen2-0.5b # model name
 //   backendRefs:
 //   - name: envoy-ai-gateway-llmaz-model-1 # backendRef
-func UpdateAIGatewayRoute(ctx context.Context, client client.Client, backendRefName, namespace, modelName string) error {
+func UpdateAIGatewayRoute(ctx context.Context, client client.Client, backendRefName, namespace, modelName, routeName string) error {
 	// get the AIGatewayRoute
 	var route aigv1a1.AIGatewayRoute
 	if err := client.Get(ctx, types.NamespacedName{
-		Name:      "envoy-ai-gateway-basic",
+		Name:      routeName,
 		Namespace: namespace,
 	}, &route); err != nil {
 		return err
@@ -134,12 +152,12 @@ func UpdateAIGatewayRoute(ctx context.Context, client client.Client, backendRefN
 }
 
 // delete a rule by modelName/backendRefname from the AIGatewayRoute
-func deleteAIGatewayRoute(ctx context.Context, client client.Client, modelName, backendRefName string) error {
+func deleteAIGatewayRoute(ctx context.Context, client client.Client, modelName, backendRefName, namespace, routeName string) error {
 	// get the AIGatewayRoute
 	var route aigv1a1.AIGatewayRoute
 	if err := client.Get(ctx, types.NamespacedName{
-		Name:      "envoy-ai-gateway-basic",
-		Namespace: "default",
+		Name:      routeName,
+		Namespace: namespace,
 	}, &route); err != nil {
 		return err
 	}
