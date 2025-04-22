@@ -5,7 +5,7 @@ to handle request traffic from application clients to Generative AI services.
 
 ## How to use
 
-### 1. Enable Envoy Gateway and Envoy AI Gateway in llmaz Helm
+### 1. Enable Envoy Gateway and Envoy AI Gateway in llmaz Helm Chart
 
 Both of them are enabled by default in `values.global.yaml` and will be deployed in llmaz-system.
 
