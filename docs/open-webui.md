@@ -5,11 +5,11 @@
 ## Prerequisites
 
 - Make sure you're located in **llmaz-system** namespace, haven't tested with other namespaces.
-- Make sure [EnvoyGateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) are installed, both of them are installed by default in llmaz. See [Envoy AI Gateway](docs/envoy-ai-gateway.md) for more details.
+- Make sure [EnvoyGateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) are installed, both of them are installed by default in llmaz. See [AI Gateway](docs/envoy-ai-gateway.md) for more details.
 
 ## How to use
 
-1. Enable Open WebUI in the `values.global.yaml` file, open-webui is disabled by default.
+1. Enable Open WebUI in the `values.global.yaml` file, open-webui is enabled by default.
 
     ```yaml
     open-webui:
@@ -18,7 +18,7 @@
 
     > Optional to set the `persistence=true` to persist the data, recommended for production.
 
-2. Run `kubectl get svc -n envoy-gateway-system` to list out the services, the output looks like:
+2. Run `kubectl get svc -n llmaz-system` to list out the services, the output looks like:
 
     ```cmd
     envoy-default-default-envoy-ai-gateway-dbec795a   LoadBalancer   10.96.145.150   <pending>     80:30548/TCP                              132m
@@ -30,7 +30,7 @@
     ```yaml
     open-webui:
       enabled: true
-      openaiBaseApiUrl: http://envoy-default-default-envoy-ai-gateway-dbec795a.envoy-gateway-system.svc.cluster.local/v1
+      openaiBaseApiUrl: http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1
     ```
 
 4. Run `make install-chatbot` to install the chatbot.

@@ -1,17 +1,67 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-0--5b
+spec:
+  familyName: qwen2
+  source:
+    modelHub:
+      modelID: Qwen/Qwen2-0.5B-Instruct-GGUF
+      filename: qwen2-0_5b-instruct-q5_k_m.gguf
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen2-0--5b
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen2-0--5b
+  backendRuntimeConfig:
+    backendName: llamacpp
+    configName: default
+    args:
+      - -fa # use flash attention
+---
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2--5-coder
+spec:
+  familyName: qwen2
+  source:
+    modelHub:
+      modelID: Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF
+      filename: qwen2.5-coder-0.5b-instruct-q2_k.gguf
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen2--5-coder
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen2--5-coder
+  backendRuntimeConfig:
+    backendName: llamacpp
+    configName: default
+    args:
+      - -fa # use flash attention
+---
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
-  name: envoy-ai-gateway-basic
+  name: default-envoy-ai-gateway
 spec:
   controllerName: gateway.envoyproxy.io/gatewayclass-controller
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: envoy-ai-gateway-basic
+  name: default-envoy-ai-gateway
   namespace: default
 spec:
-  gatewayClassName: envoy-ai-gateway-basic
+  gatewayClassName: default-envoy-ai-gateway
   listeners:
     - name: http
       protocol: HTTP
@@ -20,35 +70,57 @@ spec:
 apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIGatewayRoute
 metadata:
-  name: envoy-ai-gateway-basic
+  name: default-envoy-ai-gateway
   namespace: default
 spec:
   schema:
     name: OpenAI
   targetRefs:
-    - name: envoy-ai-gateway-basic
+    - name: default-envoy-ai-gateway
       kind: Gateway
       group: gateway.networking.k8s.io
   rules:
-
-# Above are basic config for envoy ai gateway
-# Below is example for qwen2-0.5b: a matched backend ref and the AIServiceBackend
     - matches:
         - headers:
             - type: Exact
               name: x-ai-eg-model
               value: qwen2-0.5b
       backendRefs:
-        - name: envoy-ai-gateway-llmaz-model-1
+        - name: qwen2-0--5b
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: qwen2.5-coder
+      backendRefs:
+        - name: qwen2--5-coder
 ---
 apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIServiceBackend
 metadata:
-  name: envoy-ai-gateway-llmaz-model-1
+  name: qwen2-0--5b
   namespace: default
 spec:
+  timeouts:
+    request: 3m
   schema:
     name: OpenAI
   backendRef:
     name: qwen2-0--5b-lb
     kind: Service
+    port: 8080
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIServiceBackend
+metadata:
+  name: qwen2--5-coder
+  namespace: default
+spec:
+  timeouts:
+    request: 3m
+  schema:
+    name: OpenAI
+  backendRef:
+    name: qwen2--5-coder-lb
+    kind: Service
+    port: 8080
