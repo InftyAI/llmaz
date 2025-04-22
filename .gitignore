@@ -2,3 +2,4 @@
 bin
 artifacts
 dist
+chart/charts/*
