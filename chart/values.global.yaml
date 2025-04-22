@@ -50,3 +50,8 @@ open-webui:
     enabled: false
   redis-cluster:
     enabled: false
+
+envoy-gateway:
+  enabled: true
+envoy-ai-gateway:
+  enabled: true

@@ -1,0 +1,54 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: envoy-ai-gateway-basic
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: envoy-ai-gateway-basic
+  namespace: default
+spec:
+  gatewayClassName: envoy-ai-gateway-basic
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIGatewayRoute
+metadata:
+  name: envoy-ai-gateway-basic
+  namespace: default
+spec:
+  schema:
+    name: OpenAI
+  targetRefs:
+    - name: envoy-ai-gateway-basic
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+
+# Above are basic config for envoy ai gateway
+# Below is example for qwen2-0.5b: a matched backend ref and the AIServiceBackend
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: qwen2-0.5b
+      backendRefs:
+        - name: envoy-ai-gateway-llmaz-model-1
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIServiceBackend
+metadata:
+  name: envoy-ai-gateway-llmaz-model-1
+  namespace: default
+spec:
+  schema:
+    name: OpenAI
+  backendRef:
+    name: qwen2-0--5b-lb
+    kind: Service

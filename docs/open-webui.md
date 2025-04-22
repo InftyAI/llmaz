@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - Make sure you're located in **llmaz-system** namespace, haven't tested with other namespaces.
-- Make sure [EnvoyGateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) are installed, both of them are installed by default in llmaz.
+- Make sure [EnvoyGateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) are installed, both of them are installed by default in llmaz. See [Envoy AI Gateway](docs/envoy-ai-gateway.md) for more details.
 
 ## How to use
 
