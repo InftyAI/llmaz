@@ -17,5 +17,5 @@ limitations under the License.
 package pkg
 
 const (
-	LOADER_IMAGE = "inftyai/model-loader:v0.0.10"
+	LOADER_IMAGE = "m.daocloud.io/docker.io/inftyai/model-loader:v0.0.10"
 )

@@ -58,7 +58,7 @@ ginkgo: ## Download ginkgo locally if necessary.
 
 INTEGRATION_TARGET ?= ./test/integration/...
 
-BASE_IMAGE ?= gcr.io/distroless/static:nonroot
+BASE_IMAGE ?= m.daocloud.io/gcr.io/distroless/static:nonroot
 DOCKER_BUILDX_CMD ?= docker buildx
 IMAGE_BUILD_CMD ?= $(DOCKER_BUILDX_CMD) build
 IMAGE_BUILD_EXTRA_OPTS ?=
@@ -71,7 +71,7 @@ ifeq ($(origin GOPROXY), undefined)
   unexport GOPROXY
 endif
 IMG ?= $(IMAGE_REPO):$(GIT_TAG)
-BUILDER_IMAGE ?= golang:$(GO_VERSION)
+BUILDER_IMAGE ?= m.daocloud.io/docker.io/library/golang:$(GO_VERSION)
 KIND_CLUSTER_NAME ?= kind
 CGO_ENABLED ?= 0
 

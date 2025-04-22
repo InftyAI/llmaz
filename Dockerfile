@@ -1,5 +1,5 @@
 ARG BASE_IMAGE=gcr.io/distroless/static:nonroot
-ARG BUILDER_IMAGE=golang:1.24.0
+ARG BUILDER_IMAGE=m.daocloud.io/docker.io/library/golang:1.24.0
     
 
 # Build the manager binary
