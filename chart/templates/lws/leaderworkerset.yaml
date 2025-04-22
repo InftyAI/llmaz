@@ -16667,7 +16667,7 @@ metadata:
   name: lws-controller-manager
   namespace: {{ .Values.leaderWorkerSet.namespace | default "lws-system" }}
 spec:
-  replicas: 2
+  replicas: {{ .Values.leaderWorkerSet.controller.replicas }}
   selector:
     matchLabels:
       control-plane: controller-manager
