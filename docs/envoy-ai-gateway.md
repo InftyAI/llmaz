@@ -30,7 +30,11 @@ The full example is [here](./examples/envoy-ai-gateway/basic.yaml), apply it.
 
 If Open-WebUI is enabled, you can chat via the webui (recommended), see [documentation](./open-webui.md). Otherwise, following the steps below to test the Envoy AI Gateway APIs.
 
-I. Port-forwarding the `LoadBalancer` service in llmaz-system with port 8080.
+I. Port-forwarding the `LoadBalancer` service in llmaz-system, like:
+
+```bash
+kubectl port-forward svc/envoy-default-default-envoy-ai-gateway-dbec795a 8080:80
+```
 
 II. Query `http://localhost:8008/v1/models | jq .`, available models will be listed. Expected response will look like this:
 

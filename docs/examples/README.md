@@ -14,6 +14,7 @@ We provide a set of examples to help you serve large language models, by default
 - [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
 - [Deploy multi-host inference](#multi-host-inference)
 - [Deploy host models](#deploy-host-models)
+- [Envoy AI Gateway](#envoy-ai-gateway)
 
 ### Deploy models from Huggingface
 
@@ -64,3 +65,7 @@ Model size is growing bigger and bigger, Llama 3.1 405B FP16 LLM requires more t
 ### Deploy Host Models
 
 Models could be loaded in prior to the hosts, especially those extremely big models, see [example](./hostpath/) to serve local models.
+
+### Envoy AI Gateway
+
+llmaz leverages envoy AI gateway as default API gateway, see how it works [here](../envoy-ai-gateway.md).

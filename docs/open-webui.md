@@ -9,6 +9,8 @@
 
 ## How to use
 
+If open-webui already installed, what you need to do is just update the OpenAI API endpoint in the admin settings. You can get the value from step2 & 3 below. Otherwise, following the steps here to install open-webui.
+
 1. Enable Open WebUI in the `values.global.yaml` file, open-webui is enabled by default.
 
     ```yaml
