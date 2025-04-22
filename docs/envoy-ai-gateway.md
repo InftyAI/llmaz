@@ -57,7 +57,7 @@ Expected response will look like this:
 }
 ```
 
-`$GATEWAY_URL/v1/chat/completions` will show the chat result for the model. The request will look like this:
+`$GATEWAY_URL/v1/chat/completions` will request the chat api for the model. Here, we ask the `qwen2-0.5b` model, the request will look like:
 
 ```bash
 curl -H "Content-Type: application/json"     -d '{
