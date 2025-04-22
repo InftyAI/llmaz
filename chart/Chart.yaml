@@ -25,3 +25,11 @@ dependencies:
     version: "6.4.0"
     repository: "https://helm.openwebui.com/"
     condition: open-webui.enabled
+  - name: envoy-gateway
+    version: v1.3.2
+    repository: oci://docker.io/envoyproxy/gateway-helm
+    condition: envoy-gateway.enabled
+  - name: envoy-ai-gateway
+    version: v0.1.5
+    repository: oci://docker.io/envoyproxy/ai-gateway-helm
+    condition: envoy-ai-gateway.enabled
