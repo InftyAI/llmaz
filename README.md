@@ -32,13 +32,13 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
 - **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
-- **Efficient Model Distribution (WIP)**: Out-of-the-box model cache system support with [Manta](https://github.com/InftyAI/Manta), still under development right now with architecture reframing.
 - **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
-- **SOTA Inference**: llmaz supports the latest cutting-edge researches like [Speculative Decoding](https://arxiv.org/abs/2211.17192) or [Splitwise](https://arxiv.org/abs/2311.18677)(WIP) to run on Kubernetes.
 - **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores. llmaz will automatically handle the model loading, requiring no effort from users.
 - **Multi-Host Support**: llmaz supports both single-host and multi-host scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0.
+- **AI Gateway Support**: Offering capabilities like token-based rate limiting, model routing with the integration of [Envoy AI Gateway](https://aigateway.envoyproxy.io/).
+- **Build-in ChatUI**: Out-of-the-box chatbot support with the integration of [Open WebUI](https://github.com/open-webui/open-webui), offering capacities like function call, RAG, web search and more, see configurations [here](./docs/open-webui.md).
 - **Scaling Efficiency**: llmaz supports horizontal scaling with [HPA](./docs/examples/hpa/README.md) by default and will integrate with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) for smart scaling across different clouds.
-- **Build-in ChatUI**: Out-of-the-box chatbot support with the integration of [Open WebUI](https://github.com/open-webui/open-webui), see configurations [here](./docs/open-webui.md).
+- **Efficient Model Distribution (WIP)**: Out-of-the-box model cache system support with [Manta](https://github.com/InftyAI/Manta), still under development right now with architecture reframing.
 
 ## Quick Start
 
@@ -51,7 +51,7 @@ Read the [Installation](./docs/installation.md) for guidance.
 Here's a toy example for deploying `facebook/opt-125m`, all you need to do
 is to apply a `Model` and a `Playground`.
 
-If you're running on CPUs, you can refer to [llama.cpp](/docs/examples/llamacpp/README.md), or more [examples](/docs/examples/README.md) here.
+If you're running on CPUs, you can refer to [llama.cpp](/docs/examples/llamacpp/README.md).
 
 > Note: if your model needs Huggingface token for weight downloads, please run `kubectl create secret generic modelhub-secret --from-literal=HF_TOKEN=<your token>` ahead.
 
@@ -118,14 +118,13 @@ curl http://localhost:8080/v1/completions \
 
 ### More than quick-start
 
-If you want to learn more about this project, please refer to [develop.md](./docs/develop.md).
+Please refer to [examples](./docs/examples/README.md) for more tutorials or read [develop.md](./docs/develop.md) to learn more about the project.
 
 ## Roadmap
 
-- Gateway support for traffic routing
-- Metrics support
 - Serverless support for cloud-agnostic users
-- CLI tool support
+- Prefill-Decode disaggregated serving
+- KV cache offload support
 - Model training, fine tuning in the long-term
 
 ## Community

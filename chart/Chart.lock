@@ -2,5 +2,11 @@ dependencies:
 - name: open-webui
   repository: https://helm.openwebui.com/
   version: 6.4.0
-digest: sha256:2520f6e26f2e6fd3e51c5f7f940eef94217c125a9828b0f59decedbecddcdb29
-generated: "2025-04-21T00:50:06.532039+08:00"
+- name: gateway-helm
+  repository: oci://registry-1.docker.io/envoyproxy/
+  version: 0.0.0-latest
+- name: ai-gateway-helm
+  repository: oci://registry-1.docker.io/envoyproxy/
+  version: v0.0.0-latest
+digest: sha256:c7b1aa22097a6a1a6f4dd04beed3287ab8ef2ae1aec8a9a4ec7a71251be23e4c
+generated: "2025-04-22T20:15:43.343515+08:00"

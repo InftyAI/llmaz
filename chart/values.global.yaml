@@ -34,7 +34,7 @@ prometheus:
   enabled: true
 
 open-webui:
-  enabled: false
+  enabled: true
   persistence:
     enabled: false
   enableOpenaiApi: true
