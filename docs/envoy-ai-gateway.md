@@ -30,12 +30,9 @@ The full example is [here](./examples/envoy-ai-gateway/basic.yaml), apply it.
 
 If Open-WebUI is enabled, you can chat via the webui (recommended), see [documentation](./open-webui.md). Otherwise, following the steps below to test the Envoy AI Gateway APIs.
 
-- For local test with port forwarding, use `export GATEWAY_URL="http://localhost:8080"`.
-- Using external IP, use `export GATEWAY_URL=$(kubectl get gateway/envoy-ai-gateway-basic -o jsonpath='{.status.addresses[0].value}')`
+I. Port-forwarding the `LoadBalancer` service in llmaz-system with port 8080.
 
-`$GATEWAY_URL/v1/models` will show the models that are available in the Envoy AI Gateway.
-
-Expected response will look like this:
+II. Query `http://localhost:8008/v1/models | jq .`, available models will be listed. Expected response will look like this:
 
 ```json
 {
@@ -57,7 +54,7 @@ Expected response will look like this:
 }
 ```
 
-`$GATEWAY_URL/v1/chat/completions` will request the chat api for the model. Here, we ask the `qwen2-0.5b` model, the request will look like:
+III. Query `http://localhost:8080/v1/chat/completions` to chat with the model. Here, we ask the `qwen2-0.5b` model, the query will look like:
 
 ```bash
 curl -H "Content-Type: application/json"     -d '{
@@ -68,7 +65,7 @@ curl -H "Content-Type: application/json"     -d '{
                 "content": "Hi."
             }
         ]
-    }'     $GATEWAY_URL/v1/chat/completions
+    }'     http://localhost:8080/v1/chat/completions | jq .
 ```
 
 Expected response will look like this:
