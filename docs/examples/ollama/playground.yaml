@@ -1,3 +1,12 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-0--5b
+spec:
+  familyName: qwen2
+  source:
+    uri: ollama://qwen2:0.5b
+---
 apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:
