@@ -20,15 +20,23 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 > 🌱 llmaz is alpha now, so API may change before graduating to Beta.
 
+## Overview
+
+<p align="center">
+  <picture>
+    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/infra.png" width=70%>
+  </picture>
+</p>
+
 ## Architecture
 
 <p align="center">
   <picture>
-    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/arch.png" width=70%>
+    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/arch.png" width=100%>
   </picture>
 </p>
 
-## Features Overview
+## Key Features
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
 - **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
