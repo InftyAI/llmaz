@@ -19,13 +19,13 @@ Note: llmaz helm chart will by default install
 ```cmd
 helm repo add inftyai https://inftyai.github.io/llmaz
 helm repo update
-helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace
+helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.9
 ```
 
 ### Uninstall
 
 ```cmd
-helm uninstall llmaz
+helm uninstall llmaz --namespace llmaz-system
 kubectl delete ns llmaz-system
 ```
 
@@ -59,7 +59,7 @@ make helm-install
 ### Uninstall
 
 ```cmd
-helm uninstall llmaz
+helm uninstall llmaz --namespace llmaz-system
 kubectl delete ns llmaz-system
 ```
 
