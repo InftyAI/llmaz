@@ -9,7 +9,7 @@
 - Prometheus, see [installation](https://github.com/InftyAI/llmaz/tree/main/docs/prometheus-operator#install-the-prometheus-operator).
 
 Note: llmaz helm chart will by default install
-- [Envoy Gateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/gateway) as the frontier in the llmaz-system, if you *already installed these two components* or *want to deploy in other namespaces* , append `--set envoy-gateway.enabled=false --set envoy-ai-gateway.enabled=false` to the command below.
+- [Envoy Gateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) as the frontier in the llmaz-system, if you *already installed these two components* or *want to deploy in other namespaces* , append `--set envoy-gateway.enabled=false --set envoy-ai-gateway.enabled=false` to the command below.
 - [Open WebUI](https://github.com/open-webui/open-webui) as the default chatbot, if you want to disable it, append `--set open-webui.enabled=false` to the command below.
 
 ## Install a released version
@@ -25,7 +25,7 @@ helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --v
 ### Uninstall
 
 ```cmd
-helm uninstall llmaz
+helm uninstall llmaz --namespace llmaz-system
 kubectl delete ns llmaz-system
 ```
 
@@ -59,7 +59,7 @@ make helm-install
 ### Uninstall
 
 ```cmd
-helm uninstall llmaz
+helm uninstall llmaz --namespace llmaz-system
 kubectl delete ns llmaz-system
 ```
 
