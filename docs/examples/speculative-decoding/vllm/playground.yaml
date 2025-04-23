@@ -1,3 +1,30 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: opt-6--7b
+spec:
+  familyName: opt
+  source:
+    modelHub:
+      modelID: facebook/opt-6.7b
+  inferenceConfig:
+    flavors:
+      - name: a10 # gpu type
+        limits:
+          nvidia.com/gpu: 1
+---
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: opt-125m
+spec:
+  familyName: opt
+  source:
+    modelHub:
+      modelID: facebook/opt-125m
+  # Draft model's inferenceFlavors will not impact the speculative-decoding,
+  # only target model will be considered, so we ignore the flavor configurations here.
+---
 apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:

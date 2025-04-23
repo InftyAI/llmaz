@@ -1,9 +1,0 @@
-apiVersion: llmaz.io/v1alpha1
-kind: OpenModel
-metadata:
-  name: llama3-405b-instruct
-spec:
-  familyName: llama3
-  source:
-    modelHub:
-      modelID: meta-llama/Llama-3.1-405B
