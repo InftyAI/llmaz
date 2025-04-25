@@ -4,13 +4,14 @@
 
 **Requirements**:
 
-- Kubernetes version >= 1.27
+- Kubernetes version >= 1.26
 - Helm 3, see [installation](https://helm.sh/docs/intro/install/).
 - Prometheus, see [installation](https://github.com/InftyAI/llmaz/tree/main/docs/prometheus-operator#install-the-prometheus-operator).
 
 Note: llmaz helm chart will by default install
 - [Envoy Gateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) as the frontier in the llmaz-system, if you *already installed these two components* or *want to deploy in other namespaces* , append `--set envoy-gateway.enabled=false --set envoy-ai-gateway.enabled=false` to the command below.
 - [Open WebUI](https://github.com/open-webui/open-webui) as the default chatbot, if you want to disable it, append `--set open-webui.enabled=false` to the command below.
+- For Kubernetes version, refer [Multi-host-support](.../README.md) in the readme file.
 
 ## Install a released version
 
