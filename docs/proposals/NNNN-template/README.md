@@ -57,7 +57,6 @@ style guide]. In particular, wrap lines to a reasonable length, to make it
 easier for reviewers to cite specific portions, and to minimize diff churn on
 updates.
 
-[documentation style guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/style-guide.md
 -->
 
 ## Motivation
@@ -66,7 +65,7 @@ updates.
 This section is for explicitly listing the motivation, goals, and non-goals of
 this Proposal.  Describe why the change is important and the benefits to users. The
 motivation section can optionally provide links to [experience reports] to
-demonstrate the interest in a Proposal within the wider Kubernetes community.
+demonstrate the interest in a Proposal within the wider InftyAI community.
 
 [experience reports]: https://github.com/golang/go/wiki/ExperienceReports
 -->
@@ -123,7 +122,7 @@ This might be a good place to talk about core concepts and how they relate.
 <!--
 What are the risks of this proposal, and how do we mitigate? Think broadly.
 For example, consider both security and how this will impact the larger
-Kubernetes ecosystem.
+InftyAI ecosystem.
 
 How will security be reviewed, and by whom?
 
@@ -148,8 +147,7 @@ proposal will be implemented, this is the place to discuss them.
 The goal is to ensure that we don't accept enhancements with inadequate testing.
 
 All code is expected to have adequate tests (eventually with coverage
-expectations). Please adhere to the [Kubernetes testing guidelines][testing-guidelines]
-when drafting this test plan.
+expectations).
 
 [testing-guidelines]: https://git.k8s.io/community/contributors/devel/sig-testing/testing.md
 -->
@@ -179,8 +177,6 @@ Additionally, for Alpha try to enumerate the core package you will be touching
 to implement this enhancement and provide the current unit coverage for those
 in the form of:
 - <package>: <date> - <current test coverage>
-The data can be easily read from:
-https://testgrid.k8s.io/sig-testing-canaries#ci-kubernetes-coverage-unit
 
 This can inform certain test coverage improvements that we want to do before
 extending the production code to implement this enhancement.
@@ -191,7 +187,6 @@ extending the production code to implement this enhancement.
 ##### Integration tests
 
 <!--
-Integration tests are contained in k8s.io/kubernetes/test/integration.
 Integration tests allow control of the configuration parameters used to start the binaries under test.
 This is different from e2e tests which do not allow configuration of parameters.
 Doing this allows testing non-default options and multiple different and potentially conflicting command line options.
@@ -247,8 +242,8 @@ Major milestones might include:
 - the `Summary` and `Motivation` sections being merged, signaling SIG acceptance
 - the `Proposal` section being merged, signaling agreement on a proposed design
 - the date implementation started
-- the first Kubernetes release where an initial version of the Proposal was available
-- the version of Kubernetes where the Proposal graduated to general availability
+- the first llmaz release where an initial version of the Proposal was available
+- the version of llmaz where the Proposal graduated to general availability
 - when the Proposal was retired or superseded
 -->
 
