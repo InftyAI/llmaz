@@ -330,8 +330,8 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 
 	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
-                        // TODO: The timeout is mainly quoted from https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v0.3.0/config/manifests/vllm/gpu-deployment.yaml#L170-L226.
-                        // We should support this in the upstream inference engines in the future.
+			// TODO: The timeout is mainly quoted from https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v0.3.0/config/manifests/vllm/gpu-deployment.yaml#L170-L226.
+			// We should support this in the upstream inference engines in the future.
 			TerminationGracePeriodSeconds: ptr.To[int64](130),
 			// TODO: should we support image pull secret here?
 			Containers: []corev1.Container{
