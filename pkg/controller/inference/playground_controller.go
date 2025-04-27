@@ -330,6 +330,7 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 
 	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
+			TerminationGracePeriodSeconds: ptr.To[int64](130),
 			// TODO: should we support image pull secret here?
 			Containers: []corev1.Container{
 				{

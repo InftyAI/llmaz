@@ -22,4 +22,4 @@ spec:
   modelClaim:
     modelName: qwen2-0--5b
   backendRuntimeConfig:
-    name: tgi
+    backendName: tgi
