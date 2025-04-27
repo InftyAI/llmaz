@@ -4,7 +4,7 @@
 
 **Requirements**:
 
-- Kubernetes version >= 1.27
+- Kubernetes version >= 1.26. LWS requires Kubernetes version **v1.26 or higher**. If you are using a lower Kubernetes version and most of your workloads rely on single-node inference, we may consider replacing LWS with a Deployment-based approach. This fallback plan would involve using Kubernetes Deployments to manage single-node inference workloads efficiently. See [#32](https://github.com/InftyAI/llmaz/issues/32) for more details and updates.
 - Helm 3, see [installation](https://helm.sh/docs/intro/install/).
 - Prometheus, see [installation](https://github.com/InftyAI/llmaz/tree/main/docs/prometheus-operator#install-the-prometheus-operator).
 
