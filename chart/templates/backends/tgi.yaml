@@ -10,6 +10,24 @@ metadata:
 spec:
   image: {{ .Values.backendRuntime.tgi.image.repository }}
   version: {{ .Values.backendRuntime.tgi.image.tag }}
+  lifecycle:
+    preStop:
+      exec:
+        command:
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              RUNNING=$(curl -s http://localhost:8080/metrics | grep 'tgi_batch_current_size' | grep -v '#' | awk '{print $2}')
+              WAITING=$(curl -s http://localhost:8080/metrics | grep 'tgi_queue_size' | grep -v '#' | awk '{print $2}')
+              if [ "$RUNNING" = "0" ] && [ "$WAITING" = "0" ]; then
+                echo "Terminating: No active or waiting requests, safe to terminate" >> /proc/1/fd/1
+                exit 0
+              else
+                echo "Terminating: Running: $RUNNING, Waiting: $WAITING" >> /proc/1/fd/1
+                sleep 5
+              fi
+            done
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
   recommendedConfigs:
