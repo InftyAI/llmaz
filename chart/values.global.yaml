@@ -13,7 +13,7 @@ backendRuntime:
   sglang:
     image:
       repository: lmsysorg/sglang
-      tag: v0.2.10-cu121
+      tag: v0.4.5-cu121
   tgi:
     image:
       repository: ghcr.io/huggingface/text-generation-inference
