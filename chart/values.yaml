@@ -26,6 +26,7 @@ controllerManager:
   serviceAccount:
     annotations: {}
 kubernetesClusterDomain: cluster.local
+modelLoaderImage: inftyai/model-loader:v0.0.10
 metricsService:
   ports:
   - name: https

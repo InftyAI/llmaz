@@ -16,6 +16,16 @@ limitations under the License.
 
 package pkg
 
-const (
-	LOADER_IMAGE = "inftyai/model-loader:v0.0.10"
+import "os"
+
+var (
+	LOADER_IMAGE = os.Getenv("MODEL_LOADER_IMAGE")
 )
+
+func init() {
+	// If the environment variable is not set,
+	// assign the default image tag.
+	if LOADER_IMAGE == "" {
+		LOADER_IMAGE = "inftyai/model-loader:v0.0.10"
+	}
+}
