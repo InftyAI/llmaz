@@ -1,10 +1,13 @@
-# Install Prometheus Operator Guide
+---
+title: Prometheus Operator
+weight: 3
+---
 
 Currently, llmaz has already integrated metrics. This document provides deployment steps explaining how to install and configure Prometheus Operator in a Kubernetes cluster.
 
 ### Install the prometheus operator
 
-Please follow the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md) to install 
+Please follow the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md) to install
 
 ```bash
 # Installing the prometheus operator
@@ -14,9 +17,9 @@ prometheus-operator-55b5c96cf8-jl2nx   1/1     Running   0          12s
 ```
 Ensure that the Prometheus Operator Pod is running successfully.
 
-### Install the ServiceMonitor CR for llmaz 
+### Install the ServiceMonitor CR for llmaz
 
-To enable monitoring for the llmaz system, you need to install the ServiceMonitor custom resource (CR). 
+To enable monitoring for the llmaz system, you need to install the ServiceMonitor custom resource (CR).
 You can either modify the Helm chart prometheus according to the [documentation](./../../chart/values.global.yaml) or use `make install-prometheus` in Makefile.
 
 - Using Helm Chart: to modify the values.global.yaml
@@ -73,4 +76,4 @@ Forwarding from 0.0.0.0:9090 -> 9090
 If using kind, we can use port-forward, `kubectl port-forward services/prometheus-operated  39090:9090 --address 0.0.0.0 -n llmaz-system`
 This allows us to access prometheus using a browser: `http://localhost:9090/query`
 
-![prometheus](prometheus.png?raw=true)
+![prometheus](/images/prometheus.png?raw=true)

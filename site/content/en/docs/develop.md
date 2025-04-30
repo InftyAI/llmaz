@@ -1,6 +1,9 @@
-# Develop Guidance
-
-A develop guidance for people who want to learn more about this project.
+---
+title: Develop Guidance
+weight: 3
+description: >
+  This section contains a develop guidance for people who want to learn more about this project.
+---
 
 ## Project Structure
 
