@@ -39,7 +39,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 ## Key Features
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
-- **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
+- **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp), [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM). Find the full list of supported backends [here](./docs/support-backends.md).
 - **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
 - **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores. llmaz will automatically handle the model loading, requiring no effort from users.
 - **Multi-Host Support**: llmaz supports both single-host and multi-host scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0. 
