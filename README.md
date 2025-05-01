@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/logo.png">
-    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/logo.png" width=55%>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/logo.png">
+    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/logo.png" width=55%>
   </picture>
 </p>
 
@@ -24,7 +24,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 <p align="center">
   <picture>
-    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/infra.png" width=70%>
+    <img alt="infrastructure" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/infra.png" width=70%>
   </picture>
 </p>
 
@@ -32,7 +32,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 <p align="center">
   <picture>
-    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/arch.png" width=100%>
+    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/arch.png" width=100%>
   </picture>
 </p>
 
