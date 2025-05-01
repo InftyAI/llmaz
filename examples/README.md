@@ -46,6 +46,10 @@ By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference
 
 [llama.cpp](https://github.com/ggerganov/llama.cpp) can serve models on a wide variety of hardwares, such as CPU, see [example](./llamacpp/) here.
 
+### Deploy models via TensorRT-LLM
+
+[TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) provides users with an easy-to-use Python API to define Large Language Models (LLMs) and support state-of-the-art optimizations to perform inference efficiently on NVIDIA GPUs, see [example](./tensorrt-llm/) here.
+
 ### Deploy models via text-generation-inference
 
 [text-generation-inference](https://github.com/huggingface/text-generation-inference) is used in production at Hugging Face to power Hugging Chat, the Inference API and Inference Endpoint. see [example](./tgi/) here.

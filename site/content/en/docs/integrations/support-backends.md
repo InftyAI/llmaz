@@ -13,6 +13,10 @@ If you want to integrate more backends into llmaz, please refer to this [PR](htt
 
 [SGLang](https://github.com/sgl-project/sglang) is yet another fast serving framework for large language models and vision language models.
 
+## TensorRT-LLM
+
+[TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) provides users with an easy-to-use Python API to define Large Language Models (LLMs) and support state-of-the-art optimizations to perform inference efficiently on NVIDIA GPUs. TensorRT-LLM also contains components to create Python and C++ runtimes that orchestrate the inference execution in performant way.
+
 ## Text-Generation-Inference
 
 [text-generation-inference](https://github.com/huggingface/text-generation-inference) is a Rust, Python and gRPC server for text generation inference. Used in production at Hugging Face to power Hugging Chat, the Inference API and Inference Endpoint.
