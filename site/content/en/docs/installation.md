@@ -1,4 +1,10 @@
-# Installation Guide
+---
+title: Installation
+weight: 1
+description: >
+    This section introduces the installation guidance for llmaz.
+---
+
 
 ## Prerequisites
 
