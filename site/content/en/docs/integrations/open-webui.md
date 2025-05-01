@@ -1,4 +1,7 @@
-# Open-WebUI
+---
+title: Open WebUI
+weight: 2
+---
 
 [Open WebUI](https://github.com/open-webui/open-webui) is a user-friendly AI interface with OpenAI-compatible APIs, serving as the default chatbot for llmaz.
 
