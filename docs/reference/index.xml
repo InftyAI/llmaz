@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Reference on llmaz</title><link>https://llmaz.inftyai.com/docs/reference/</link><description>Recent content in Reference on llmaz</description><generator>Hugo</generator><language>en</language><atom:link href="https://llmaz.inftyai.com/docs/reference/index.xml" rel="self" type="application/rss+xml"/><item><title>llmaz core API</title><link>https://llmaz.inftyai.com/docs/reference/core.v1alpha1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/reference/core.v1alpha1/</guid><description>&lt;h2 id="resource-types">Resource Types&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://llmaz.inftyai.com/docs/reference/core.v1alpha1/#llmaz-io-v1alpha1-OpenModel">OpenModel&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="llmaz-io-v1alpha1-OpenModel">&lt;code>OpenModel&lt;/code> &lt;/h2>
+&lt;p>&lt;strong>Appears in:&lt;/strong>&lt;/p>
+&lt;p>OpenModel is the Schema for the open models API&lt;/p>
+&lt;table class="table">
+&lt;thead>&lt;tr>&lt;th width="30%">Field&lt;/th>&lt;th>Description&lt;/th>&lt;/tr>&lt;/thead>
+&lt;tbody>
+&lt;tr>&lt;td>&lt;code>apiVersion&lt;/code>&lt;br/>string&lt;/td>&lt;td>&lt;code>llmaz.io/v1alpha1&lt;/code>&lt;/td>&lt;/tr>
+&lt;tr>&lt;td>&lt;code>kind&lt;/code>&lt;br/>string&lt;/td>&lt;td>&lt;code>OpenModel&lt;/code>&lt;/td>&lt;/tr>
+&lt;tr>&lt;td>&lt;code>spec&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#llmaz-io-v1alpha1-ModelSpec">&lt;code>ModelSpec&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;span class="text-muted">No description provided.&lt;/span>&lt;/td>
+&lt;/tr>
+&lt;tr>&lt;td>&lt;code>status&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#llmaz-io-v1alpha1-ModelStatus">&lt;code>ModelStatus&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;span class="text-muted">No description provided.&lt;/span>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h2 id="llmaz-io-v1alpha1-Flavor">&lt;code>Flavor&lt;/code> &lt;/h2>
+&lt;p>&lt;strong>Appears in:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://llmaz.inftyai.com/docs/reference/core.v1alpha1/#llmaz-io-v1alpha1-InferenceConfig">InferenceConfig&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>Flavor defines the accelerator requirements for a model and the necessary parameters
+in autoscaling. Right now, it will be used in two places:&lt;/p>
+&lt;ul>
+&lt;li>Pod scheduling with node selectors specified.&lt;/li>
+&lt;li>Cluster autoscaling with essential parameters provided.&lt;/li>
+&lt;/ul>
+&lt;table class="table">
+&lt;thead>&lt;tr>&lt;th width="30%">Field&lt;/th>&lt;th>Description&lt;/th>&lt;/tr>&lt;/thead>
+&lt;tbody>
+&lt;tr>&lt;td>&lt;code>name&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#llmaz-io-v1alpha1-FlavorName">&lt;code>FlavorName&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;p>Name represents the flavor name, which will be used in model claim.&lt;/p></description></item><item><title>llmaz inference API</title><link>https://llmaz.inftyai.com/docs/reference/inference.v1alpha1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/reference/inference.v1alpha1/</guid><description>&lt;h2 id="resource-types">Resource Types&lt;/h2>
+&lt;ul>
+&lt;li>&lt;a href="https://llmaz.inftyai.com/docs/reference/inference.v1alpha1/#inference-llmaz-io-v1alpha1-Playground">Playground&lt;/a>&lt;/li>
+&lt;li>&lt;a href="https://llmaz.inftyai.com/docs/reference/inference.v1alpha1/#inference-llmaz-io-v1alpha1-Service">Service&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="inference-llmaz-io-v1alpha1-Playground">&lt;code>Playground&lt;/code> &lt;/h2>
+&lt;p>&lt;strong>Appears in:&lt;/strong>&lt;/p>
+&lt;p>Playground is the Schema for the playgrounds API&lt;/p>
+&lt;table class="table">
+&lt;thead>&lt;tr>&lt;th width="30%">Field&lt;/th>&lt;th>Description&lt;/th>&lt;/tr>&lt;/thead>
+&lt;tbody>
+&lt;tr>&lt;td>&lt;code>apiVersion&lt;/code>&lt;br/>string&lt;/td>&lt;td>&lt;code>inference.llmaz.io/v1alpha1&lt;/code>&lt;/td>&lt;/tr>
+&lt;tr>&lt;td>&lt;code>kind&lt;/code>&lt;br/>string&lt;/td>&lt;td>&lt;code>Playground&lt;/code>&lt;/td>&lt;/tr>
+&lt;tr>&lt;td>&lt;code>spec&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#inference-llmaz-io-v1alpha1-PlaygroundSpec">&lt;code>PlaygroundSpec&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;span class="text-muted">No description provided.&lt;/span>&lt;/td>
+&lt;/tr>
+&lt;tr>&lt;td>&lt;code>status&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#inference-llmaz-io-v1alpha1-PlaygroundStatus">&lt;code>PlaygroundStatus&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;span class="text-muted">No description provided.&lt;/span>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h2 id="inference-llmaz-io-v1alpha1-Service">&lt;code>Service&lt;/code> &lt;/h2>
+&lt;p>&lt;strong>Appears in:&lt;/strong>&lt;/p>
+&lt;p>Service is the Schema for the services API&lt;/p>
+&lt;table class="table">
+&lt;thead>&lt;tr>&lt;th width="30%">Field&lt;/th>&lt;th>Description&lt;/th>&lt;/tr>&lt;/thead>
+&lt;tbody>
+&lt;tr>&lt;td>&lt;code>apiVersion&lt;/code>&lt;br/>string&lt;/td>&lt;td>&lt;code>inference.llmaz.io/v1alpha1&lt;/code>&lt;/td>&lt;/tr>
+&lt;tr>&lt;td>&lt;code>kind&lt;/code>&lt;br/>string&lt;/td>&lt;td>&lt;code>Service&lt;/code>&lt;/td>&lt;/tr>
+&lt;tr>&lt;td>&lt;code>spec&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#inference-llmaz-io-v1alpha1-ServiceSpec">&lt;code>ServiceSpec&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;span class="text-muted">No description provided.&lt;/span>&lt;/td>
+&lt;/tr>
+&lt;tr>&lt;td>&lt;code>status&lt;/code> &lt;B>[Required]&lt;/B>&lt;br/>
+&lt;a href="#inference-llmaz-io-v1alpha1-ServiceStatus">&lt;code>ServiceStatus&lt;/code>&lt;/a>
+&lt;/td>
+&lt;td>
+ &lt;span class="text-muted">No description provided.&lt;/span>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;h2 id="inference-llmaz-io-v1alpha1-BackendName">&lt;code>BackendName&lt;/code> &lt;/h2>
+&lt;p>(Alias of &lt;code>string&lt;/code>)&lt;/p>
+&lt;p>&lt;strong>Appears in:&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://llmaz.inftyai.com/docs/reference/inference.v1alpha1/#inference-llmaz-io-v1alpha1-BackendRuntimeConfig">BackendRuntimeConfig&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="inference-llmaz-io-v1alpha1-BackendRuntime">&lt;code>BackendRuntime&lt;/code> &lt;/h2>
+&lt;p>&lt;strong>Appears in:&lt;/strong>&lt;/p>
+&lt;p>BackendRuntime is the Schema for the backendRuntime API&lt;/p></description></item></channel></rss>
