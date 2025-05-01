@@ -23,9 +23,7 @@ Note: llmaz helm chart will by default install
 ### Install
 
 ```cmd
-helm repo add inftyai https://inftyai.github.io/llmaz
-helm repo update
-helm install llmaz inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.9
+helm install llmaz oci://registry-1.docker.io/inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.9
 ```
 
 ### Uninstall
