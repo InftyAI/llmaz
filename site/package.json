@@ -2,8 +2,10 @@
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "cross-env": "^7.0.3",
+    "postcss": "^8.5.3",
     "postcss-cli": "^11.0.1",
-    "rtlcss": "^4.3.0"
+    "rtlcss": "^4.3.0",
+    "tailwindcss": "^4.1.5"
   },
   "name": "site",
   "version": "1.0.0",
@@ -14,8 +16,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "postcss": "^8.5.3"
-  }
+  "description": ""
 }
