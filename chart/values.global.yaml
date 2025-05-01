@@ -14,6 +14,10 @@ backendRuntime:
     image:
       repository: lmsysorg/sglang
       tag: v0.4.5-cu121
+  tensorrt_llm:
+    image:
+      repository: nvcr.io/nvidia/tritonserver
+      tag: 25.03-trtllm-python-py3
   tgi:
     image:
       repository: ghcr.io/huggingface/text-generation-inference
