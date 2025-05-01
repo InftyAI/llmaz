@@ -14,6 +14,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Node.js dependencies
+        working-directory: ./site
+        run: |
+          npm ci || npm install
+
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
@@ -21,7 +31,7 @@ jobs:
           extended: true
 
       - name: Build Hugo site
-        run: hugo --source site
+        run: hugo --source site --minify
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
