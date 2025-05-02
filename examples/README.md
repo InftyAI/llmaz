@@ -4,17 +4,19 @@ We provide a set of examples to help you serve large language models, by default
 
 ## Table of Contents
 
-- [Deploy models from Huggingface](#deploy-models-from-huggingface)
-- [Deploy models from ModelScope](#deploy-models-from-modelscope)
-- [Deploy models from ObjectStore](#deploy-models-from-objectstore)
-- [Deploy models via SGLang](#deploy-models-via-sglang)
-- [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
-- [Deploy models via text-generation-inference](#deploy-models-via-tgi)
-- [Deploy models via ollama](#ollama)
-- [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
-- [Deploy multi-host inference](#multi-host-inference)
-- [Deploy host models](#deploy-host-models)
-- [Envoy AI Gateway](#envoy-ai-gateway)
+- [Examples](#examples)
+  - [Table of Contents](#table-of-contents)
+    - [Deploy models from Huggingface](#deploy-models-from-huggingface)
+    - [Deploy models from ModelScope](#deploy-models-from-modelscope)
+    - [Deploy models from ObjectStore](#deploy-models-from-objectstore)
+    - [Deploy models via SGLang](#deploy-models-via-sglang)
+    - [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
+    - [Deploy models via text-generation-inference](#deploy-models-via-text-generation-inference)
+    - [Deploy models via ollama](#deploy-models-via-ollama)
+    - [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
+    - [Multi-Host Inference](#multi-host-inference)
+    - [Deploy Host Models](#deploy-host-models)
+    - [Envoy AI Gateway](#envoy-ai-gateway)
 
 ### Deploy models from Huggingface
 
@@ -45,10 +47,6 @@ By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference
 ### Deploy models via llama.cpp
 
 [llama.cpp](https://github.com/ggerganov/llama.cpp) can serve models on a wide variety of hardwares, such as CPU, see [example](./llamacpp/) here.
-
-### Deploy models via TensorRT-LLM
-
-[TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM) provides users with an easy-to-use Python API to define Large Language Models (LLMs) and support state-of-the-art optimizations to perform inference efficiently on NVIDIA GPUs, see [example](./tensorrt-llm/) here.
 
 ### Deploy models via text-generation-inference
 
