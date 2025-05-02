@@ -4,19 +4,17 @@ We provide a set of examples to help you serve large language models, by default
 
 ## Table of Contents
 
-- [Examples](#examples)
-  - [Table of Contents](#table-of-contents)
-    - [Deploy models from Huggingface](#deploy-models-from-huggingface)
-    - [Deploy models from ModelScope](#deploy-models-from-modelscope)
-    - [Deploy models from ObjectStore](#deploy-models-from-objectstore)
-    - [Deploy models via SGLang](#deploy-models-via-sglang)
-    - [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
-    - [Deploy models via text-generation-inference](#deploy-models-via-text-generation-inference)
-    - [Deploy models via ollama](#deploy-models-via-ollama)
-    - [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
-    - [Multi-Host Inference](#multi-host-inference)
-    - [Deploy Host Models](#deploy-host-models)
-    - [Envoy AI Gateway](#envoy-ai-gateway)
+- [Deploy models from Huggingface](#deploy-models-from-huggingface)
+- [Deploy models from ModelScope](#deploy-models-from-modelscope)
+- [Deploy models from ObjectStore](#deploy-models-from-objectstore)
+- [Deploy models via SGLang](#deploy-models-via-sglang)
+- [Deploy models via llama.cpp](#deploy-models-via-llamacpp)
+- [Deploy models via text-generation-inference](#deploy-models-via-text-generation-inference)
+- [Deploy models via ollama](#deploy-models-via-ollama)
+- [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
+- [Multi-Host Inference](#multi-host-inference)
+- [Deploy Host Models](#deploy-host-models)
+- [Envoy AI Gateway](#envoy-ai-gateway)
 
 ### Deploy models from Huggingface
 
