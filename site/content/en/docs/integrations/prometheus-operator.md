@@ -20,7 +20,7 @@ Ensure that the Prometheus Operator Pod is running successfully.
 ### Install the ServiceMonitor CR for llmaz
 
 To enable monitoring for the llmaz system, you need to install the ServiceMonitor custom resource (CR).
-You can either modify the Helm chart prometheus according to the [documentation](./../../chart/values.global.yaml) or use `make install-prometheus` in Makefile.
+You can either modify the Helm chart prometheus according to the [documentation](https://github.com/InftyAI/llmaz/blob/main/chart/values.global.yaml) or use `make install-prometheus` in Makefile.
 
 - Using Helm Chart: to modify the values.global.yaml
 ```yaml
