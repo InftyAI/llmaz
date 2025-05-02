@@ -335,3 +335,8 @@ helm-package: helm
 
 	# To recover values.yaml
 	make helm
+
+.PHONY: launch-website
+launch-website:
+	cd site && \
+	hugo server
