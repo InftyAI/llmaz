@@ -47,9 +47,9 @@ kubectl delete crd \
 
 ### Change configurations
 
-If you want to change the default configurations, please change the values in [values.global.yaml](../chart/values.global.yaml).
+If you want to change the default configurations, please change the values in [values.global.yaml](https://github.com/InftyAI/llmaz/blob/main/chart/values.global.yaml).
 
-**Do you change** the values in _values.yaml_ because it's auto-generated and will be overwritten.
+**Do not change** the values in _values.yaml_ because it's auto-generated and will be overwritten.
 
 
 ### Install

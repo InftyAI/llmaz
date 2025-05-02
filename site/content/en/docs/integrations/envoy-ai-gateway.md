@@ -27,7 +27,7 @@ To expose your models via Envoy Gateway, you need to create a GatewayClass, Gate
 
 We'll deploy two models `Qwen/Qwen2-0.5B-Instruct-GGUF` and `Qwen/Qwen2.5-Coder-0.5B-Instruct-GGUF` with llama.cpp (cpu only) and expose them via Envoy AI Gateway.
 
-The full example is [here](./examples/envoy-ai-gateway/basic.yaml), apply it.
+The full example is [here](https://github.com/InftyAI/llmaz/blob/main/docs/examples/envoy-ai-gateway/basic.yaml), apply it.
 
 ### 3. Check Envoy AI Gateway APIs
 
