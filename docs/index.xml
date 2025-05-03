@@ -3,7 +3,7 @@
 &lt;ul>
 &lt;li>Kubernetes version &amp;gt;= 1.26. LWS requires Kubernetes version &lt;strong>v1.26 or higher&lt;/strong>. If you are using a lower Kubernetes version and most of your workloads rely on single-node inference, we may consider replacing LWS with a Deployment-based approach. This fallback plan would involve using Kubernetes Deployments to manage single-node inference workloads efficiently. See &lt;a href="https://github.com/InftyAI/llmaz/issues/32">#32&lt;/a> for more details and updates.&lt;/li>
 &lt;li>Helm 3, see &lt;a href="https://helm.sh/docs/intro/install/">installation&lt;/a>.&lt;/li>
-&lt;li>Prometheus, see &lt;a href="https://github.com/InftyAI/llmaz/tree/main/docs/prometheus-operator#install-the-prometheus-operator">installation&lt;/a>.&lt;/li>
+&lt;li>Prometheus, see &lt;a href="https://github.com/InftyAI/llmaz/blob/main/site/content/en/docs/integrations/prometheus-operator.md#install-the-prometheus-operator">installation&lt;/a>.&lt;/li>
 &lt;/ul>
 &lt;p>Note: llmaz helm chart will by default install&lt;/p></description></item><item><title>Develop Guidance</title><link>https://llmaz.inftyai.com/docs/develop/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/develop/</guid><description>&lt;h2 id="project-structure">Project Structure&lt;/h2>
 &lt;pre tabindex="0">&lt;code class="language-structure" data-lang="structure">llmaz # root
