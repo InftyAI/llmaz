@@ -12,7 +12,7 @@ description: >
 
 - Kubernetes version >= 1.26. LWS requires Kubernetes version **v1.26 or higher**. If you are using a lower Kubernetes version and most of your workloads rely on single-node inference, we may consider replacing LWS with a Deployment-based approach. This fallback plan would involve using Kubernetes Deployments to manage single-node inference workloads efficiently. See [#32](https://github.com/InftyAI/llmaz/issues/32) for more details and updates.
 - Helm 3, see [installation](https://helm.sh/docs/intro/install/).
-- Prometheus, see [installation](https://github.com/InftyAI/llmaz/tree/main/docs/prometheus-operator#install-the-prometheus-operator).
+- Prometheus, see [installation](https://github.com/InftyAI/llmaz/blob/main/site/content/en/docs/integrations/prometheus-operator.md#install-the-prometheus-operator).
 
 Note: llmaz helm chart will by default install
 - [Envoy Gateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) as the frontier in the llmaz-system, if you *already installed these two components* or *want to deploy in other namespaces* , append `--set envoy-gateway.enabled=false --set envoy-ai-gateway.enabled=false` to the command below.
