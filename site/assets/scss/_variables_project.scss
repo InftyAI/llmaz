@@ -7,3 +7,37 @@ $primary: #ff7142;
 $secondary: #ffffff;
 
 $link-color: #e87454;
+
+.td-search__input:focus {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+.td-search__input:focus::placeholder {
+    color: #ffffff !important;
+}
+
+.dropdown-menu.show {
+    background-color: #ffffff !important;
+}
+
+.dropdown-menu.show .dropdown-item {
+    color: #000000 !important;
+    background-color: #ffffff;
+}
+
+.dropdown-menu.show .dropdown-item:hover,
+.dropdown-menu.show .dropdown-item:focus {
+    background-color: #e6e6e6;
+    color: #000000 !important;
+}
+
+p.lead {
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+}
+
+.td-footer {
+    background-color: #e28d76 !important;
+    min-height: 50px !important;
+}
