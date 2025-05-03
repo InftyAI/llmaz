@@ -10,7 +10,7 @@ title: llmaz
 <a class="btn btn-lg btn-secondary me-3 mb-4" href="https://github.com/InftyAI/llmaz">
   GitHub <i class="fab fa-github ms-2 "></i>
 </a>
-<p class="lead mt-5 -text-white">Easy, advanced inference platform for large language models on Kubernetes</p>
+<p class="lead mt-5 -text-white">Easy, advanced inference platform for large language models on Kubernetes.</p>
 {{< blocks/link-down color="white" >}}
 
 {{< /blocks/cover >}}
