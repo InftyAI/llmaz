@@ -158,7 +158,7 @@ enable = true
   name ="X"
   url = "https://x.com/InftyAI"
   icon = "fab fa-x-twitter"
-  desc = "Follow us on Twitter to get the latest news!"
+  desc = "Follow us on X to get the latest news!"
 [[params.links.developer]]
   name = "Slack"
   url = "https://inftyai.slack.com/"
