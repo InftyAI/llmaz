@@ -316,7 +316,7 @@ helm: manifests kustomize helmify
 
 .PHONY: helm-install
 helm-install: helm
-	helm upgrade --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update
+	helm upgrade --namespace llmaz-system --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update --create-namespace
 
 .PHONY: helm-upgrade
 helm-upgrade: image-push artifacts helm-install
