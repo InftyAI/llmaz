@@ -46,8 +46,8 @@ You can either modify the Helm chart prometheus according to the &lt;a href="htt
 &lt;p>&lt;a href="https://github.com/ggerganov/llama.cpp">llama.cpp&lt;/a> is to enable LLM inference with minimal setup and state-of-the-art performance on a wide variety of hardware - locally and in the cloud.&lt;/p>
 &lt;h2 id="sglang">SGLang&lt;/h2>
 &lt;p>&lt;a href="https://github.com/sgl-project/sglang">SGLang&lt;/a> is yet another fast serving framework for large language models and vision language models.&lt;/p>
-&lt;h2 id="text-generation-inference">Text-Generation-Inference&lt;/h2>
-&lt;p>&lt;a href="https://github.com/huggingface/text-generation-inference">text-generation-inference&lt;/a> is a Rust, Python and gRPC server for text generation inference. Used in production at Hugging Face to power Hugging Chat, the Inference API and Inference Endpoint.&lt;/p></description></item><item><title>llmaz core API</title><link>https://llmaz.inftyai.com/docs/reference/core.v1alpha1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/reference/core.v1alpha1/</guid><description>&lt;h2 id="resource-types">Resource Types&lt;/h2>
+&lt;h2 id="tensorrt-llm">TensorRT-LLM&lt;/h2>
+&lt;p>&lt;a href="https://github.com/NVIDIA/TensorRT-LLM">TensorRT-LLM&lt;/a> provides users with an easy-to-use Python API to define Large Language Models (LLMs) and support state-of-the-art optimizations to perform inference efficiently on NVIDIA GPUs. TensorRT-LLM also contains components to create Python and C++ runtimes that orchestrate the inference execution in performant way.&lt;/p></description></item><item><title>llmaz core API</title><link>https://llmaz.inftyai.com/docs/reference/core.v1alpha1/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/reference/core.v1alpha1/</guid><description>&lt;h2 id="resource-types">Resource Types&lt;/h2>
 &lt;ul>
 &lt;li>&lt;a href="https://llmaz.inftyai.com/docs/reference/core.v1alpha1/#llmaz-io-v1alpha1-OpenModel">OpenModel&lt;/a>&lt;/li>
 &lt;/ul>
