@@ -1,5 +1,5 @@
 # This is just an toy example, because it doesn't make any sense
-# in real world, drafting tokens for the model with similar size.
+# in real world, drafting tokens for the model with smaller size.
 apiVersion: llmaz.io/v1alpha1
 kind: OpenModel
 metadata:
@@ -38,10 +38,3 @@ spec:
     backendName: llamacpp
     args:
       - -fa # use flash attention
-    resources:
-      requests:
-        cpu: 4
-        memory: "8Gi"
-      limits:
-        cpu: 4
-        memory: "8Gi"
