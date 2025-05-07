@@ -29,6 +29,10 @@ We'll deploy two models `Qwen/Qwen2-0.5B-Instruct-GGUF` and `Qwen/Qwen2.5-Coder-
 
 The full example is [here](https://github.com/InftyAI/llmaz/blob/main/docs/examples/envoy-ai-gateway/basic.yaml), apply it.
 
+```bash
+kubectl apply -f https://raw.githubusercontent.com/InftyAI/llmaz/refs/heads/main/docs/examples/envoy-ai-gateway/basic.yaml
+```
+
 ### 3. Check Envoy AI Gateway APIs
 
 If Open-WebUI is enabled, you can chat via the webui (recommended), see [documentation](./open-webui.md). Otherwise, following the steps below to test the Envoy AI Gateway APIs.
@@ -36,7 +40,11 @@ If Open-WebUI is enabled, you can chat via the webui (recommended), see [documen
 I. Port-forwarding the `LoadBalancer` service in llmaz-system, like:
 
 ```bash
-kubectl port-forward svc/envoy-default-default-envoy-ai-gateway-dbec795a 8080:80
+kubectl -n llmaz-system port-forward \
+  $(kubectl -n llmaz-system get svc \
+    -l gateway.envoyproxy.io/owning-gateway-name=default-envoy-ai-gateway \
+    -o name) \
+  8080:80
 ```
 
 II. Query `http://localhost:8008/v1/models | jq .`, available models will be listed. Expected response will look like this:
