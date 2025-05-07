@@ -14,6 +14,10 @@ backendRuntime:
     image:
       repository: lmsysorg/sglang
       tag: v0.4.5-cu121
+  tensorrt_llm:
+    image:
+      repository: nvcr.io/nvidia/tritonserver
+      tag: 25.03-trtllm-python-py3
   tgi:
     image:
       repository: ghcr.io/huggingface/text-generation-inference
@@ -38,7 +42,9 @@ open-webui:
   persistence:
     enabled: false
   enableOpenaiApi: true
-  openaiBaseApiUrl: "https://api.openai.com/v1"
+  # Assumes the OpenAI-compatible API is exposed via the Envoy AI Gateway. Please replace this value if you 
+  # deployed the envoy-ai-gateway example to a namespace other than "default".
+  openaiBaseApiUrl: "http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1"
   extraEnvVars:
   - name: OPENAI_API_KEY
     value: "ChangeMe"

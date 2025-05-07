@@ -12,7 +12,7 @@ weight: 2
 
 ## How to use
 
-If open-webui already installed, what you need to do is just update the OpenAI API endpoint in the admin settings. You can get the value from step2 & 3 below. Otherwise, following the steps here to install open-webui.
+If open-webui already installed, what you need to do is just update the OpenAI API endpoint in the admin settings if you deployed the [Basic AI Gateway Example](docs/envoy-ai-gateway.md) to a namespace other than "default". You can get the value from step2 & 3 below. Otherwise, following the steps here to install open-webui.
 
 1. Enable Open WebUI in the `values.global.yaml` file, open-webui is enabled by default.
 
@@ -35,6 +35,7 @@ If open-webui already installed, what you need to do is just update the OpenAI A
     ```yaml
     open-webui:
       enabled: true
+      # Please replace this value if you deployed the envoy-ai-gateway example to a namespace other than "default".
       openaiBaseApiUrl: http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1
     ```
 
