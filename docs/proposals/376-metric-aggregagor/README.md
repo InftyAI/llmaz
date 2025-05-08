@@ -85,7 +85,7 @@ List the specific goals of the Proposal. What is it trying to achieve? How will 
 know that this has succeeded?
 -->
 
-- A simple implementation with random selector plugin
+- A simple implementation with least busy scheduling algorithm
 - Extensible with different consumers in the cluster, like the Lora autoscaler or the ai gateway
 - Metrics visualization support, like Grafana
 - Metric management support, especially the gc policy
