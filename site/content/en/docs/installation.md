@@ -15,6 +15,7 @@ description: >
 - Prometheus, see [installation](https://github.com/InftyAI/llmaz/blob/main/site/content/en/docs/integrations/prometheus-operator.md#install-the-prometheus-operator).
 
 Note: llmaz helm chart will by default install
+- [LWS](https://github.com/kubernetes-sigs/lws) as the default inference workload in the llmaz-system, if you *already installed it * or *want to deploy it in other namespaces* , append `--set leaderWorkerSet.enabled=false` to the command below.
 - [Envoy Gateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) as the frontier in the llmaz-system, if you *already installed these two components* or *want to deploy in other namespaces* , append `--set envoy-gateway.enabled=false --set envoy-ai-gateway.enabled=false` to the command below.
 - [Open WebUI](https://github.com/open-webui/open-webui) as the default chatbot, if you want to disable it, append `--set open-webui.enabled=false` to the command below.
 
