@@ -1,12 +1,15 @@
 dependencies:
+- name: lws
+  repository: oci://registry.k8s.io/lws/charts
+  version: 0.6.1
 - name: open-webui
-  repository: https://helm.openwebui.com/
+  repository: https://helm.openwebui.com
   version: 6.4.0
 - name: gateway-helm
-  repository: oci://registry-1.docker.io/envoyproxy/
+  repository: oci://registry-1.docker.io/envoyproxy
   version: 0.0.0-latest
 - name: ai-gateway-helm
-  repository: oci://registry-1.docker.io/envoyproxy/
+  repository: oci://registry-1.docker.io/envoyproxy
   version: v0.0.0-latest
-digest: sha256:c7b1aa22097a6a1a6f4dd04beed3287ab8ef2ae1aec8a9a4ec7a71251be23e4c
-generated: "2025-04-22T20:15:43.343515+08:00"
+digest: sha256:c38d3f50113d621f6ed8ce25d39b6f8253aa771a079eca4ea6321af865b0215b
+generated: "2025-05-09T18:36:57.472144+08:00"

@@ -58,7 +58,6 @@ spec:
                       the hood, e.g. vLLM.
                     type: string
                   configName:
-                    default: default
                     description: |-
                       ConfigName represents the recommended configuration name for the backend,
                       It will be inferred from the models in the runtime if not specified, e.g. default,
@@ -1018,3 +1017,4 @@ spec:
         specReplicasPath: .spec.replicas
         statusReplicasPath: .status.replicas
       status: {}
+
