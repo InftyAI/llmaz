@@ -47,7 +47,7 @@ kubectl -n llmaz-system port-forward \
   8080:80
 ```
 
-II. Query `http://localhost:8008/v1/models | jq .`, available models will be listed. Expected response will look like this:
+II. Query `curl http://localhost:8080/v1/models | jq .`, available models will be listed. Expected response will look like this:
 
 ```json
 {
