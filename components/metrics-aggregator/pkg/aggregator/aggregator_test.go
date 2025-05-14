@@ -67,10 +67,15 @@ func TestAggregator(t *testing.T) {
 
 	agg.DeletePod("test-namespace/test-pod")
 
+	if agg.Len() != 0 {
+		t.Fatal("pod count is not correct")
+	}
+
 	if _, ok := agg.GetPod("test-namespace/test-pod"); ok {
 		t.Fatal("pod should not be found")
 	}
 
+	agg.DeletePod("test-namespace/test-pod")
 	if agg.Len() != 0 {
 		t.Fatal("pod count is not correct")
 	}

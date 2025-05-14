@@ -78,8 +78,10 @@ func (a *Aggregator) GetPod(nsName string) (*corev1.Pod, bool) {
 }
 
 func (a *Aggregator) DeletePod(nsName string) {
-	a.PodMap.Delete(nsName)
-	a.counter.Add(-1)
+	if _, ok := a.PodMap.Load(nsName); ok {
+		a.PodMap.Delete(nsName)
+		a.counter.Add(-1)
+	}
 }
 
 func (a *Aggregator) Len() int32 {
