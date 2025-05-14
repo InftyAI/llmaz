@@ -3,7 +3,7 @@ title: llmaz
 ---
 
 {{< blocks/cover color="primary" image_anchor="top" height="max" >}}
-<p><img class="w-50 h-auto mb-4" src="/images/logo.png" class="llmaz-logo" /></p>
+<p><img class="w-50 h-auto mb-4" src="/images/logo-white.png" class="llmaz-logo" /></p>
 <a class="btn btn-lg btn-secondary me-3 mb-4" href="/docs/">
   Learn More <i class="fas fa-arrow-alt-circle-right ms-2"></i>
 </a>
