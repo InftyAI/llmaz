@@ -57,10 +57,16 @@ func NewAggregator() *Aggregator {
 func (a *Aggregator) AddPod(pod *corev1.Pod) {
 	name := a.KeyFunc(pod)
 	wrapper := &PodWrapper{nsName: name, pod: pod}
+
+	if _, ok := a.GetPod(name); !ok {
+		a.PodMap.Store(name, wrapper)
+		a.counter.Add(1)
+		return
+	}
+
 	// Always replace with the latest one, one reason is we need to use the
 	// latest Pod IP.
 	a.PodMap.Store(name, wrapper)
-	a.counter.Add(1)
 }
 
 func (a *Aggregator) GetPod(nsName string) (*corev1.Pod, bool) {

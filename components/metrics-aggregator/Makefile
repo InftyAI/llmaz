@@ -1,5 +1,7 @@
 
 # Image URL to use all building/pushing image targets
+PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+ARTIFACTS ?= $(PROJECT_DIR)/bin
 GO_VERSION := $(shell awk '/^go /{print $$2}' go.mod|head -n1)
 
 IMAGE_REGISTRY ?= inftyai
@@ -69,11 +71,6 @@ artifacts: kustomize
 	$(KUSTOMIZE) build config/default -o artifacts/manifests.yaml
 	@$(call clean-manifests)
 
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
-
-
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
@@ -86,9 +83,15 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+GOTESTSUM = $(shell pwd)/bin/gotestsum
+.PHONY: gotestsum
+gotestsum: ## Download gotestsum locally if necessary.
+	test -s $(LOCALBIN)/gotestsum || \
+	GOBIN=$(LOCALBIN) go install gotest.tools/gotestsum@v1.8.2
+
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test ./... -coverprofile cover.out
+test: manifests fmt vet envtest gotestsum ## Run tests.
+	$(GOTESTSUM) --junitfile $(ARTIFACTS)/junit.xml -- ./pkg/... -coverprofile  $(ARTIFACTS)/cover.out
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
 GOLANGCI_LINT_VERSION ?= v1.54.2
