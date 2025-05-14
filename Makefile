@@ -84,7 +84,9 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 		rbac:roleName=manager-role output:rbac:artifacts:config=config/rbac \
 		crd:generateEmbeddedObjectMeta=true output:crd:artifacts:config=config/crd/bases \
 		webhook output:webhook:artifacts:config=config/webhook \
-		paths="./..."
+		paths="./cmd/..."
+		paths="./api/..."
+		paths="./pkg/..."
 
 .PHONY: generate
 generate: controller-gen code-generator ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -123,6 +125,9 @@ gotestsum: ## Download gotestsum locally if necessary.
 .PHONY: test
 test: manifests fmt vet envtest gotestsum ## Run tests.
 	$(GOTESTSUM) --junitfile $(ARTIFACTS)/junit.xml -- ./api/... ./pkg/... -coverprofile  $(ARTIFACTS)/cover.out
+
+	# Test the metrics-aggregator component
+	cd components/metrics-aggregator && make test
 
 .PHONY: test-integration
 test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.

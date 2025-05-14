@@ -1,4 +1,4 @@
-module github.com/inftyai/llmaz
+module github.com/inftyai/metrics-aggregator
 
 go 1.23.0
 

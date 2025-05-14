@@ -34,8 +34,8 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
-	"github.com/inftyai/llmaz/pkg/aggregator"
-	"github.com/inftyai/llmaz/pkg/controller"
+	"github.com/inftyai/metrics-aggregator/pkg/aggregator"
+	"github.com/inftyai/metrics-aggregator/pkg/controller"
 )
 
 var (

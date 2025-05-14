@@ -6,5 +6,5 @@ domain: inftyai.com
 layout:
 - go.kubebuilder.io/v4
 projectName: metrics-aggregator
-repo: github.com/inftyai/llmaz
+repo: github.com/inftyai/metrics-aggregator
 version: "3"
