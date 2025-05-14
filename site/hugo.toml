@@ -115,8 +115,12 @@ copyright = "The InftyAI Team"
 [params.ui]
 #  Set to true to disable breadcrumb navigation.
 breadcrumb_disable = false
+
 # Set to false if you don't want to display a logo (/assets/icons/logo.svg) in the top navbar
-navbar_logo = false
+navbar_logo = true
+# Custom parameter. Set the path to your logo here. The default is `icons/logo.svg`.
+navbar_logo_path = "icons/logo-white.svg"
+
 # Set to true if you don't want the top navbar to be translucent when over a `block/cover`, like on the homepage.
 navbar_translucent_over_cover_disable = false
 # Enable to show the side bar menu in its compact state.
