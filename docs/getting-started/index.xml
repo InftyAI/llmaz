@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Getting Started on llmaz</title><link>https://llmaz.inftyai.com/docs/getting-started/</link><description>Recent content in Getting Started on llmaz</description><generator>Hugo</generator><language>en</language><atom:link href="https://llmaz.inftyai.com/docs/getting-started/index.xml" rel="self" type="application/rss+xml"/><item><title>Prerequisites</title><link>https://llmaz.inftyai.com/docs/getting-started/prerequisites/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/getting-started/prerequisites/</guid><description>&lt;p>&lt;strong>Requirements&lt;/strong>:&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Kubernetes version &amp;gt;= 1.27.&lt;/p>
+&lt;p>LWS requires Kubernetes version &lt;strong>v1.27 or higher&lt;/strong>. If you are using a lower Kubernetes version and most of your workloads rely on single-node inference, we may consider replacing LWS with a Deployment-based approach. This fallback plan would involve using Kubernetes Deployments to manage single-node inference workloads efficiently. See &lt;a href="https://github.com/InftyAI/llmaz/issues/32">#32&lt;/a> for more details and updates.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Helm 3, see &lt;a href="https://helm.sh/docs/intro/install/">installation&lt;/a>.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>Note that llmaz helm chart will by default install:&lt;/p></description></item><item><title>Installation</title><link>https://llmaz.inftyai.com/docs/getting-started/installation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/getting-started/installation/</guid><description>&lt;h2 id="install-a-released-version-recommended">Install a released version (recommended)&lt;/h2>
+&lt;h3 id="install">Install&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cmd" data-lang="cmd">&lt;span style="display:flex;">&lt;span>helm install llmaz oci://registry-1.docker.io/inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.9
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="uninstall">Uninstall&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cmd" data-lang="cmd">&lt;span style="display:flex;">&lt;span>helm uninstall llmaz --namespace llmaz-system
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kubectl delete ns llmaz-system
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you want to delete the CRDs as well, run&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cmd" data-lang="cmd">&lt;span style="display:flex;">&lt;span>kubectl delete crd \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> openmodels.llmaz.io \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> backendruntimes.inference.llmaz.io \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> playgrounds.inference.llmaz.io \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> services.inference.llmaz.io
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="install-from-source">Install from source&lt;/h2>
+&lt;h3 id="change-configurations">Change configurations&lt;/h3>
+&lt;p>If you want to change the default configurations, please change the values in &lt;a href="https://github.com/InftyAI/llmaz/blob/main/chart/values.global.yaml">values.global.yaml&lt;/a>.&lt;/p>
+&lt;p>&lt;strong>Do not change&lt;/strong> the values in &lt;em>values.yaml&lt;/em> because it&amp;rsquo;s auto-generated and will be overwritten.&lt;/p></description></item><item><title>Basic Usage</title><link>https://llmaz.inftyai.com/docs/getting-started/basic-usage/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/getting-started/basic-usage/</guid><description>&lt;p>Let&amp;rsquo;s assume that you have installed the llmaz with the default settings, which means both the &lt;a href="https://llmaz.inftyai.com/docs/integrations/envoy-ai-gateway/">AI Gateway&lt;/a> and &lt;a href="https://llmaz.inftyai.com/docs/integrations/open-webui/">Open WebUI&lt;/a> are installed. Now let&amp;rsquo;s following the steps to chat with your models.&lt;/p>
+&lt;h3 id="deploy-the-services">Deploy the Services&lt;/h3>
+&lt;p>Run the following command to deploy two models (cpu only).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>kubectl apply -f https://raw.githubusercontent.com/InftyAI/llmaz/refs/heads/main/docs/examples/envoy-ai-gateway/basic.yaml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="chat-with-models">Chat with Models&lt;/h3>
+&lt;p>Waiting for your services ready, generally looks like:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>NAME READY STATUS RESTARTS AGE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ai-eg-route-extproc-default-envoy-ai-gateway-6ddcd49b64-ldwcd 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 6m37s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>qwen2--5-coder-0 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 6m37s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>qwen2-0--5b-0 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 6m37s
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Once ready, you can access the Open WebUI by port-forwarding the service:&lt;/p></description></item></channel></rss>

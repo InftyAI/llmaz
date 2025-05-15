@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>llmaz</title><link>https://llmaz.inftyai.com/</link><description>Recent content on llmaz</description><generator>Hugo</generator><language>en</language><atom:link href="https://llmaz.inftyai.com/index.xml" rel="self" type="application/rss+xml"/><item><title>Envoy AI Gateway</title><link>https://llmaz.inftyai.com/docs/integrations/envoy-ai-gateway/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/envoy-ai-gateway/</guid><description>&lt;p>&lt;a href="https://aigateway.envoyproxy.io/">Envoy AI Gateway&lt;/a> is an open source project for using Envoy Gateway
 to handle request traffic from application clients to Generative AI services.&lt;/p>
 &lt;h2 id="how-to-use">How to use&lt;/h2>
-&lt;h3 id="1-enable-envoy-gateway-and-envoy-ai-gateway">1. Enable Envoy Gateway and Envoy AI Gateway&lt;/h3>
-&lt;p>Both of them are enabled by default in &lt;code>values.global.yaml&lt;/code> and will be deployed in llmaz-system.&lt;/p>
+&lt;h3 id="enable-envoy-gateway-and-envoy-ai-gateway">Enable Envoy Gateway and Envoy AI Gateway&lt;/h3>
+&lt;p>Both of them are already enabled by default in &lt;code>values.global.yaml&lt;/code> and will be deployed in llmaz-system.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">envoy-gateway&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f8f8f8;text-decoration:underline"> &lt;/span>&lt;span style="color:#204a87;font-weight:bold">enabled&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline"> &lt;/span>&lt;span style="color:#204a87;font-weight:bold">true&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f8f8f8;text-decoration:underline">&lt;/span>&lt;span style="color:#204a87;font-weight:bold">envoy-ai-gateway&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline">
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f8f8f8;text-decoration:underline"> &lt;/span>&lt;span style="color:#204a87;font-weight:bold">enabled&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline"> &lt;/span>&lt;span style="color:#204a87;font-weight:bold">true&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>However, &lt;a href="https://gateway.envoyproxy.io/latest/install/install-helm/">Envoy Gateway&lt;/a> and &lt;a href="https://aigateway.envoyproxy.io/docs/getting-started/">Envoy AI Gateway&lt;/a> can be deployed standalone in case you want to deploy them in other namespaces.&lt;/p></description></item><item><title>Installation</title><link>https://llmaz.inftyai.com/docs/installation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/installation/</guid><description>&lt;h2 id="prerequisites">Prerequisites&lt;/h2>
-&lt;p>&lt;strong>Requirements&lt;/strong>:&lt;/p>
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>However, &lt;a href="https://gateway.envoyproxy.io/latest/install/install-helm/">Envoy Gateway&lt;/a> and &lt;a href="https://aigateway.envoyproxy.io/docs/getting-started/">Envoy AI Gateway&lt;/a> can be deployed standalone in case you want to deploy them in other namespaces.&lt;/p></description></item><item><title>Prerequisites</title><link>https://llmaz.inftyai.com/docs/getting-started/prerequisites/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/getting-started/prerequisites/</guid><description>&lt;p>&lt;strong>Requirements&lt;/strong>:&lt;/p>
 &lt;ul>
 &lt;li>
 &lt;p>Kubernetes version &amp;gt;= 1.27.&lt;/p>
@@ -18,14 +17,45 @@ to handle request traffic from application clients to Generative AI services.&lt
 &lt;p>Helm 3, see &lt;a href="https://helm.sh/docs/intro/install/">installation&lt;/a>.&lt;/p>
 &lt;/li>
 &lt;/ul>
-&lt;p>Note that llmaz helm chart will by default install:&lt;/p></description></item><item><title>Open WebUI</title><link>https://llmaz.inftyai.com/docs/integrations/open-webui/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/open-webui/</guid><description>&lt;p>&lt;a href="https://github.com/open-webui/open-webui">Open WebUI&lt;/a> is a user-friendly AI interface with OpenAI-compatible APIs, serving as the default chatbot for llmaz.&lt;/p>
+&lt;p>Note that llmaz helm chart will by default install:&lt;/p></description></item><item><title>Installation</title><link>https://llmaz.inftyai.com/docs/getting-started/installation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/getting-started/installation/</guid><description>&lt;h2 id="install-a-released-version-recommended">Install a released version (recommended)&lt;/h2>
+&lt;h3 id="install">Install&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cmd" data-lang="cmd">&lt;span style="display:flex;">&lt;span>helm install llmaz oci://registry-1.docker.io/inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.9
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="uninstall">Uninstall&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cmd" data-lang="cmd">&lt;span style="display:flex;">&lt;span>helm uninstall llmaz --namespace llmaz-system
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>kubectl delete ns llmaz-system
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If you want to delete the CRDs as well, run&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-cmd" data-lang="cmd">&lt;span style="display:flex;">&lt;span>kubectl delete crd \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> openmodels.llmaz.io \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> backendruntimes.inference.llmaz.io \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> playgrounds.inference.llmaz.io \
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> services.inference.llmaz.io
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="install-from-source">Install from source&lt;/h2>
+&lt;h3 id="change-configurations">Change configurations&lt;/h3>
+&lt;p>If you want to change the default configurations, please change the values in &lt;a href="https://github.com/InftyAI/llmaz/blob/main/chart/values.global.yaml">values.global.yaml&lt;/a>.&lt;/p>
+&lt;p>&lt;strong>Do not change&lt;/strong> the values in &lt;em>values.yaml&lt;/em> because it&amp;rsquo;s auto-generated and will be overwritten.&lt;/p></description></item><item><title>Open-WebUI</title><link>https://llmaz.inftyai.com/docs/integrations/open-webui/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/open-webui/</guid><description>&lt;p>&lt;a href="https://github.com/open-webui/open-webui">Open WebUI&lt;/a> is a user-friendly AI interface with OpenAI-compatible APIs, serving as the default chatbot for llmaz.&lt;/p>
 &lt;h2 id="prerequisites">Prerequisites&lt;/h2>
 &lt;ul>
-&lt;li>Make sure you&amp;rsquo;re located in &lt;strong>llmaz-system&lt;/strong> namespace, haven&amp;rsquo;t tested with other namespaces.&lt;/li>
 &lt;li>Make sure &lt;a href="https://github.com/envoyproxy/gateway">EnvoyGateway&lt;/a> and &lt;a href="https://github.com/envoyproxy/ai-gateway">Envoy AI Gateway&lt;/a> are installed, both of them are installed by default in llmaz. See &lt;a href="docs/envoy-ai-gateway.md">AI Gateway&lt;/a> for more details.&lt;/li>
 &lt;/ul>
 &lt;h2 id="how-to-use">How to use&lt;/h2>
-&lt;p>If open-webui already installed, what you need to do is just update the OpenAI API endpoint in the admin settings if you deployed the &lt;a href="docs/envoy-ai-gateway.md">Basic AI Gateway Example&lt;/a> to a namespace other than &amp;ldquo;default&amp;rdquo;. You can get the value from step2 &amp;amp; 3 below. Otherwise, following the steps here to install open-webui.&lt;/p></description></item><item><title>Develop Guidance</title><link>https://llmaz.inftyai.com/docs/develop/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/develop/</guid><description>&lt;h2 id="project-structure">Project Structure&lt;/h2>
+&lt;h3 id="enable-open-webui">Enable Open WebUI&lt;/h3>
+&lt;p>Open-WebUI is enabled by default in the &lt;code>values.global.yaml&lt;/code> and will be deployed in llmaz-system.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#204a87;font-weight:bold">open-webui&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline">
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f8f8f8;text-decoration:underline"> &lt;/span>&lt;span style="color:#204a87;font-weight:bold">enabled&lt;/span>&lt;span style="color:#000;font-weight:bold">:&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline"> &lt;/span>&lt;span style="color:#204a87;font-weight:bold">true&lt;/span>&lt;span style="color:#f8f8f8;text-decoration:underline">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="set-the-service-address">Set the Service Address&lt;/h3>
+&lt;ol>
+&lt;li>
+&lt;p>Run &lt;code>kubectl get svc -n llmaz-system&lt;/code> to list out the services, the output looks like below, the LoadBalancer service name will be used later.&lt;/p></description></item><item><title>Basic Usage</title><link>https://llmaz.inftyai.com/docs/getting-started/basic-usage/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/getting-started/basic-usage/</guid><description>&lt;p>Let&amp;rsquo;s assume that you have installed the llmaz with the default settings, which means both the &lt;a href="https://llmaz.inftyai.com/docs/integrations/envoy-ai-gateway/">AI Gateway&lt;/a> and &lt;a href="https://llmaz.inftyai.com/docs/integrations/open-webui/">Open WebUI&lt;/a> are installed. Now let&amp;rsquo;s following the steps to chat with your models.&lt;/p>
+&lt;h3 id="deploy-the-services">Deploy the Services&lt;/h3>
+&lt;p>Run the following command to deploy two models (cpu only).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>kubectl apply -f https://raw.githubusercontent.com/InftyAI/llmaz/refs/heads/main/docs/examples/envoy-ai-gateway/basic.yaml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="chat-with-models">Chat with Models&lt;/h3>
+&lt;p>Waiting for your services ready, generally looks like:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>NAME READY STATUS RESTARTS AGE
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ai-eg-route-extproc-default-envoy-ai-gateway-6ddcd49b64-ldwcd 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 6m37s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>qwen2--5-coder-0 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 6m37s
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>qwen2-0--5b-0 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 6m37s
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Once ready, you can access the Open WebUI by port-forwarding the service:&lt;/p></description></item><item><title>Develop Guidance</title><link>https://llmaz.inftyai.com/docs/develop/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/develop/</guid><description>&lt;h2 id="project-structure">Project Structure&lt;/h2>
 &lt;pre tabindex="0">&lt;code class="language-structure" data-lang="structure">llmaz # root
 ├── bin # where the binaries locates, like the kustomize, ginkgo, etc.
 ├── chart # where the helm chart locates
