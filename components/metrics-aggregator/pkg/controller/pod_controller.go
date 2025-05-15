@@ -69,6 +69,8 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, &pod); err != nil {
 		if apierrors.IsNotFound(err) {
 			r.Agg.DeletePod(r.Agg.KeyFunc(&pod))
+			// TODO: this is only for debug, remove it later.
+			logger.V(0).Info("Pod not found", "PodMap length", r.Agg.Len())
 		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
@@ -77,19 +79,23 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	if isPodTerminating(&pod) {
 		r.Agg.DeletePod(r.Agg.KeyFunc(&pod))
+		// TODO: this is only for debug, remove it later.
+		logger.V(0).Info("Pod terminating", "PodMap length", r.Agg.Len())
 		return ctrl.Result{}, nil
 	}
 
 	if isPodReady(&pod) {
 		r.Agg.AddPod(&pod)
 		// TODO: this is only for debug, remove it later.
-		logger.V(0).Info("PodMap length", "PodMap length", r.Agg.Len())
+		logger.V(0).Info("Pod Ready", "PodMap length", r.Agg.Len())
 		return ctrl.Result{}, nil
 	}
 
 	// If Pod not ready, remove from the store.
 	// TODO: should we mark it as not ready in the store rather than delete it?
 	r.Agg.DeletePod(r.Agg.KeyFunc(&pod))
+	// TODO: this is only for debug, remove it later.
+	logger.V(0).Info("Pod not ready", "PodMap length", r.Agg.Len())
 	return ctrl.Result{}, nil
 }
 
