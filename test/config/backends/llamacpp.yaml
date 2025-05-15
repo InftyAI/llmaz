@@ -22,6 +22,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
+        - --metrics
       resources:
         requests:
           cpu: 1
@@ -43,6 +44,7 @@ spec:
         - "16"
         - --draft-min
         - "5"
+        - --metrics
   startupProbe:
     periodSeconds: 10
     failureThreshold: 30

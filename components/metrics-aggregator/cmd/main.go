@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"os"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -43,6 +44,10 @@ var (
 	setupLog = ctrl.Log.WithName("setup")
 )
 
+const (
+	defaultSyncInterval = 50 * time.Millisecond
+)
+
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
@@ -50,6 +55,8 @@ func init() {
 }
 
 func main() {
+	ctx := ctrl.SetupSignalHandler()
+
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
@@ -89,7 +96,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	agg := aggregator.NewAggregator()
+	agg := aggregator.NewAggregator(ctx, defaultSyncInterval)
 
 	if err := controller.NewPodReconciler(
 		mgr.GetClient(),

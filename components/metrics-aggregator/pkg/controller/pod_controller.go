@@ -20,7 +20,6 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -67,11 +66,6 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	var pod corev1.Pod
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, &pod); err != nil {
-		if apierrors.IsNotFound(err) {
-			r.Agg.DeletePod(r.Agg.KeyFunc(&pod))
-			// TODO: this is only for debug, remove it later.
-			logger.V(0).Info("Pod not found", "PodMap length", r.Agg.Len())
-		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 

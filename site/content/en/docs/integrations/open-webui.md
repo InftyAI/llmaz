@@ -37,7 +37,7 @@ open-webui:
 
 3. Click `Settings -> Admin Settings -> Connections`, set the URL to `http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1` and save. (You can also set the `openaiBaseApiUrl` in the `values.global.yaml`)
 
-![img](/images/open-webui-setting.png)
+  ![img](/images/open-webui-setting.png)
 
 4. Start to chat now.
 

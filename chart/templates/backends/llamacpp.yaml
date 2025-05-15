@@ -63,6 +63,7 @@ spec:
         - "16"
         - --draft-min
         - "5"
+        - --metrics
   startupProbe:
     periodSeconds: 10
     failureThreshold: 30
