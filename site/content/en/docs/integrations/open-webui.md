@@ -1,5 +1,5 @@
 ---
-title: Open WebUI
+title: Open-WebUI
 weight: 2
 ---
 
@@ -7,47 +7,41 @@ weight: 2
 
 ## Prerequisites
 
-- Make sure you're located in **llmaz-system** namespace, haven't tested with other namespaces.
 - Make sure [EnvoyGateway](https://github.com/envoyproxy/gateway) and [Envoy AI Gateway](https://github.com/envoyproxy/ai-gateway) are installed, both of them are installed by default in llmaz. See [AI Gateway](docs/envoy-ai-gateway.md) for more details.
 
 ## How to use
 
-If open-webui already installed, what you need to do is just update the OpenAI API endpoint in the admin settings if you deployed the [Basic AI Gateway Example](docs/envoy-ai-gateway.md) to a namespace other than "default". You can get the value from step2 & 3 below. Otherwise, following the steps here to install open-webui.
+### Enable Open WebUI
 
-1. Enable Open WebUI in the `values.global.yaml` file, open-webui is enabled by default.
+Open-WebUI is enabled by default in the `values.global.yaml` and will be deployed in llmaz-system.
 
-    ```yaml
-    open-webui:
-      enabled: true
-    ```
+```yaml
+open-webui:
+  enabled: true
+```
 
-    > Optional to set the `persistence=true` to persist the data, recommended for production.
+### Set the Service Address
 
-2. Run `kubectl get svc -n llmaz-system` to list out the services, the output looks like:
+1. Run `kubectl get svc -n llmaz-system` to list out the services, the output looks like below, the LoadBalancer service name will be used later.
 
     ```cmd
     envoy-default-default-envoy-ai-gateway-dbec795a   LoadBalancer   10.96.145.150   <pending>     80:30548/TCP                              132m
     envoy-gateway                                     ClusterIP      10.96.52.76     <none>        18000/TCP,18001/TCP,18002/TCP,19001/TCP   172m
     ```
 
-3. Set `openaiBaseApiUrl` in the `values.global.yaml` like:
+2. Port forward the Open-WebUI service, and visit `http://localhost:8080`.
 
-    ```yaml
-    open-webui:
-      enabled: true
-      # Please replace this value if you deployed the envoy-ai-gateway example to a namespace other than "default".
-      openaiBaseApiUrl: http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1
+    ```bash
+    kubectl port-forward svc/open-webui 8080:80 -n llmaz-system
     ```
 
-4. Run `make install-chatbot` to install the chatbot.
+3. Click `Settings -> Admin Settings -> Connections`, set the URL to `http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1` and save. (You can also set the `openaiBaseApiUrl` in the `values.global.yaml`)
 
-5. Port forwarding by:
-    ```
-    kubectl port-forward svc/open-webui 8080:80
-    ```
+![img](/images/open-webui-setting.png)
 
-6. Visit [http://localhost:8080](http://localhost:8080) to access the Open WebUI.
+4. Start to chat now.
 
-7. Configure the administrator for the first time.
 
-**That's it! You can now chat with llmaz models with Open WebUI.**
+## Persistence
+
+Set the `persistence=true` in `values.global.yaml` to enable persistence.
