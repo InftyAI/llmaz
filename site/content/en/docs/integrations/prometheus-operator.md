@@ -3,11 +3,17 @@ title: Prometheus Operator
 weight: 3
 ---
 
-Currently, llmaz has already integrated metrics. This document provides deployment steps explaining how to install and configure Prometheus Operator in a Kubernetes cluster.
+This document provides deployment steps to install and configure Prometheus Operator in a Kubernetes cluster.
 
 ### Install the prometheus operator
 
-Please follow the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md) to install
+Please follow the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md) to install prometheus operator or simply run the following command:
+
+```bash
+curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.81.0/bundle.yaml | kubectl delete -f -
+```
+
+Ensure that the Prometheus Operator Pod is running successfully.
 
 ```bash
 # Installing the prometheus operator
@@ -15,7 +21,6 @@ root@VM-0-5-ubuntu:/home/ubuntu# kubectl get pods
 NAME                                   READY   STATUS    RESTARTS   AGE
 prometheus-operator-55b5c96cf8-jl2nx   1/1     Running   0          12s
 ```
-Ensure that the Prometheus Operator Pod is running successfully.
 
 ### Install the ServiceMonitor CR for llmaz
 

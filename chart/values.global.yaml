@@ -32,14 +32,14 @@ leaderWorkerSet:
 
 prometheus:
   # Prometheus is required to enable smart routing.
-  enabled: true
+  enabled: false
 
 open-webui:
   enabled: true
   persistence:
     enabled: false
   enableOpenaiApi: true
-  # Assumes the OpenAI-compatible API is exposed via the Envoy AI Gateway. Please replace this value if you 
+  # Assumes the OpenAI-compatible API is exposed via the Envoy AI Gateway. Please replace this value if you
   # deployed the envoy-ai-gateway example to a namespace other than "default".
   openaiBaseApiUrl: "http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1"
   extraEnvVars:
