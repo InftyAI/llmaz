@@ -8,9 +8,9 @@ to handle request traffic from application clients to Generative AI services.
 
 ## How to use
 
-### 1. Enable Envoy Gateway and Envoy AI Gateway
+### Enable Envoy Gateway and Envoy AI Gateway
 
-Both of them are enabled by default in `values.global.yaml` and will be deployed in llmaz-system.
+Both of them are already enabled by default in `values.global.yaml` and will be deployed in llmaz-system.
 
 ```yaml
 envoy-gateway:
@@ -21,7 +21,7 @@ envoy-ai-gateway:
 
 However, [Envoy Gateway](https://gateway.envoyproxy.io/latest/install/install-helm/) and [Envoy AI Gateway](https://aigateway.envoyproxy.io/docs/getting-started/) can be deployed standalone in case you want to deploy them in other namespaces.
 
-### 2. Basic AI Gateway Example
+### Basic Example
 
 To expose your models via Envoy Gateway, you need to create a GatewayClass, Gateway, and AIGatewayRoute. The following example shows how to do this.
 
@@ -33,7 +33,7 @@ The full example is [here](https://github.com/InftyAI/llmaz/blob/main/docs/examp
 kubectl apply -f https://raw.githubusercontent.com/InftyAI/llmaz/refs/heads/main/docs/examples/envoy-ai-gateway/basic.yaml
 ```
 
-### 3. Check Envoy AI Gateway APIs
+### Query AI Gateway APIs
 
 If Open-WebUI is enabled, you can chat via the webui (recommended), see [documentation](./open-webui.md). Otherwise, following the steps below to test the Envoy AI Gateway APIs.
 
