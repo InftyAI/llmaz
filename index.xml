@@ -10,11 +10,15 @@ to handle request traffic from application clients to Generative AI services.&lt
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>However, &lt;a href="https://gateway.envoyproxy.io/latest/install/install-helm/">Envoy Gateway&lt;/a> and &lt;a href="https://aigateway.envoyproxy.io/docs/getting-started/">Envoy AI Gateway&lt;/a> can be deployed standalone in case you want to deploy them in other namespaces.&lt;/p></description></item><item><title>Installation</title><link>https://llmaz.inftyai.com/docs/installation/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/installation/</guid><description>&lt;h2 id="prerequisites">Prerequisites&lt;/h2>
 &lt;p>&lt;strong>Requirements&lt;/strong>:&lt;/p>
 &lt;ul>
-&lt;li>Kubernetes version &amp;gt;= 1.26. LWS requires Kubernetes version &lt;strong>v1.26 or higher&lt;/strong>. If you are using a lower Kubernetes version and most of your workloads rely on single-node inference, we may consider replacing LWS with a Deployment-based approach. This fallback plan would involve using Kubernetes Deployments to manage single-node inference workloads efficiently. See &lt;a href="https://github.com/InftyAI/llmaz/issues/32">#32&lt;/a> for more details and updates.&lt;/li>
-&lt;li>Helm 3, see &lt;a href="https://helm.sh/docs/intro/install/">installation&lt;/a>.&lt;/li>
-&lt;li>Prometheus, see &lt;a href="https://github.com/InftyAI/llmaz/blob/main/site/content/en/docs/integrations/prometheus-operator.md#install-the-prometheus-operator">installation&lt;/a>.&lt;/li>
+&lt;li>
+&lt;p>Kubernetes version &amp;gt;= 1.27.&lt;/p>
+&lt;p>LWS requires Kubernetes version &lt;strong>v1.27 or higher&lt;/strong>. If you are using a lower Kubernetes version and most of your workloads rely on single-node inference, we may consider replacing LWS with a Deployment-based approach. This fallback plan would involve using Kubernetes Deployments to manage single-node inference workloads efficiently. See &lt;a href="https://github.com/InftyAI/llmaz/issues/32">#32&lt;/a> for more details and updates.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Helm 3, see &lt;a href="https://helm.sh/docs/intro/install/">installation&lt;/a>.&lt;/p>
+&lt;/li>
 &lt;/ul>
-&lt;p>Note: llmaz helm chart will by default install&lt;/p></description></item><item><title>Open WebUI</title><link>https://llmaz.inftyai.com/docs/integrations/open-webui/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/open-webui/</guid><description>&lt;p>&lt;a href="https://github.com/open-webui/open-webui">Open WebUI&lt;/a> is a user-friendly AI interface with OpenAI-compatible APIs, serving as the default chatbot for llmaz.&lt;/p>
+&lt;p>Note that llmaz helm chart will by default install:&lt;/p></description></item><item><title>Open WebUI</title><link>https://llmaz.inftyai.com/docs/integrations/open-webui/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/open-webui/</guid><description>&lt;p>&lt;a href="https://github.com/open-webui/open-webui">Open WebUI&lt;/a> is a user-friendly AI interface with OpenAI-compatible APIs, serving as the default chatbot for llmaz.&lt;/p>
 &lt;h2 id="prerequisites">Prerequisites&lt;/h2>
 &lt;ul>
 &lt;li>Make sure you&amp;rsquo;re located in &lt;strong>llmaz-system&lt;/strong> namespace, haven&amp;rsquo;t tested with other namespaces.&lt;/li>
@@ -31,15 +35,16 @@ to handle request traffic from application clients to Generative AI services.&lt
 ├── pkg # where the main logic for Kubernetes controllers locates
 &lt;/code>&lt;/pre>&lt;h2 id="api-design">API design&lt;/h2>
 &lt;h3 id="core-apis">Core APIs&lt;/h3>
-&lt;p>See the &lt;a href="https://llmaz.inftyai.com/docs/reference/core.v1alpha1/">API Reference&lt;/a> for more details.&lt;/p></description></item><item><title>Prometheus Operator</title><link>https://llmaz.inftyai.com/docs/integrations/prometheus-operator/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/prometheus-operator/</guid><description>&lt;p>Currently, llmaz has already integrated metrics. This document provides deployment steps explaining how to install and configure Prometheus Operator in a Kubernetes cluster.&lt;/p>
+&lt;p>See the &lt;a href="https://llmaz.inftyai.com/docs/reference/core.v1alpha1/">API Reference&lt;/a> for more details.&lt;/p></description></item><item><title>Prometheus Operator</title><link>https://llmaz.inftyai.com/docs/integrations/prometheus-operator/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/prometheus-operator/</guid><description>&lt;p>This document provides deployment steps to install and configure Prometheus Operator in a Kubernetes cluster.&lt;/p>
 &lt;h3 id="install-the-prometheus-operator">Install the prometheus operator&lt;/h3>
-&lt;p>Please follow the &lt;a href="https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md">documentation&lt;/a> to install&lt;/p>
+&lt;p>Please follow the &lt;a href="https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md">documentation&lt;/a> to install prometheus operator or simply run the following command:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.81.0/bundle.yaml &lt;span style="color:#000;font-weight:bold">|&lt;/span> kubectl delete -f -
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ensure that the Prometheus Operator Pod is running successfully.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f8f8f8;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#8f5902;font-style:italic"># Installing the prometheus operator&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>root@VM-0-5-ubuntu:/home/ubuntu# kubectl get pods
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>NAME READY STATUS RESTARTS AGE
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>prometheus-operator-55b5c96cf8-jl2nx 1/1 Running &lt;span style="color:#0000cf;font-weight:bold">0&lt;/span> 12s
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Ensure that the Prometheus Operator Pod is running successfully.&lt;/p>
-&lt;h3 id="install-the-servicemonitor-cr-for-llmaz">Install the ServiceMonitor CR for llmaz&lt;/h3>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="install-the-servicemonitor-cr-for-llmaz">Install the ServiceMonitor CR for llmaz&lt;/h3>
 &lt;p>To enable monitoring for the llmaz system, you need to install the ServiceMonitor custom resource (CR).
 You can either modify the Helm chart prometheus according to the &lt;a href="https://github.com/InftyAI/llmaz/blob/main/chart/values.global.yaml">documentation&lt;/a> or use &lt;code>make install-prometheus&lt;/code> in Makefile.&lt;/p></description></item><item><title>Supported Inference Backends</title><link>https://llmaz.inftyai.com/docs/integrations/support-backends/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://llmaz.inftyai.com/docs/integrations/support-backends/</guid><description>&lt;p>If you want to integrate more backends into llmaz, please refer to this &lt;a href="https://github.com/InftyAI/llmaz/pull/182">PR&lt;/a>. It&amp;rsquo;s always welcomed.&lt;/p>
 &lt;h2 id="llamacpp">llama.cpp&lt;/h2>
