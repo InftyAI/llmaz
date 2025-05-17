@@ -17,7 +17,9 @@ limitations under the License.
 package aggregator
 
 import (
+	"context"
 	"testing"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +39,7 @@ func TestDefaultKeyFunc(t *testing.T) {
 }
 
 func TestAggregator(t *testing.T) {
-	agg := NewAggregator()
+	agg := NewAggregator(context.Background(), 500*time.Millisecond)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-pod",

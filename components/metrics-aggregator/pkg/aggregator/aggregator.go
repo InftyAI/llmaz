@@ -17,10 +17,17 @@ limitations under the License.
 package aggregator
 
 import (
+	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/inftyai/metrics-aggregator/pkg/backend"
+	"github.com/inftyai/metrics-aggregator/pkg/store"
+	"github.com/inftyai/metrics-aggregator/pkg/util"
 )
 
 func DefaultKeyFunc(pod *corev1.Pod) string {
@@ -34,31 +41,27 @@ type Aggregator struct {
 	// the value is the PodWrapper.
 	// TODO: Will all Pods share the same Map lead to performance issue once the number of pods is large.
 	PodMap sync.Map
-	// counter counts the number of pods in PodMap.
-	counter atomic.Int32
 	// KeyFunc represents the function to generate a key for the pod.
 	KeyFunc func(pod *corev1.Pod) string
-}
 
-type PodWrapper struct {
-	// nsName is a string looks like "namespace/podName"
-	nsName string
-	// Pod is the pod object.
-	// TODO: should we store the whole Pod object?
-	pod *corev1.Pod
-}
-
-func NewAggregator() *Aggregator {
-	return &Aggregator{
-		KeyFunc: DefaultKeyFunc,
-	}
+	// The system context controls when to stop all the goroutines.
+	ctx context.Context
+	// interval represents the how often to request the metrics from the pods.
+	interval time.Duration
+	// counter counts the number of pods in PodMap.
+	counter atomic.Int32
+	// store is the backend store to save the metrics.
+	store store.Store
 }
 
 func (a *Aggregator) AddPod(pod *corev1.Pod) {
 	name := a.KeyFunc(pod)
-	wrapper := &PodWrapper{nsName: name, pod: pod}
+	wrapper := newPodWrapper(a.ctx, name, pod, a.store)
 
 	if _, ok := a.GetPod(name); !ok {
+		wrapper.once.Do(func() {
+			go wrapper.syncMetricsInLoop(a.interval)
+		})
 		a.PodMap.Store(name, wrapper)
 		a.counter.Add(1)
 		return
@@ -69,21 +72,128 @@ func (a *Aggregator) AddPod(pod *corev1.Pod) {
 	a.PodMap.Store(name, wrapper)
 }
 
-func (a *Aggregator) GetPod(nsName string) (*corev1.Pod, bool) {
-	elem, ok := a.PodMap.Load(nsName)
+func (a *Aggregator) GetPod(name string) (*corev1.Pod, bool) {
+	elem, ok := a.PodMap.Load(name)
 	if !ok {
 		return nil, false
 	}
 	return elem.(*PodWrapper).pod, true
 }
 
-func (a *Aggregator) DeletePod(nsName string) {
-	if _, ok := a.PodMap.Load(nsName); ok {
-		a.PodMap.Delete(nsName)
+func (a *Aggregator) DeletePod(name string) {
+	if wrapper, ok := a.PodMap.Load(name); ok {
+		w := wrapper.(*PodWrapper)
+		if err := w.stop(); err != nil {
+			fmt.Printf("failed to stop the pod wrapper: %v", err)
+		}
+		a.PodMap.Delete(name)
 		a.counter.Add(-1)
 	}
 }
 
 func (a *Aggregator) Len() int32 {
 	return a.counter.Load()
+}
+
+func NewAggregator(ctx context.Context, interval time.Duration) *Aggregator {
+	// TODO: the store type should be optional.
+	// FIXME: the redis host should be configurable.
+	// store := store.NewRedisStore(ctx, "localhost")
+	return &Aggregator{
+		// We only have one aggregator, so it's ok to use the context directly.
+		ctx:      ctx,
+		KeyFunc:  DefaultKeyFunc,
+		interval: interval,
+		store:    nil,
+	}
+}
+
+type PodWrapper struct {
+	// ctx is the root context of the podWrapper.
+	ctx context.Context
+	// cancelFunc is the function to cancel the context of the background goroutine.
+	cancelFunc context.CancelFunc
+	// name is a string of the podWrapper.
+	name string
+	// the name of the model Pod is serving.
+	modelName string
+	// Pod is the pod object.
+	// TODO: should we store the whole Pod object?
+	pod *corev1.Pod
+	// once ensures we only run the background goroutine for only once.
+	once sync.Once
+	// store used to save the metrics.
+	store store.Store
+}
+
+func (w *PodWrapper) syncMetricsInLoop(interval time.Duration) {
+	ticket := time.NewTicker(interval)
+	defer ticket.Stop()
+
+	for {
+		select {
+		case <-ticket.C:
+			ep := metricEndpoint(w.pod)
+			metrics, err := backend.QueryMetrics(ep)
+			if err != nil {
+				fmt.Printf("failed to query metrics from %s: %v, but continue.", ep, err)
+				continue
+			}
+			// TODO: only for debug.
+			for k, v := range metrics {
+				fmt.Printf("%s metrics %s: %f\n", w.name, k, v)
+			}
+			if err := w.saveMetrics(metrics); err != nil {
+				fmt.Printf("failed to save metrics to store: %v, but continue.", err)
+				continue
+			}
+		case <-w.ctx.Done():
+			fmt.Println("context done, stop the goroutine.")
+			return
+		}
+
+		// Avoid to count the request ping-pong time.
+		ticket.Reset(interval)
+	}
+}
+
+func (w *PodWrapper) saveMetrics(metrics backend.MetricValues) error {
+	runningQueueSize := metrics[backend.RunningQueueSize]
+	waitingQueueSize := metrics[backend.WaitingQueueSize]
+	// TODO: we may have more algorithms in the future based on different policies,
+	// make it configurable.
+	score := runningQueueSize*0.7 + waitingQueueSize*0.3
+	// Only used in unit test to skip the store operation.
+	if w.store != nil {
+		return w.store.Insert(w.ctx, "LeastLatency:"+w.modelName, score, w.name)
+	}
+	return nil
+}
+
+func (w *PodWrapper) stop() error {
+	// Stop the background goroutine first.
+	w.cancelFunc()
+	// Only used in unit test to skip the store operation.
+	if w.store != nil {
+		// TODO: only we support more policies, we should refactor here.
+		return w.store.Remove(w.ctx, "LeastLatency:"+w.modelName, w.name)
+	}
+	return nil
+}
+
+func newPodWrapper(ctx context.Context, name string, pod *corev1.Pod, store store.Store) *PodWrapper {
+	ctx, cancel := context.WithCancel(ctx)
+	return &PodWrapper{
+		ctx:        ctx,
+		cancelFunc: cancel,
+		name:       name,
+		pod:        pod,
+		store:      store,
+		modelName:  pod.Labels[util.ModelNameLabelKey],
+	}
+}
+
+// TODO: The http port is hardcoded now.
+func metricEndpoint(pod *corev1.Pod) string {
+	return "http://" + pod.Status.PodIP + ":8080"
 }

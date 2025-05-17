@@ -16,6 +16,18 @@ limitations under the License.
 
 package store
 
-// Backend represents the interface for the backend store, like Redis.
-type Backend interface {
+import "context"
+
+// Store represents the interface for the backend store, like Redis.
+// In metrics-aggregator, we use Store to save the metrics and
+// In AI gateway, we use Store to fetch the metrics for smart routing.
+// They're paired with each other. Each time you want to add a new store,
+// you need to implement in both sides.
+//
+// Note:
+// The store interface functions is derived from Redis,
+// change it once we have more stores.
+type Store interface {
+	Insert(ctx context.Context, key string, score float64, member string) error
+	Remove(ctx context.Context, key string, member string) error
 }

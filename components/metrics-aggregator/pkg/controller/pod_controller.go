@@ -20,7 +20,6 @@ import (
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
@@ -32,10 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/inftyai/metrics-aggregator/pkg/aggregator"
-)
-
-const (
-	modelNameLabelKey = "llmaz.io/model-name"
+	"github.com/inftyai/metrics-aggregator/pkg/util"
 )
 
 // PodReconciler reconciles a Model object
@@ -67,11 +63,6 @@ func (r *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 
 	var pod corev1.Pod
 	if err := r.Get(ctx, types.NamespacedName{Name: req.Name, Namespace: req.Namespace}, &pod); err != nil {
-		if apierrors.IsNotFound(err) {
-			r.Agg.DeletePod(r.Agg.KeyFunc(&pod))
-			// TODO: this is only for debug, remove it later.
-			logger.V(0).Info("Pod not found", "PodMap length", r.Agg.Len())
-		}
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
@@ -105,16 +96,16 @@ func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&corev1.Pod{}).
 		WithEventFilter(predicate.Funcs{
 			CreateFunc: func(e event.CreateEvent) bool {
-				return hasLabel(e.Object, modelNameLabelKey)
+				return hasLabel(e.Object, util.ModelNameLabelKey)
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
-				return hasLabel(e.ObjectOld, modelNameLabelKey)
+				return hasLabel(e.ObjectOld, util.ModelNameLabelKey)
 			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
-				return hasLabel(e.Object, modelNameLabelKey)
+				return hasLabel(e.Object, util.ModelNameLabelKey)
 			},
 			GenericFunc: func(e event.GenericEvent) bool {
-				return hasLabel(e.Object, modelNameLabelKey)
+				return hasLabel(e.Object, util.ModelNameLabelKey)
 			},
 		}).
 		Complete(r)
