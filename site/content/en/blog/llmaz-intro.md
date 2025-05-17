@@ -4,10 +4,9 @@ description: "A brief introduction to llmaz and the features published in the fi
 date: 2025-01-26T15:00:00+08:00
 lastmod: 2025-01-26T15:00:00+08:00
 categories:
-  - "llmaz"
+  - "inference"
 tags:
-  - "Inference"
-  - "Release Note"
+  - "release-note"
 author: >
   [Kante Yin](https://github.com/kerthcet) ([InftyAI](https://inftyai.com/))
 ---
@@ -18,7 +17,7 @@ With the GPT series models shocking the world, a new era of AI innovation has be
 
 ## Architecture
 
-First of all, let's take a look at the architecture of llmaz: ![llmaz architecture](/images/arch.png)
+First of all, let's take a look at the architecture of llmaz: ![llmaz architecture](/images/infra.png)
 
 Basically, llmaz works as a platform on top of Kubernetes and provides an unified interface for various kinds of inference engines, it has four CRDs as defined:
 
