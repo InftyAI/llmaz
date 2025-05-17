@@ -31,10 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/inftyai/metrics-aggregator/pkg/aggregator"
-)
-
-const (
-	modelNameLabelKey = "llmaz.io/model-name"
+	"github.com/inftyai/metrics-aggregator/pkg/util"
 )
 
 // PodReconciler reconciles a Model object
@@ -99,16 +96,16 @@ func (r *PodReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&corev1.Pod{}).
 		WithEventFilter(predicate.Funcs{
 			CreateFunc: func(e event.CreateEvent) bool {
-				return hasLabel(e.Object, modelNameLabelKey)
+				return hasLabel(e.Object, util.ModelNameLabelKey)
 			},
 			UpdateFunc: func(e event.UpdateEvent) bool {
-				return hasLabel(e.ObjectOld, modelNameLabelKey)
+				return hasLabel(e.ObjectOld, util.ModelNameLabelKey)
 			},
 			DeleteFunc: func(e event.DeleteEvent) bool {
-				return hasLabel(e.Object, modelNameLabelKey)
+				return hasLabel(e.Object, util.ModelNameLabelKey)
 			},
 			GenericFunc: func(e event.GenericEvent) bool {
-				return hasLabel(e.Object, modelNameLabelKey)
+				return hasLabel(e.Object, util.ModelNameLabelKey)
 			},
 		}).
 		Complete(r)

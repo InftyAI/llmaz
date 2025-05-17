@@ -14,41 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package indicator
+package backend
 
-import "github.com/inftyai/metrics-aggregator/pkg/util"
+import (
+	dto "github.com/prometheus/client_model/go"
 
-var _ Indicator = &LlamaCpp{}
+	"github.com/inftyai/metrics-aggregator/pkg/util"
+)
 
-type LlamaCpp struct {
-}
+var _ Backend = &LlamaCpp{}
 
-func (l *LlamaCpp) Endpoint() string {
-	return "/metrics"
-}
+type LlamaCpp struct{}
 
-func (l *LlamaCpp) MetricsMap() map[IndicatorType]string {
-	return map[IndicatorType]string{
-		RunningQueueSize: "llamacpp:requests_processing",
-		WaitingQueueSize: "llamacpp:requests_deferred",
-	}
-}
-
-// TODO: add tests, mock the API request here.
-func (l *LlamaCpp) QueryMetrics(uri string) (MetricValues, error) {
-	if uri[len(uri)-1] == '/' {
-		uri = uri[:len(uri)-1]
-	}
-	url := uri + l.Endpoint()
-
-	metrics, err := util.RequestMetric(url)
-	if err != nil {
-		return nil, err
-	}
-
+func (l *LlamaCpp) ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error) {
 	res := make(MetricValues)
 
-	for k, v := range l.MetricsMap() {
+	for k, v := range l.metricsMap() {
 		value, err := util.ParseMetricsWithNoLabel(v, metrics)
 		if err != nil {
 			return nil, err
@@ -56,4 +37,11 @@ func (l *LlamaCpp) QueryMetrics(uri string) (MetricValues, error) {
 		res[k] = value
 	}
 	return res, nil
+}
+
+func (l *LlamaCpp) metricsMap() map[MetricType]string {
+	return map[MetricType]string{
+		RunningQueueSize: "llamacpp:requests_processing",
+		WaitingQueueSize: "llamacpp:requests_deferred",
+	}
 }

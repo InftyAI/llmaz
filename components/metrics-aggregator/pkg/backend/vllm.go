@@ -14,27 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package backend
 
-import (
-	"fmt"
-	"net/http"
+import dto "github.com/prometheus/client_model/go"
 
-	dto "github.com/prometheus/client_model/go"
-	"github.com/prometheus/common/expfmt"
-)
+// var _ Backend = &VLLM{}
 
-func RequestMetrics(url string) (map[string]*dto.MetricFamily, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+type VLLM struct {
+}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get metrics: %s", resp.Status)
-	}
+func (v *VLLM) metricsMap() map[MetricType]string {
+	return map[MetricType]string{}
+}
 
-	parser := expfmt.TextParser{}
-	return parser.TextToMetricFamilies(resp.Body)
+func (v *VLLM) ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error) {
+	return nil, nil
 }

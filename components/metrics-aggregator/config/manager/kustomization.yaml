@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: inftyai/test
-  newTag: ma-051501
+  newTag: ma-051702

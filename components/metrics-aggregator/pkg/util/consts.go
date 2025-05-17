@@ -14,13 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package indicator
+package util
 
-// var _ Indicator = &VLLM{}
-
-type VLLM struct {
-}
-
-func (v *VLLM) Endpoint() string {
-	return "/metrics"
-}
+const (
+	ModelNameLabelKey = "llmaz.io/model-name"
+)

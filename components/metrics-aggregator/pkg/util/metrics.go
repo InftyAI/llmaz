@@ -22,6 +22,7 @@ import (
 	dto "github.com/prometheus/client_model/go"
 )
 
+// ParseMetricsWithNoLabel parses the metrics from the given metric family map with no labels specified.
 func ParseMetricsWithNoLabel(metricName string, mfs map[string]*dto.MetricFamily) (float64, error) {
 	mf, ok := mfs[metricName]
 	if !ok {
