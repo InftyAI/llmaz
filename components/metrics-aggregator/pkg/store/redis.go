@@ -50,7 +50,7 @@ func NewRedisStore(ctx context.Context, host string) *RedisStore {
 // - Common set with the namespacedName as the key and current time as the value.
 // It generally looks like:
 //
-//	ZADD LeastLatency::<ModelName> 0.5 default/fake-pod
+//	ZADD LeastLatency:<ModelName> 0.5 default/fake-pod
 //	SET default/fake-pod "2025-05-12T06:16:27Z"
 func (r *RedisStore) Insert(ctx context.Context, key string, score float64, member string) error {
 	// No need to store if the score is 0.
