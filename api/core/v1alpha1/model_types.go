@@ -184,7 +184,7 @@ type ModelClaims struct {
 	Models []ModelRef `json:"models,omitempty"`
 	// InferenceFlavors represents a list of flavor names with fungibility supported
 	// to serve the model.
-	// - If not set, always apply with the 0-index model by default.
+	// - If not set, will employ the model configured flavors by default.
 	// - If set, will lookup the flavor names following the model orders.
 	// +optional
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
