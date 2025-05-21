@@ -68,6 +68,10 @@ llama.cpp supports speculative decoding to significantly improve inference perfo
 
 [Speculative Decoding](https://arxiv.org/abs/2211.17192) can improve inference performance efficiently, see [example](./speculative-decoding/vllm/) here.
 
+### Loading models with Run:ai Model Streamer with vLLM
+
+[Run:ai Model Streamer](https://github.com/run-ai/runai-model-streamer/blob/master/docs/README.md) is a library to read tensors in concurrency, while streaming it to GPU memory. vLLM supports loading weights in Safetensors format using the Run:ai Model Streamer. See [example](./runai-streamer/) here. 
+
 ### Multi-Host Inference
 
 Model size is growing bigger and bigger, Llama 3.1 405B FP16 LLM requires more than 750 GB GPU for weights only, leaving kv cache unconsidered, even with 8 x H100 Nvidia GPUs, 80 GB size of HBM each, can not fit in a single host, requires a multi-host deployment, see [example](./multi-nodes/) here.
