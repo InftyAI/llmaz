@@ -13,7 +13,10 @@ metadata:
 spec:
   familyName: deepseek
   source:
-    uri: s3://cr7258/DeepSeek-R1-Distill-Qwen-1.5B
+    # Note: You need to replace <YOUR_S3_BUCKET> with your actual S3 bucket name
+    # If the s3 bucket need AWS credentials for authentication,
+    # please run `kubectl create secret generic aws-access-secret --from-literal=AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY_ID> --from-literal=AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_ACCESS_KEY>` ahead.
+    uri: s3://<YOUR_S3_BUCKET>/DeepSeek-R1-Distill-Qwen-1.5B
   inferenceConfig:
     flavors:
       - name: t4 # GPU type

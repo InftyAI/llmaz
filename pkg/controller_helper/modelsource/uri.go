@@ -20,10 +20,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/inftyai/llmaz/pkg"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
 
-	corev1 "k8s.io/api/core/v1"
+	"github.com/inftyai/llmaz/pkg"
 )
 
 var _ ModelSourceProvider = &URIProvider{}
