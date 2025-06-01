@@ -30,7 +30,6 @@ var _ ModelSourceProvider = &URIProvider{}
 
 const (
 	OSS      = "OSS"
-	S3       = "S3"
 	Ollama   = "OLLAMA"
 	HostPath = "HOST"
 )

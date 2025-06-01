@@ -45,13 +45,3 @@ func ParseOSS(address string) (endpoint, bucket, modelPath string, err error) {
 	endpoint, modelPath = splits[0], splits[1]
 	return endpoint, bucket, modelPath, nil
 }
-
-// ParseS3 address looks like: <bucket>/<modelPath>
-func ParseS3(address string) (bucket, modelPath string, err error) {
-	splits := strings.SplitN(address, "/", 2)
-	if len(splits) != 2 {
-		return "", "", fmt.Errorf("address not right %s", address)
-	}
-	bucket, modelPath = splits[0], splits[1]
-	return bucket, modelPath, nil
-}
