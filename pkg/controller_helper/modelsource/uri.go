@@ -237,5 +237,36 @@ func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
 				)
 			}
 		}
+	case OSS:
+		for i := range template.Spec.Containers {
+			if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+					corev1.EnvVar{
+						Name: OSS_ACCESS_KEY_ID,
+						ValueFrom: &corev1.EnvVarSource{
+							SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+								},
+								Key:      OSS_ACCESS_KEY_ID,
+								Optional: ptr.To[bool](true),
+							},
+						},
+					},
+					corev1.EnvVar{
+						Name: OSS_ACCESS_KEY_SECRET,
+						ValueFrom: &corev1.EnvVarSource{
+							SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+								},
+								Key:      OSS_ACCESS_KEY_SECRET,
+								Optional: ptr.To[bool](true),
+							},
+						},
+					},
+				)
+			}
+		}
 	}
 }

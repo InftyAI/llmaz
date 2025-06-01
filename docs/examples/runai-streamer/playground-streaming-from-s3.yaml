@@ -43,10 +43,10 @@ spec:
       - name: RUNAI_STREAMER_CONCURRENCY
         value: "32"
       # For troubleshooting, uncomment the following two environment variables.
-      - name: RUNAI_STREAMER_LOG_TO_STDERR
-        value: "1"
-      - name: RUNAI_STREAMER_LOG_LEVEL
-        value: "DEBUG"
+#      - name: RUNAI_STREAMER_LOG_TO_STDERR
+#        value: "1"
+#      - name: RUNAI_STREAMER_LOG_LEVEL
+#        value: "DEBUG"
     resources:
       limits:
         cpu: "4"
