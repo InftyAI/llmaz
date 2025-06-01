@@ -1,12 +1,13 @@
+
+---
 apiVersion: llmaz.io/v1alpha1
 kind: OpenModel
 metadata:
-  name: qwen2-0--5b
+  name: deepseek-r1-distill-qwen-1-5b
 spec:
-  familyName: qwen2
+  familyName: deepseek
   source:
-    modelHub:
-      modelID: Qwen/Qwen2-0.5B-Instruct
+    uri: s3://cr7258/DeepSeek-R1-Distill-Qwen-1.5B
   inferenceConfig:
     flavors:
       - name: t4 # GPU type
@@ -16,11 +17,13 @@ spec:
 apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:
-  name: qwen2-0--5b
+  name: deepseek-r1-distill-qwen-1-5b
+  annotations:
+    llmaz.io/skip-model-loader: "true"
 spec:
   replicas: 1
   modelClaim:
-    modelName: qwen2-0--5b
+    modelName: deepseek-r1-distill-qwen-1-5b
   backendRuntimeConfig:
     configName: runai-streamer
     backendName: vllm # currently, only vllm supports runai streamer
