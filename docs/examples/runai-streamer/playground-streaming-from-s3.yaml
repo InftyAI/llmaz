@@ -39,14 +39,9 @@ spec:
       # The default value is 1 second. Increase it to 10 seconds to avoid timeouts in case of slow network conditions.
       - name: RUNAI_STREAMER_S3_REQUEST_TIMEOUT_MS
         value: "10000"
-      # Controls the level of concurrency and number of OS threads reading tensors from the file to the CPU buffer
-      - name: RUNAI_STREAMER_CONCURRENCY
-        value: "32"
-      # For troubleshooting, uncomment the following two environment variables.
-#      - name: RUNAI_STREAMER_LOG_TO_STDERR
-#        value: "1"
-#      - name: RUNAI_STREAMER_LOG_LEVEL
-#        value: "DEBUG"
+      # Controls the level of concurrency and number of OS threads reading tensors from the file to the CPU buffer, the default value is 16
+      #- name: RUNAI_STREAMER_CONCURRENCY
+      #  value: "32"
     resources:
       limits:
         cpu: "4"
