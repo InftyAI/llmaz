@@ -46,6 +46,10 @@ const (
 	OSS_ACCESS_SECRET_NAME = "oss-access-secret"
 	OSS_ACCESS_KEY_ID      = "OSS_ACCESS_KEY_ID"
 	OSS_ACCESS_KEY_SECRET  = "OSS_ACCESS_KEY_SECRET"
+
+	AWS_ACCESS_SECRET_NAME = "aws-access-secret"
+	AWS_ACCESS_KEY_ID      = "AWS_ACCESS_KEY_ID"
+	AWS_ACCESS_KEY_SECRET  = "AWS_SECRET_ACCESS_KEY"
 )
 
 type ModelSourceProvider interface {
@@ -54,6 +58,7 @@ type ModelSourceProvider interface {
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
 	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
+	InjectModelEnvVars(spec *corev1.PodTemplateSpec)
 }
 
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
@@ -72,11 +77,13 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	if model.Spec.Source.URI != nil {
 		// We'll validate the format in the webhook, so generally no error should happen here.
 		protocol, value, _ := util.ParseURI(string(*model.Spec.Source.URI))
-		provider := &URIProvider{modelName: model.Name, protocol: protocol}
+		provider := &URIProvider{modelName: model.Name, protocol: protocol, uri: string(*model.Spec.Source.URI)}
 
 		switch protocol {
 		case OSS:
 			provider.endpoint, provider.bucket, provider.modelPath, _ = util.ParseOSS(value)
+		case S3:
+			provider.bucket, provider.modelPath, _ = util.ParseS3(value)
 		case HostPath:
 			provider.modelPath = value
 		case Ollama:

@@ -30,6 +30,7 @@ var _ ModelSourceProvider = &URIProvider{}
 
 const (
 	OSS      = "OSS"
+	S3       = "S3"
 	Ollama   = "OLLAMA"
 	HostPath = "HOST"
 )
@@ -40,6 +41,7 @@ type URIProvider struct {
 	bucket    string
 	endpoint  string
 	modelPath string
+	uri       string
 }
 
 func (p *URIProvider) ModelName() string {
@@ -66,7 +68,7 @@ func (p *URIProvider) ModelPath(skipModelLoader bool) string {
 	// Skip the model loader to allow the inference engine to handle loading models directly from remote storage (e.g., S3, OSS).
 	// In this case, the remote model path should be returned (e.g., s3://bucket/modelPath).
 	if skipModelLoader {
-		return p.modelPath
+		return p.uri
 	}
 
 	// protocol is oss.
@@ -200,4 +202,40 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	// 		},
 	// 	},
 	// })
+}
+
+func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
+	switch p.protocol {
+	case S3:
+		for i := range template.Spec.Containers {
+			if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+					corev1.EnvVar{
+						Name: AWS_ACCESS_KEY_ID,
+						ValueFrom: &corev1.EnvVarSource{
+							SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: AWS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+								},
+								Key:      AWS_ACCESS_KEY_ID,
+								Optional: ptr.To[bool](true),
+							},
+						},
+					},
+					corev1.EnvVar{
+						Name: AWS_ACCESS_KEY_SECRET,
+						ValueFrom: &corev1.EnvVarSource{
+							SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: AWS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+								},
+								Key:      AWS_ACCESS_KEY_SECRET,
+								Optional: ptr.To[bool](true),
+							},
+						},
+					},
+				)
+			}
+		}
+	}
 }

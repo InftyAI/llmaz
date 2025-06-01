@@ -170,3 +170,36 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 func spreadEnvToInitContainer(containerEnv []corev1.EnvVar, initContainer *corev1.Container) {
 	initContainer.Env = append(initContainer.Env, containerEnv...)
 }
+
+func (p *ModelHubProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
+	for i := range template.Spec.Containers {
+		if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+			template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+				corev1.EnvVar{
+					Name: "HUGGING_FACE_HUB_TOKEN",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: MODELHUB_SECRET_NAME, // if secret not exists, the env is empty.
+							},
+							Key:      HUGGINGFACE_TOKEN_KEY,
+							Optional: ptr.To[bool](true),
+						},
+					},
+				},
+				corev1.EnvVar{
+					Name: "HF_TOKEN",
+					ValueFrom: &corev1.EnvVarSource{
+						SecretKeyRef: &corev1.SecretKeySelector{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: MODELHUB_SECRET_NAME,
+							},
+							Key:      HUGGINGFACE_TOKEN_KEY,
+							Optional: ptr.To[bool](true),
+						},
+					},
+				},
+			)
+		}
+	}
+}

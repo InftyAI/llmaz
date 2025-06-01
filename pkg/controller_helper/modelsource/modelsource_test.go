@@ -66,8 +66,8 @@ func Test_ModelSourceProvider(t *testing.T) {
 			if tc.wantModelName != provider.ModelName() {
 				t.Fatalf("unexpected model name, want %s, got %s", tc.wantModelName, provider.ModelName())
 			}
-			if tc.wantModelPath != provider.ModelPath() {
-				t.Fatalf("unexpected model path, want %s, got %s", tc.wantModelPath, provider.ModelPath())
+			if tc.wantModelPath != provider.ModelPath(false) {
+				t.Fatalf("unexpected model path, want %s, got %s", tc.wantModelPath, provider.ModelPath(false))
 			}
 		})
 	}

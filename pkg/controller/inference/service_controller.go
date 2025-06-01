@@ -174,13 +174,19 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 		skipModelLoader = annotations[inferenceapi.SkipModelLoaderAnnoKey] == "true"
 	}
 
-	if !skipModelLoader {
-		for i, model := range models {
-			source := modelSource.NewModelSourceProvider(model)
+	for i, model := range models {
+		source := modelSource.NewModelSourceProvider(model)
+
+		if !skipModelLoader {
 			if isMultiNodesInference {
 				source.InjectModelLoader(template.LeaderTemplate, i)
 			}
 			source.InjectModelLoader(template.WorkerTemplate, i)
+		} else {
+			if isMultiNodesInference {
+				source.InjectModelEnvVars(template.LeaderTemplate)
+			}
+			source.InjectModelEnvVars(template.WorkerTemplate)
 		}
 	}
 
