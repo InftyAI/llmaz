@@ -4,6 +4,8 @@ apiVersion: llmaz.io/v1alpha1
 kind: OpenModel
 metadata:
   name: deepseek-r1-distill-qwen-1-5b
+  annotations:
+    llmaz.io/skip-model-loader: "true"
 spec:
   familyName: deepseek
   source:
@@ -25,5 +27,4 @@ spec:
   modelClaim:
     modelName: deepseek-r1-distill-qwen-1-5b
   backendRuntimeConfig:
-    configName: runai-streamer
     backendName: vllm # currently, only vllm supports runai streamer

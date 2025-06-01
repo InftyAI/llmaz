@@ -50,7 +50,13 @@ func (p *ModelHubProvider) ModelName() string {
 //   - modelID: Qwen/Qwen2-0.5B-Instruct-GGUF
 //     fileName: qwen2-0_5b-instruct-q5_k_m.gguf
 //     modelPath: /workspace/models/qwen2-0_5b-instruct-q5_k_m.gguf
-func (p *ModelHubProvider) ModelPath() string {
+func (p *ModelHubProvider) ModelPath(skipModelLoader bool) string {
+	// Skip the model loader to allow the inference engine to handle loading models directly from model hub (e.g., Hugging Face, ModelScope).
+	// In this case, the model ID should be returned (e.g., facebook/opt-125m).
+	if skipModelLoader {
+		return p.modelID
+	}
+
 	if p.fileName != nil {
 		return CONTAINER_MODEL_PATH + *p.fileName
 	}

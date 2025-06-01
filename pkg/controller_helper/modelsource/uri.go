@@ -20,16 +20,17 @@ import (
 	"strconv"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
+	"github.com/inftyai/llmaz/pkg"
 	"k8s.io/utils/ptr"
 
-	"github.com/inftyai/llmaz/pkg"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var _ ModelSourceProvider = &URIProvider{}
 
 const (
 	OSS      = "OSS"
+	S3       = "S3"
 	Ollama   = "OLLAMA"
 	HostPath = "HOST"
 )
@@ -58,13 +59,18 @@ func (p *URIProvider) ModelName() string {
 // Example 2:
 //   - uri: bucket.endpoint/modelPath/model.gguf
 //     modelPath: /workspace/models/model.gguf
-func (p *URIProvider) ModelPath() string {
+func (p *URIProvider) ModelPath(skipModelLoader bool) string {
 	if p.protocol == HostPath {
 		return p.modelPath
 	}
 
-	// protocol is oss.
+	// Skip the model loader to allow the inference engine to handle loading models directly from remote storage (e.g., S3, OSS).
+	// In this case, the remote model path should be returned (e.g., s3://bucket/modelPath).
+	if skipModelLoader {
+		return p.modelPath
+	}
 
+	// protocol is oss.
 	splits := strings.Split(p.modelPath, "/")
 
 	if strings.Contains(p.modelPath, ".gguf") {
@@ -103,7 +109,6 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	}
 
 	// Other protocols.
-
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
@@ -167,7 +172,6 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	}
 
 	// Handle container.
-
 	for i, container := range template.Spec.Containers {
 		// We only consider this container.
 		if container.Name == MODEL_RUNNER_CONTAINER_NAME {
@@ -180,7 +184,6 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	}
 
 	// Handle spec.
-
 	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
 		Name: MODEL_VOLUME_NAME,
 		VolumeSource: corev1.VolumeSource{

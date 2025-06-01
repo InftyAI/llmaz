@@ -50,7 +50,7 @@ const (
 
 type ModelSourceProvider interface {
 	ModelName() string
-	ModelPath() string
+	ModelPath(skipModelLoader bool) string
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
 	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
@@ -77,6 +77,8 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 		switch protocol {
 		case OSS:
 			provider.endpoint, provider.bucket, provider.modelPath, _ = util.ParseOSS(value)
+		case S3:
+			provider.bucket, provider.modelPath, _ = util.ParseS3(value)
 		case HostPath:
 			provider.modelPath = value
 		case Ollama:
