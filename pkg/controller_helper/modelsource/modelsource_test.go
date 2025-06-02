@@ -215,7 +215,7 @@ func TestInjectModelEnvVars(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Call InjectModelEnvVars
-			tt.provider.InjectModelEnvVars(tt.template)
+			tt.provider.InjectModelEnvVars(tt.template, 0)
 
 			// Find the model-runner container
 			var container *corev1.Container

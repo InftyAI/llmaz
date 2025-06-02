@@ -58,7 +58,7 @@ type ModelSourceProvider interface {
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
 	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
-	InjectModelEnvVars(spec *corev1.PodTemplateSpec)
+	InjectModelEnvVars(spec *corev1.PodTemplateSpec, index int)
 }
 
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {

@@ -201,15 +201,6 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	// Build metadata
 	serviceApplyConfiguration := inferenceclientgo.Service(playground.Name, playground.Namespace)
 
-	if annotations := playground.GetAnnotations(); annotations != nil {
-		// Propagate llmaz.io/skip-model-loader annotation to inferenceService.
-		if value, exists := annotations[inferenceapi.SkipModelLoaderAnnoKey]; exists {
-			serviceApplyConfiguration.WithAnnotations(map[string]string{
-				inferenceapi.SkipModelLoaderAnnoKey: value,
-			})
-		}
-	}
-
 	// Build spec.
 	spec := inferenceclientgo.ServiceSpec()
 

@@ -27,8 +27,6 @@ apiVersion: inference.llmaz.io/v1alpha1
 kind: Playground
 metadata:
   name: deepseek-r1-distill-qwen-1-5b
-  annotations:
-    llmaz.io/skip-model-loader: "true"
 spec:
   replicas: 1
   modelClaim:

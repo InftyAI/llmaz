@@ -73,9 +73,6 @@ const (
 	PlaygroundProgressing = "Progressing"
 	// PlaygroundAvailable indicates the corresponding inference service is available now.
 	PlaygroundAvailable string = "Available"
-	// SkipModelLoaderAnnoKey indicates whether to skip the model loader,
-	// enabling the inference engine to manage model loading directly.
-	SkipModelLoaderAnnoKey = "llmaz.io/skip-model-loader"
 )
 
 // PlaygroundStatus defines the observed state of Playground

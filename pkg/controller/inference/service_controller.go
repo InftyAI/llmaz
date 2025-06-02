@@ -168,15 +168,12 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
 	isMultiNodesInference := template.LeaderTemplate != nil
 
-	// Skip model loader if llmaz.io/skip-model-loader annotation is set.
-	skipModelLoader := false
-	if annotations := service.GetAnnotations(); annotations != nil {
-		skipModelLoader = annotations[inferenceapi.SkipModelLoaderAnnoKey] == "true"
-	}
-
 	for i, model := range models {
+		skipModelLoader := false
+		if annotations := model.GetAnnotations(); annotations != nil {
+			skipModelLoader = annotations[coreapi.SkipModelLoaderAnnoKey] == "true"
+		}
 		source := modelSource.NewModelSourceProvider(model)
-
 		if !skipModelLoader {
 			if isMultiNodesInference {
 				source.InjectModelLoader(template.LeaderTemplate, i)
@@ -184,9 +181,9 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 			source.InjectModelLoader(template.WorkerTemplate, i)
 		} else {
 			if isMultiNodesInference {
-				source.InjectModelEnvVars(template.LeaderTemplate)
+				source.InjectModelEnvVars(template.LeaderTemplate, i)
 			}
-			source.InjectModelEnvVars(template.WorkerTemplate)
+			source.InjectModelEnvVars(template.WorkerTemplate, i)
 		}
 	}
 

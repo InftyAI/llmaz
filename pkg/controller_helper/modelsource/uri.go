@@ -204,7 +204,12 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	// })
 }
 
-func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
+func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec, index int) {
+	// Return once not the main model, because all the below has already been injected.
+	if index != 0 {
+		return
+	}
+
 	switch p.protocol {
 	case S3:
 		for i := range template.Spec.Containers {

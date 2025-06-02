@@ -158,6 +158,9 @@ const (
 	DraftRole ModelRole = "draft"
 	// LoraRole represents the lora model.
 	LoraRole ModelRole = "lora"
+	// SkipModelLoaderAnnoKey indicates whether to skip the model loader,
+	// enabling the inference engine to manage model loading directly.
+	SkipModelLoaderAnnoKey = "llmaz.io/skip-model-loader"
 )
 
 // ModelRef refers to a created Model with it's role.

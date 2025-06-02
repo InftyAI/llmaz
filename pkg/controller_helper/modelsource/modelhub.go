@@ -171,7 +171,11 @@ func spreadEnvToInitContainer(containerEnv []corev1.EnvVar, initContainer *corev
 	initContainer.Env = append(initContainer.Env, containerEnv...)
 }
 
-func (p *ModelHubProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
+func (p *ModelHubProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec, index int) {
+	// Return once not the main model, because all the below has already been injected.
+	if index != 0 {
+		return
+	}
 	for i := range template.Spec.Containers {
 		if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
 			template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
