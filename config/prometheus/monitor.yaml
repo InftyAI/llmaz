@@ -21,3 +21,4 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: llmaz
+      control-plane: controller-manager

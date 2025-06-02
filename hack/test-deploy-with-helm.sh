@@ -25,7 +25,7 @@ function kind_load {
 function deploy {
     cd $CWD
     HELM_EXT_OPTS='--set controllerManager.manager.image.tag=${TAG}' make helm-install
-    $KUBECTL wait --timeout=30m --for=condition=ready pods --namespace=llmaz-system -l app.kubernetes.io/component!=open-webui,app!=certgen
+    $KUBECTL wait --timeout=10m --for=condition=ready pods --namespace=llmaz-system -l app.kubernetes.io/component!=open-webui,app!=certgen
     echo "all pods of llmaz-system is ready..."
     $KUBECTL get pod -n llmaz-system
 }

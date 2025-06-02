@@ -71,11 +71,6 @@ type ModelHub struct {
 // URIProtocol represents the protocol of the URI.
 type URIProtocol string
 
-// Add roles for operating leaderWorkerSet.
-//
-// +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets/status,verbs=get;update;patch
-
 // ModelSource represents the source of the model.
 // Only one model source will be used.
 type ModelSource struct {

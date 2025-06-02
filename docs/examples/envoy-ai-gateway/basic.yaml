@@ -82,14 +82,14 @@ spec:
         - headers:
             - type: Exact
               name: x-ai-eg-model
-              value: qwen2-0.5b
+              value: qwen2-0--5b
       backendRefs:
         - name: qwen2-0--5b
     - matches:
         - headers:
             - type: Exact
               name: x-ai-eg-model
-              value: qwen2.5-coder
+              value: qwen2--5-coder
       backendRefs:
         - name: qwen2--5-coder
 ---

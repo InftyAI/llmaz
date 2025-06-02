@@ -22,6 +22,9 @@ resources:
 # crd/kustomization.yaml
 - ../webhook
 
+# [customized]
+- configmap.yaml
+
 # [INTERNALCERT]
 - ../internalcert
 

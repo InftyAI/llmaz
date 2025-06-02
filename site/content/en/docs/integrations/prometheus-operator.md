@@ -10,7 +10,7 @@ This document provides deployment steps to install and configure Prometheus Oper
 Please follow the [documentation](https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/getting-started/installation.md) to install prometheus operator or simply run the following command:
 
 ```bash
-curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.81.0/bundle.yaml | kubectl delete -f -
+curl -sL https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.81.0/bundle.yaml | kubectl create -f -
 ```
 
 Ensure that the Prometheus Operator Pod is running successfully.

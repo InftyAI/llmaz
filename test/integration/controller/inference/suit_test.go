@@ -31,6 +31,7 @@ import (
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/scheme"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -120,7 +121,14 @@ var _ = BeforeSuite(func() {
 	serviceController := inferencecontroller.NewServiceReconciler(mgr.GetClient(), mgr.GetScheme(), mgr.GetEventRecorderFor("service"))
 	Expect(serviceController.SetupWithManager(mgr)).NotTo(HaveOccurred())
 
+	Expect(k8sClient.Create(ctx, &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "llmaz-system",
+		},
+	})).ToNot(HaveOccurred())
+
 	Expect(util.Setup(ctx, k8sClient, "../../../config/backends")).To(Succeed())
+	Expect(util.Setup(ctx, k8sClient, "../../../config/others")).To(Succeed())
 
 	go func() {
 		defer GinkgoRecover()
