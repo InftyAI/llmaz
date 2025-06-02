@@ -16664,7 +16664,7 @@ metadata:
   name: lws-controller-manager
   namespace: lws-system
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       control-plane: controller-manager
@@ -16680,7 +16680,7 @@ spec:
         - --zap-log-level=2
         command:
         - /manager
-        image: registry.k8s.io/lws/lws:v0.5.0
+        image: registry.k8s.io/lws/lws:v0.6.1
         livenessProbe:
           httpGet:
             path: /healthz
