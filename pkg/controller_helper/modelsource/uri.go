@@ -29,6 +29,7 @@ import (
 var _ ModelSourceProvider = &URIProvider{}
 
 const (
+	GCS      = "GCS"
 	OSS      = "OSS"
 	S3       = "S3"
 	Ollama   = "OLLAMA"
@@ -170,7 +171,7 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 
 func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
 	switch p.protocol {
-	case S3:
+	case S3, GCS:
 		for i := range template.Spec.Containers {
 			if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
 				// Check if AWS credentials already exist

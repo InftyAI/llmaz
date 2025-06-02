@@ -85,7 +85,7 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 		switch protocol {
 		case OSS:
 			provider.endpoint, provider.bucket, provider.modelPath, _ = util.ParseOSS(value)
-		case S3:
+		case S3, GCS:
 			provider.bucket, provider.modelPath, _ = util.ParseS3(value)
 		case HostPath:
 			provider.modelPath = value

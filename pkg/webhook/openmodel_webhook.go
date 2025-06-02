@@ -47,6 +47,7 @@ func SetupOpenModelWebhook(mgr ctrl.Manager) error {
 var _ webhook.CustomDefaulter = &OpenModelWebhook{}
 
 var SUPPORTED_OBJ_STORES = map[string]struct{}{
+	modelSource.GCS:      {},
 	modelSource.OSS:      {},
 	modelSource.S3:       {},
 	modelSource.Ollama:   {},
@@ -112,7 +113,7 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 					if _, _, _, err := util.ParseOSS(address); err != nil {
 						allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
 					}
-				case modelSource.S3:
+				case modelSource.S3, modelSource.GCS:
 					if _, _, err := util.ParseS3(address); err != nil {
 						allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
 					}
