@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: inftyai/llmaz
-  newTag: v0.1.3
+  newTag: main
