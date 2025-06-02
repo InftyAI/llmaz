@@ -166,111 +166,108 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	}
 
 	template.Spec.InitContainers = append(template.Spec.InitContainers, *initContainer)
-
-	// Return once not the main model, because all the below has already been injected.
-	if index != 0 {
-		return
-	}
-
-	// Handle container.
-	for i, container := range template.Spec.Containers {
-		// We only consider this container.
-		if container.Name == MODEL_RUNNER_CONTAINER_NAME {
-			template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-				Name:      MODEL_VOLUME_NAME,
-				MountPath: CONTAINER_MODEL_PATH,
-				ReadOnly:  true,
-			})
-		}
-	}
-
-	// Handle spec.
-	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-		Name: MODEL_VOLUME_NAME,
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	})
-
-	// TODO: support OCI image volume
-	// template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-	// 	Name: MODEL_VOLUME_NAME,
-	// 	VolumeSource: corev1.VolumeSource{
-	// 		Image: &corev1.ImageVolumeSource{
-	// 			Reference:  url,
-	// 			PullPolicy: corev1.PullIfNotPresent,
-	// 		},
-	// 	},
-	// })
 }
 
-func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec, index int) {
-	// Return once not the main model, because all the below has already been injected.
-	if index != 0 {
-		return
-	}
-
+func (p *URIProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
 	switch p.protocol {
 	case S3:
 		for i := range template.Spec.Containers {
 			if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
-				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
-					corev1.EnvVar{
-						Name: AWS_ACCESS_KEY_ID,
-						ValueFrom: &corev1.EnvVarSource{
-							SecretKeyRef: &corev1.SecretKeySelector{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: AWS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+				// Check if AWS credentials already exist
+				awsKeyIDExists := false
+				awsKeySecretExists := false
+				for _, env := range template.Spec.Containers[i].Env {
+					if env.Name == AWS_ACCESS_KEY_ID {
+						awsKeyIDExists = true
+					}
+					if env.Name == AWS_ACCESS_KEY_SECRET {
+						awsKeySecretExists = true
+					}
+				}
+
+				// Add AWS_ACCESS_KEY_ID if it doesn't exist
+				if !awsKeyIDExists {
+					template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+						corev1.EnvVar{
+							Name: AWS_ACCESS_KEY_ID,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: AWS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+									},
+									Key:      AWS_ACCESS_KEY_ID,
+									Optional: ptr.To[bool](true),
 								},
-								Key:      AWS_ACCESS_KEY_ID,
-								Optional: ptr.To[bool](true),
 							},
-						},
-					},
-					corev1.EnvVar{
-						Name: AWS_ACCESS_KEY_SECRET,
-						ValueFrom: &corev1.EnvVarSource{
-							SecretKeyRef: &corev1.SecretKeySelector{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: AWS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+						})
+				}
+
+				// Add AWS_ACCESS_KEY_SECRET if it doesn't exist
+				if !awsKeySecretExists {
+					template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+						corev1.EnvVar{
+							Name: AWS_ACCESS_KEY_SECRET,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: AWS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+									},
+									Key:      AWS_ACCESS_KEY_SECRET,
+									Optional: ptr.To[bool](true),
 								},
-								Key:      AWS_ACCESS_KEY_SECRET,
-								Optional: ptr.To[bool](true),
 							},
-						},
-					},
-				)
+						})
+				}
 			}
 		}
 	case OSS:
 		for i := range template.Spec.Containers {
 			if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
-				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
-					corev1.EnvVar{
-						Name: OSS_ACCESS_KEY_ID,
-						ValueFrom: &corev1.EnvVarSource{
-							SecretKeyRef: &corev1.SecretKeySelector{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+				// Check if OSS credentials already exist
+				ossKeyIDExists := false
+				ossKeySecretExists := false
+				for _, env := range template.Spec.Containers[i].Env {
+					if env.Name == OSS_ACCESS_KEY_ID {
+						ossKeyIDExists = true
+					}
+					if env.Name == OSS_ACCESS_KEY_SECRET {
+						ossKeySecretExists = true
+					}
+				}
+
+				// Add OSS_ACCESS_KEY_ID if it doesn't exist
+				if !ossKeyIDExists {
+					template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+						corev1.EnvVar{
+							Name: OSS_ACCESS_KEY_ID,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+									},
+									Key:      OSS_ACCESS_KEY_ID,
+									Optional: ptr.To[bool](true),
 								},
-								Key:      OSS_ACCESS_KEY_ID,
-								Optional: ptr.To[bool](true),
 							},
-						},
-					},
-					corev1.EnvVar{
-						Name: OSS_ACCESS_KEY_SECRET,
-						ValueFrom: &corev1.EnvVarSource{
-							SecretKeyRef: &corev1.SecretKeySelector{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+						})
+				}
+
+				// Add OSS_ACCESS_KEY_SECRET if it doesn't exist
+				if !ossKeySecretExists {
+					template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+						corev1.EnvVar{
+							Name: OSS_ACCESS_KEY_SECRET,
+							ValueFrom: &corev1.EnvVarSource{
+								SecretKeyRef: &corev1.SecretKeySelector{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
+									},
+									Key:      OSS_ACCESS_KEY_SECRET,
+									Optional: ptr.To[bool](true),
 								},
-								Key:      OSS_ACCESS_KEY_SECRET,
-								Optional: ptr.To[bool](true),
 							},
-						},
-					},
-				)
+						})
+				}
 			}
 		}
 	}

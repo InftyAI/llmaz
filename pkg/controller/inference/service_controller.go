@@ -168,6 +168,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
 	isMultiNodesInference := template.LeaderTemplate != nil
 
+	var shouldMountModelVolume bool
 	for i, model := range models {
 		skipModelLoader := false
 		if annotations := model.GetAnnotations(); annotations != nil {
@@ -175,16 +176,25 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 		}
 		source := modelSource.NewModelSourceProvider(model)
 		if !skipModelLoader {
+			shouldMountModelVolume = true
 			if isMultiNodesInference {
 				source.InjectModelLoader(template.LeaderTemplate, i)
 			}
 			source.InjectModelLoader(template.WorkerTemplate, i)
 		} else {
 			if isMultiNodesInference {
-				source.InjectModelEnvVars(template.LeaderTemplate, i)
+				source.InjectModelEnvVars(template.LeaderTemplate)
 			}
-			source.InjectModelEnvVars(template.WorkerTemplate, i)
+			source.InjectModelEnvVars(template.WorkerTemplate)
 		}
+	}
+
+	// If model-loader initContainer is injected, we should mount the model-volume to the model-runner container.
+	if shouldMountModelVolume {
+		if isMultiNodesInference {
+			modelSource.InjectModelVolume(template.LeaderTemplate)
+		}
+		modelSource.InjectModelVolume(template.WorkerTemplate)
 	}
 
 	// We only consider the main model's requirements for now.

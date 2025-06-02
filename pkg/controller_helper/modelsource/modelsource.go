@@ -40,8 +40,9 @@ const (
 	MODEL_SOURCE_MODEL_OBJ_STORE = "objstore"
 
 	// secrets
-	MODELHUB_SECRET_NAME  = "modelhub-secret"
-	HUGGINGFACE_TOKEN_KEY = "HF_TOKEN"
+	MODELHUB_SECRET_NAME   = "modelhub-secret"
+	HUGGING_FACE_TOKEN_KEY = "HF_TOKEN"
+	HUGGING_FACE_HUB_TOKEN = "HUGGING_FACE_HUB_TOKEN"
 
 	OSS_ACCESS_SECRET_NAME = "oss-access-secret"
 	OSS_ACCESS_KEY_ID      = "OSS_ACCESS_KEY_ID"
@@ -58,7 +59,9 @@ type ModelSourceProvider interface {
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
 	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
-	InjectModelEnvVars(spec *corev1.PodTemplateSpec, index int)
+	// InjectModelEnvVars will inject the model credentials env to the model-runner container.
+	// This is used when the model-loader initContainer is not injected, and the model loading is handled by the model-runner container.
+	InjectModelEnvVars(spec *corev1.PodTemplateSpec)
 }
 
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
@@ -97,4 +100,40 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	}
 	// Should not reach here, it will be validated at webhook in prior.
 	return nil
+}
+
+// InjectModelVolume mounts the model-volume to the pod template
+// The logic for mounting model-volume to model-runner container is identical in both ModelHubProvider and URIProvider,
+// so this function can be reused and only needs to be configured once
+func InjectModelVolume(template *corev1.PodTemplateSpec) {
+	// Handle container.
+	for i, container := range template.Spec.Containers {
+		// We only consider this container.
+		if container.Name == MODEL_RUNNER_CONTAINER_NAME {
+			template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
+				Name:      MODEL_VOLUME_NAME,
+				MountPath: CONTAINER_MODEL_PATH,
+				ReadOnly:  true,
+			})
+		}
+	}
+
+	// Handle spec.
+	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
+		Name: MODEL_VOLUME_NAME,
+		VolumeSource: corev1.VolumeSource{
+			EmptyDir: &corev1.EmptyDirVolumeSource{},
+		},
+	})
+
+	// TODO: support OCI image volume
+	// template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
+	// 	Name: MODEL_VOLUME_NAME,
+	// 	VolumeSource: corev1.VolumeSource{
+	// 		Image: &corev1.ImageVolumeSource{
+	// 			Reference:  url,
+	// 			PullPolicy: corev1.PullIfNotPresent,
+	// 		},
+	// 	},
+	// })
 }
