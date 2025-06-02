@@ -52,7 +52,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 ### Installation
 
-Read the [Installation](./site/content/en/docs/installation.md) for guidance.
+Read the [Installation](./site/content/en/docs/getting-started/installation.md) for guidance.
 
 ### Deploy
 
