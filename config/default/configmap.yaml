@@ -4,5 +4,5 @@ metadata:
   name: global-config
 data:
   config.data: |
-    scheduler-name: default
+    scheduler-name: default-scheduler
     # init-container-image: inftyai/model-loader:v0.0.10
