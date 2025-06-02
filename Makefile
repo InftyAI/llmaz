@@ -135,9 +135,11 @@ test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
 	$(GINKGO) --junit-report=junit.xml --output-dir=$(ARTIFACTS) -v $(INTEGRATION_TARGET)
 
 .PHONY: test-e2e
-# FIXME: we should install lws CRD.
 test-e2e: kustomize manifests fmt vet envtest ginkgo kind-image-build
 	E2E_KIND_NODE_VERSION=$(E2E_KIND_NODE_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) KUSTOMIZE=$(KUSTOMIZE) GINKGO=$(GINKGO) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) ENVTEST_LWS_VERSION=$(ENVTEST_LWS_VERSION) ./hack/e2e-test.sh
+
+test-deploy-with-helm: kind-image-build
+	E2E_KIND_NODE_VERSION=$(E2E_KIND_NODE_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) TAG=$(GIT_TAG) ./hack/test-deploy-with-helm.sh
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
 GOLANGCI_LINT_VERSION ?= v1.63.4
@@ -269,6 +271,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.2.1
 CONTROLLER_TOOLS_VERSION ?= v0.16.1
+HELM_EXT_OPTS ?=
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
@@ -321,7 +324,7 @@ helm: manifests kustomize helmify
 
 .PHONY: helm-install
 helm-install: helm
-	helm upgrade --namespace llmaz-system --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update --create-namespace
+	helm upgrade --namespace llmaz-system --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update --create-namespace $(HELM_EXT_OPTS)
 
 .PHONY: helm-upgrade
 helm-upgrade: image-push artifacts helm-install
