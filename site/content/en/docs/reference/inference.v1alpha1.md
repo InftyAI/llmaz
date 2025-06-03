@@ -337,7 +337,7 @@ Default to 1.
 MinReplicas couldn't be 0 now, will support serverless in the future.</p>
 </td>
 </tr>
-<tr><td><code>maxReplicas</code><br/>
+<tr><td><code>maxReplicas</code> <B>[Required]</B><br/>
 <code>int32</code>
 </td>
 <td>
@@ -449,7 +449,7 @@ ModelClaims and modelClaim are exclusive configured.</p>
 under the hood, e.g. vLLM, which is the default backendRuntime.</p>
 </td>
 </tr>
-<tr><td><code>elasticConfig</code> <B>[Required]</B><br/>
+<tr><td><code>elasticConfig</code><br/>
 <a href="#inference-llmaz-io-v1alpha1-ElasticConfig"><code>ElasticConfig</code></a>
 </td>
 <td>
