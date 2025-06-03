@@ -92,7 +92,7 @@ generate: controller-gen code-generator ## Generate code containing DeepCopy, De
 
 .PHONY: generate-apiref
 generate-apiref: genref
-	cd $(PROJECT_DIR)/hack/genref/ && $(GENREF) -o $(PROJECT_DIR)/docs/reference
+	cd $(PROJECT_DIR)/hack/genref/ && $(GENREF) -o $(PROJECT_DIR)/site/content/en/docs/reference
 
 # Use same code-generator version as k8s.io/api
 CODEGEN_VERSION := $(shell go list -m -f '{{.Version}}' k8s.io/api)
