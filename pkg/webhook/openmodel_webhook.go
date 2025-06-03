@@ -19,9 +19,11 @@ package webhook
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -61,6 +63,8 @@ func (w *OpenModelWebhook) Default(ctx context.Context, obj runtime.Object) erro
 		model.Labels = map[string]string{}
 	}
 	model.Labels[coreapi.ModelFamilyNameLabelKey] = string(model.Spec.FamilyName)
+	createdAt := ptr.Deref[metav1.Time](model.Spec.CreatedAt, metav1.Now().Rfc3339Copy())
+	model.Spec.CreatedAt = &createdAt
 	return nil
 }
 

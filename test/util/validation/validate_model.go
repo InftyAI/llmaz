@@ -19,6 +19,7 @@ package validation
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/types"
@@ -36,6 +37,12 @@ func ValidateModel(ctx context.Context, k8sClient client.Client, model *coreapi.
 
 		if model.Labels[coreapi.ModelFamilyNameLabelKey] != string(model.Spec.FamilyName) {
 			return errors.New("family name not right")
+		}
+		if model.Spec.OwnedBy == nil {
+			return fmt.Errorf("ownedBy is nil")
+		}
+		if model.Spec.CreatedAt == nil {
+			return fmt.Errorf("createdAt is nil")
 		}
 
 		return nil
