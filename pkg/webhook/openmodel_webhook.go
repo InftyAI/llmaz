@@ -59,6 +59,9 @@ func (w *OpenModelWebhook) Default(ctx context.Context, obj runtime.Object) erro
 		model.Labels = map[string]string{}
 	}
 	model.Labels[coreapi.ModelFamilyNameLabelKey] = string(model.Spec.FamilyName)
+	if model.Spec.CreatedAt == nil {
+		model.Spec.CreatedAt = &model.CreationTimestamp
+	}
 	return nil
 }
 

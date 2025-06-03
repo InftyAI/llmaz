@@ -37,6 +37,8 @@ const (
 
 	HUGGING_FACE = "Huggingface"
 	MODEL_SCOPE  = "ModelScope"
+
+	DefaultOwnedBy = "llmaz"
 )
 
 // ModelHub represents the model registry for model downloads.
@@ -195,6 +197,18 @@ type ModelSpec struct {
 	Source ModelSource `json:"source"`
 	// InferenceConfig represents the inference configurations for the model.
 	InferenceConfig *InferenceConfig `json:"inferenceConfig,omitempty"`
+	// OwnedBy represents the owner of the running models serving by the backends,
+	// which will be exported as the field of "OwnedBy" in openai-compatible API "/models".
+	// Default to "llmaz" if not set.
+	// +optional
+	// +kubebuilder:default="llmaz"
+	OwnedBy *string `json:"ownedBy,omitempty"`
+	// CreatedAt represents the creation timestamp of the running models serving by the backends,
+	// which will be exported as the field of "Created" in openai-compatible API "/models".
+	// It follows the format of RFC 3339, for example "2024-05-21T10:00:00Z".
+	// +optional
+	// +kubebuilder:validation:Format=date-time
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 }
 
 const (

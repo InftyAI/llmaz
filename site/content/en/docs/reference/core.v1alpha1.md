@@ -361,6 +361,24 @@ the model such as loading from huggingface, OCI registry, s3, host path and so o
    <p>InferenceConfig represents the inference configurations for the model.</p>
 </td>
 </tr>
+<tr><td><code>ownedBy</code><br/>
+<code>string</code>
+</td>
+<td>
+   <p>OwnedBy represents the owner of the running models serving by the backends,
+which will be exported as the field of &quot;OwnedBy&quot; in openai-compatible API &quot;/models&quot;.
+Default to &quot;llmaz&quot; if not set.</p>
+</td>
+</tr>
+<tr><td><code>createdAt</code><br/>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.28/#time-v1-meta"><code>k8s.io/apimachinery/pkg/apis/meta/v1.Time</code></a>
+</td>
+<td>
+   <p>CreatedAt represents the creation timestamp of the running models serving by the backends,
+which will be exported as the field of &quot;Created&quot; in openai-compatible API &quot;/models&quot;.
+It follows the format of RFC 3339, for example &quot;2024-05-21T10:00:00Z&quot;.</p>
+</td>
+</tr>
 </tbody>
 </table>
 

@@ -55,7 +55,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "", nil, nil).FamilyName("llama3").Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy(coreapi.DefaultOwnedBy).Obj()
 			},
 		}),
 		ginkgo.Entry("apply modelscope model hub name", &testDefaultingCase{
@@ -63,7 +63,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "", nil, nil).Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy(coreapi.DefaultOwnedBy).Obj()
 			},
 		}),
 	)
