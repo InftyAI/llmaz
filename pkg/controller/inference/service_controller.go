@@ -168,15 +168,15 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
 	isMultiNodesInference := template.LeaderTemplate != nil
 
-	var shouldMountModelVolume bool
+	// Skip model-loader initContainer if llmaz.io/skip-model-loader annotation is set.
+	skipModelLoader := false
+	if annotations := service.GetAnnotations(); annotations != nil {
+		skipModelLoader = annotations[inferenceapi.SkipModelLoaderAnnoKey] == "true"
+	}
+
 	for i, model := range models {
-		skipModelLoader := false
-		if annotations := model.GetAnnotations(); annotations != nil {
-			skipModelLoader = annotations[coreapi.SkipModelLoaderAnnoKey] == "true"
-		}
 		source := modelSource.NewModelSourceProvider(model)
 		if !skipModelLoader {
-			shouldMountModelVolume = true
 			if isMultiNodesInference {
 				source.InjectModelLoader(template.LeaderTemplate, i)
 			}
@@ -190,7 +190,7 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 	}
 
 	// If model-loader initContainer is injected, we should mount the model-volume to the model-runner container.
-	if shouldMountModelVolume {
+	if skipModelLoader {
 		if isMultiNodesInference {
 			modelSource.InjectModelVolume(template.LeaderTemplate)
 		}

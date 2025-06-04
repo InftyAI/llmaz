@@ -144,26 +144,7 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 }
 
 func spreadEnvToInitContainer(containerEnv []corev1.EnvVar, initContainer *corev1.Container) {
-	// Filter out credential-related environment variables to avoid duplicates
-	// For example, when main model doesn't use model-loader and handle the model loading itself -- in this case, the HUGGING_FACE_HUB_TOKEN and HF_TOKEN environment variables should be set in the model-runner container.
-	// While draft model uses model-loader, spreadEnvToInitContainer shouldn't copy HUGGING_FACE_HUB_TOKEN and HF_TOKEN environment variables from model-runner container to model-loader initContainer.
-	excludedEnvs := map[string]struct{}{
-		// HuggingFace credentials
-		HUGGING_FACE_HUB_TOKEN: {},
-		HUGGING_FACE_TOKEN_KEY: {},
-		// AWS/S3 credentials
-		AWS_ACCESS_KEY_ID:     {},
-		AWS_ACCESS_KEY_SECRET: {},
-		// OSS credentials
-		OSS_ACCESS_KEY_ID:     {},
-		OSS_ACCESS_KEY_SECRET: {},
-	}
-
-	for _, env := range containerEnv {
-		if _, excluded := excludedEnvs[env.Name]; !excluded {
-			initContainer.Env = append(initContainer.Env, env)
-		}
-	}
+	initContainer.Env = append(initContainer.Env, containerEnv...)
 }
 
 func (p *ModelHubProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
