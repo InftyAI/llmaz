@@ -19,8 +19,8 @@ package dispatcher
 import (
 	"context"
 
-	"github.com/inftyai/metrics-aggregator/pkg/dispatcher/framework"
-	"github.com/inftyai/metrics-aggregator/pkg/store"
+	"github.com/inftyai/router/pkg/dispatcher/framework"
+	"github.com/inftyai/router/pkg/store"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 

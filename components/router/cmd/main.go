@@ -35,9 +35,9 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
-	"github.com/inftyai/metrics-aggregator/pkg/aggregator"
-	"github.com/inftyai/metrics-aggregator/pkg/controller"
-	"github.com/inftyai/metrics-aggregator/pkg/store"
+	"github.com/inftyai/router/pkg/controller"
+	aggregator "github.com/inftyai/router/pkg/metrics-aggregator"
+	"github.com/inftyai/router/pkg/store"
 )
 
 var (

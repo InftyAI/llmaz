@@ -20,8 +20,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/inftyai/metrics-aggregator/pkg/store"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/inftyai/router/pkg/store"
 )
 
 type MockPlugin struct {

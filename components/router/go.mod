@@ -1,4 +1,4 @@
-module github.com/inftyai/metrics-aggregator
+module github.com/inftyai/router
 
 go 1.23.0
 

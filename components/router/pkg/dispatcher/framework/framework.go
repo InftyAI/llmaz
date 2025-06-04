@@ -19,7 +19,7 @@ package framework
 import (
 	"context"
 
-	"github.com/inftyai/metrics-aggregator/pkg/store"
+	"github.com/inftyai/router/pkg/store"
 )
 
 const (

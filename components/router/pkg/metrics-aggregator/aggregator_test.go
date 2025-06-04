@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aggregator
+package metricsAggregator
 
 import (
 	"context"
 	"testing"
 	"time"
 
-	"github.com/inftyai/metrics-aggregator/pkg/store"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/inftyai/router/pkg/store"
 )
 
 func TestDefaultKeyFunc(t *testing.T) {

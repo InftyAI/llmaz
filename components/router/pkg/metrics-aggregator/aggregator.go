@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aggregator
+package metricsAggregator
 
 import (
 	"context"
@@ -26,9 +26,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/inftyai/metrics-aggregator/pkg/backend"
-	"github.com/inftyai/metrics-aggregator/pkg/store"
-	"github.com/inftyai/metrics-aggregator/pkg/util"
+	"github.com/inftyai/router/pkg/backend"
+	"github.com/inftyai/router/pkg/store"
+	"github.com/inftyai/router/pkg/util"
 )
 
 func DefaultKeyFunc(obj metav1.Object) string {

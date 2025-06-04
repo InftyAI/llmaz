@@ -124,7 +124,7 @@ test: manifests fmt vet envtest gotestsum ## Run tests.
 	$(GOTESTSUM) --junitfile $(ARTIFACTS)/junit.xml -- ./api/... ./pkg/... -coverprofile  $(ARTIFACTS)/cover.out
 
 	# Test the components.
-	cd components/metrics-aggregator && make test
+	cd components/router && make test
 
 .PHONY: test-integration
 test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.

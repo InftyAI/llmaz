@@ -23,8 +23,8 @@ import (
 
 	dto "github.com/prometheus/client_model/go"
 
-	"github.com/inftyai/metrics-aggregator/pkg/store"
-	"github.com/inftyai/metrics-aggregator/pkg/util"
+	"github.com/inftyai/router/pkg/store"
+	"github.com/inftyai/router/pkg/util"
 )
 
 const (
