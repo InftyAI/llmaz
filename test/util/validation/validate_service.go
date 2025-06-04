@@ -132,7 +132,7 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 		var envStrings []string
 
 		if model.Spec.Source.ModelHub != nil {
-			envStrings = []string{"MODEL_SOURCE_TYPE", "MODEL_ID", "MODEL_HUB_NAME", "HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"}
+			envStrings = []string{"MODEL_SOURCE_TYPE", "MODEL_ID", "MODEL_HUB_NAME", modelSource.HUGGING_FACE_TOKEN_KEY, modelSource.HUGGING_FACE_HUB_TOKEN}
 			if model.Spec.Source.ModelHub.Revision != nil {
 				envStrings = append(envStrings, "REVISION")
 			}
@@ -144,7 +144,7 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 			}
 		}
 		if model.Spec.Source.URI != nil {
-			envStrings = []string{"MODEL_SOURCE_TYPE", "PROVIDER", "ENDPOINT", "BUCKET", "MODEL_PATH", "OSS_ACCESS_KEY_ID", "OSS_ACCESS_KEY_SECRET"}
+			envStrings = []string{"MODEL_SOURCE_TYPE", "PROVIDER", "ENDPOINT", "BUCKET", "MODEL_PATH", modelSource.OSS_ACCESS_KEY_ID, modelSource.OSS_ACCESS_KEY_SECRET}
 		}
 
 		for _, str := range envStrings {
@@ -242,6 +242,134 @@ func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *
 		}
 		return nil
 	}).Should(gomega.Succeed())
+}
+
+// ValidateSkipModelLoaderService validates the Playground resource with llmaz.io/skip-model-loader annotation
+func ValidateSkipModelLoaderService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
+	gomega.Eventually(func() error {
+		if service.Annotations == nil || service.Annotations["llmaz.io/skip-model-loader"] != "true" {
+			return fmt.Errorf("service %s does not have skip-model-loader annotation", service.Name)
+		}
+
+		workload := lws.LeaderWorkerSet{}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &workload); err != nil {
+			return errors.New("failed to get lws")
+		}
+		if *service.Spec.Replicas != *workload.Spec.Replicas {
+			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.Replicas, *workload.Spec.Replicas)
+		}
+
+		models := []*coreapi.OpenModel{}
+		for _, mr := range service.Spec.ModelClaims.Models {
+			model := &coreapi.OpenModel{}
+			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
+				return errors.New("failed to get model")
+			}
+			models = append(models, model)
+		}
+
+		for index, model := range models {
+			if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+				if err := ValidateSkipModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+					return err
+				}
+			}
+			if err := ValidateSkipModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
+				return err
+			}
+		}
+
+		mainModel := models[0]
+		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelNameLabelKey] != mainModel.Name {
+			return fmt.Errorf("unexpected model name %s in template, want %s", workload.Labels[coreapi.ModelNameLabelKey], mainModel.Name)
+		}
+		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey] != string(mainModel.Spec.FamilyName) {
+			return fmt.Errorf("unexpected model family name %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey], mainModel.Spec.FamilyName)
+		}
+
+		// Validate injecting flavors.
+		if mainModel.Spec.InferenceConfig != nil && len(mainModel.Spec.InferenceConfig.Flavors) != 0 {
+			if err := ValidateModelFlavor(service, mainModel, &workload); err != nil {
+				return err
+			}
+		}
+
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name + "-lb", Namespace: service.Namespace}, &corev1.Service{}); err != nil {
+			return err
+		}
+
+		return nil
+	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
+}
+
+// ValidateSkipModelLoader validates the model-loader initContainer is not injected into the template
+// and checks if the model-runner contains model credentials environment variables
+func ValidateSkipModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service) error {
+	if model.Spec.Source.URI != nil {
+		protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
+		if protocol == modelSource.Ollama {
+			return nil
+		}
+	}
+
+	if model.Spec.Source.ModelHub != nil || model.Spec.Source.URI != nil {
+		// Check if the template does not contain the model-loader initContainer
+		containerName := modelSource.MODEL_LOADER_CONTAINER_NAME
+		if index != 0 {
+			containerName += "-" + strconv.Itoa(index)
+		}
+
+		for _, container := range template.Spec.InitContainers {
+			if container.Name == containerName {
+				return fmt.Errorf("template has model-loader initContainer: %s", container.Name)
+			}
+		}
+
+		for _, container := range template.Spec.Containers {
+			if container.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
+				// Check if the model-runner container contains model credentials environment variables
+				var envStrings []string
+				if model.Spec.Source.ModelHub != nil {
+					envStrings = append(envStrings, modelSource.HUGGING_FACE_TOKEN_KEY, modelSource.HUGGING_FACE_HUB_TOKEN)
+				} else if model.Spec.Source.URI != nil {
+					protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
+					if protocol == modelSource.S3 || protocol == modelSource.GCS {
+						envStrings = append(envStrings, modelSource.AWS_ACCESS_KEY_ID, modelSource.AWS_ACCESS_KEY_SECRET)
+					} else if protocol == modelSource.OSS {
+						envStrings = append(envStrings, modelSource.OSS_ACCESS_KEY_ID, modelSource.OSS_ACCESS_KEY_SECRET)
+					}
+				}
+
+				for _, str := range envStrings {
+					envExist := false
+					for _, env := range container.Env {
+						if env.Name == str {
+							envExist = true
+							break
+						}
+					}
+					if !envExist {
+						return fmt.Errorf("env %s doesn't exist", str)
+					}
+				}
+
+				// The model-runner container should not mount the model-volume if the model-loader initContainer is not injected
+				for _, v := range container.VolumeMounts {
+					if v.Name == modelSource.MODEL_VOLUME_NAME {
+						return fmt.Errorf("model-runner container has volume mount %s", v.Name)
+					}
+				}
+			}
+		}
+
+		for _, v := range template.Spec.Volumes {
+			if v.Name == modelSource.MODEL_VOLUME_NAME {
+				return errors.New("when skip the model-loader initContainer, the model-volume should not be created")
+			}
+		}
+	}
+
+	return nil
 }
 
 type CheckServiceAvailableFunc func() error

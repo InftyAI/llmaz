@@ -167,4 +167,60 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
 	})
+
+	ginkgo.It("Deploy huggingface model with llmaz.io/skip-model-loader annotation", func() {
+		model := wrapper.MakeModel("deepseek-r1-distill-qwen-1-5b").FamilyName("deepseek").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", "", "", nil, nil).Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		playground := wrapper.MakePlayground("deepseek-r1-distill-qwen-1-5b", ns.Name).
+			ModelClaim("deepseek-r1-distill-qwen-1-5b").
+			BackendRuntime("vllm").Replicas(1).Obj()
+
+		if playground.Annotations == nil {
+			playground.Annotations = make(map[string]string)
+		}
+		playground.Annotations["llmaz.io/skip-model-loader"] = "true"
+
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateSkipModelLoaderService(ctx, k8sClient, service)
+		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		validation.ValidateServicePods(ctx, k8sClient, service)
+		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
+	})
+
+	ginkgo.It("Deploy S3 model with llmaz.io/skip-model-loader annotation", func() {
+		model := wrapper.MakeModel("deepseek-r1-distill-qwen-1-5b").FamilyName("deepseek").ModelSourceWithURI("s3://test-bucket/DeepSeek-R1-Distill-Qwen-1.5B").Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		playground := wrapper.MakePlayground("deepseek-r1-distill-qwen-1-5b", ns.Name).
+			ModelClaim("deepseek-r1-distill-qwen-1-5b").
+			BackendRuntime("vllm").Replicas(1).Obj()
+
+		if playground.Annotations == nil {
+			playground.Annotations = make(map[string]string)
+		}
+		playground.Annotations["llmaz.io/skip-model-loader"] = "true"
+
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateSkipModelLoaderService(ctx, k8sClient, service)
+		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		validation.ValidateServicePods(ctx, k8sClient, service)
+		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
+	})
 })

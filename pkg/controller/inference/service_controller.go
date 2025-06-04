@@ -190,7 +190,7 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 	}
 
 	// If model-loader initContainer is injected, we should mount the model-volume to the model-runner container.
-	if skipModelLoader {
+	if !skipModelLoader {
 		if isMultiNodesInference {
 			modelSource.InjectModelVolume(template.LeaderTemplate)
 		}
