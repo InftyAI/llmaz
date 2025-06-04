@@ -5,6 +5,6 @@
 domain: inftyai.com
 layout:
 - go.kubebuilder.io/v4
-projectName: metrics-aggregator
-repo: github.com/inftyai/metrics-aggregator
+projectName: router
+repo: github.com/inftyai/router
 version: "3"

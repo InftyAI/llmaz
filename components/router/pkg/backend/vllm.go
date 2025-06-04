@@ -17,31 +17,33 @@ limitations under the License.
 package backend
 
 import (
+	"github.com/inftyai/router/pkg/store"
+	"github.com/inftyai/router/pkg/util"
 	dto "github.com/prometheus/client_model/go"
-
-	"github.com/inftyai/metrics-aggregator/pkg/util"
 )
 
-var _ Backend = &LlamaCpp{}
+var _ Backend = &VLLM{}
 
-type LlamaCpp struct{}
+type VLLM struct {
+}
 
-func (l *LlamaCpp) ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error) {
-	res := make(MetricValues)
+func (v *VLLM) ParseMetrics(name string, metrics map[string]*dto.MetricFamily) (store.Indicator, error) {
+	res := make(store.MetricValues)
 
-	for k, v := range l.metricsMap() {
+	for k, v := range v.metricsMap() {
 		value, err := util.ParseMetricsWithNoLabel(v, metrics)
 		if err != nil {
-			return nil, err
+			return store.Indicator{}, err
 		}
 		res[k] = value
 	}
-	return res, nil
+	return store.MapToInstanceMetrics(name, res), nil
 }
 
-func (l *LlamaCpp) metricsMap() map[MetricType]string {
-	return map[MetricType]string{
-		RunningQueueSize: "llamacpp:requests_processing",
-		WaitingQueueSize: "llamacpp:requests_deferred",
+func (v *VLLM) metricsMap() map[store.MetricType]string {
+	return map[store.MetricType]string{
+		store.RunningQueueSize: "vllm:num_requests_running",
+		store.WaitingQueueSize: "vllm:num_requests_waiting",
+		store.KVCacheUsage:     "vllm:gpu_cache_usage_perc",
 	}
 }

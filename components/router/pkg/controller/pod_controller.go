@@ -30,8 +30,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
-	"github.com/inftyai/metrics-aggregator/pkg/aggregator"
-	"github.com/inftyai/metrics-aggregator/pkg/util"
+	aggregator "github.com/inftyai/router/pkg/metrics-aggregator"
+	"github.com/inftyai/router/pkg/util"
 )
 
 // PodReconciler reconciles a Model object

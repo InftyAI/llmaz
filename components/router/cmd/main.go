@@ -35,8 +35,9 @@ import (
 
 	//+kubebuilder:scaffold:imports
 
-	"github.com/inftyai/metrics-aggregator/pkg/aggregator"
-	"github.com/inftyai/metrics-aggregator/pkg/controller"
+	"github.com/inftyai/router/pkg/controller"
+	aggregator "github.com/inftyai/router/pkg/metrics-aggregator"
+	"github.com/inftyai/router/pkg/store"
 )
 
 var (
@@ -96,7 +97,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	agg := aggregator.NewAggregator(ctx, defaultSyncInterval)
+	store := store.NewMemoryStore()
+	agg := aggregator.NewAggregator(ctx, defaultSyncInterval, store)
 
 	if err := controller.NewPodReconciler(
 		mgr.GetClient(),
