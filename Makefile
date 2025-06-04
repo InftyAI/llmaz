@@ -123,7 +123,7 @@ gotestsum: ## Download gotestsum locally if necessary.
 test: manifests fmt vet envtest gotestsum ## Run tests.
 	$(GOTESTSUM) --junitfile $(ARTIFACTS)/junit.xml -- ./api/... ./pkg/... -coverprofile  $(ARTIFACTS)/cover.out
 
-	# Test the metrics-aggregator component
+	# Test the components.
 	cd components/metrics-aggregator && make test
 
 .PHONY: test-integration

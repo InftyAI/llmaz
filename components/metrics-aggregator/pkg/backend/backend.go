@@ -23,33 +23,27 @@ import (
 
 	dto "github.com/prometheus/client_model/go"
 
+	"github.com/inftyai/metrics-aggregator/pkg/store"
 	"github.com/inftyai/metrics-aggregator/pkg/util"
 )
-
-type MetricType string
 
 const (
 	// We assumed that all the backends are using the same endpoint for metrics.
 	METRICS_ENDPOINT = "/metrics"
-
-	RunningQueueSize MetricType = "running_queue_size"
-	WaitingQueueSize MetricType = "waiting_queue_size"
 )
-
-// A collection of the metrics, indicatorType as the key.
-type MetricValues map[MetricType]float64
 
 type Backend interface {
 	// ParseMetrics parses the metrics from the given metric family map.
-	ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error)
+	ParseMetrics(name string, metrics map[string]*dto.MetricFamily) (store.Indicator, error)
 
-	// metricsMap returns the map of the indicatorType to the real metric name.
+	// metricsMap returns the map of the metricType to the real metric name.
+	// The whole list of metricTypes are defined in the store package.
 	// TODO: in the future, we should make this configurable, so people can quick add a new backend
 	// rather than modifying the code here.
-	metricsMap() map[MetricType]string
+	metricsMap() map[store.MetricType]string
 }
 
-func QueryMetrics(endpoint string) (MetricValues, error) {
+func QueryMetrics(name string, endpoint string) (store.Indicator, error) {
 	if endpoint[len(endpoint)-1] == '/' {
 		endpoint = endpoint[:len(endpoint)-1]
 	}
@@ -57,27 +51,23 @@ func QueryMetrics(endpoint string) (MetricValues, error) {
 
 	mfs, err := util.RequestMetrics(url)
 	if err != nil {
-		return nil, err
+		return store.Indicator{}, err
 	}
 
 	if len(mfs) == 0 {
-		return nil, fmt.Errorf("no metrics found at %s", url)
+		return store.Indicator{}, fmt.Errorf("no metrics found at %s", url)
 	}
 
 	backend, err := detectBackend(mfs)
 	if err != nil {
-		return nil, err
+		return store.Indicator{}, err
 	}
 
-	return backend.ParseMetrics(mfs)
+	return backend.ParseMetrics(name, mfs)
 }
 
 func detectBackend(mfs map[string]*dto.MetricFamily) (Backend, error) {
 	for name := range mfs {
-		if strings.HasPrefix(name, "vllm_") {
-			return &VLLM{}, nil
-		}
-
 		if strings.HasPrefix(name, "llamacpp") {
 			return &LlamaCpp{}, nil
 		}

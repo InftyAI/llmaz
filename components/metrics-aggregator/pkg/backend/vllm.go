@@ -16,17 +16,34 @@ limitations under the License.
 
 package backend
 
-import dto "github.com/prometheus/client_model/go"
+import (
+	"github.com/inftyai/metrics-aggregator/pkg/store"
+	"github.com/inftyai/metrics-aggregator/pkg/util"
+	dto "github.com/prometheus/client_model/go"
+)
 
-// var _ Backend = &VLLM{}
+var _ Backend = &VLLM{}
 
 type VLLM struct {
 }
 
-func (v *VLLM) metricsMap() map[MetricType]string {
-	return map[MetricType]string{}
+func (v *VLLM) ParseMetrics(name string, metrics map[string]*dto.MetricFamily) (store.Indicator, error) {
+	res := make(store.MetricValues)
+
+	for k, v := range v.metricsMap() {
+		value, err := util.ParseMetricsWithNoLabel(v, metrics)
+		if err != nil {
+			return store.Indicator{}, err
+		}
+		res[k] = value
+	}
+	return store.MapToInstanceMetrics(name, res), nil
 }
 
-func (v *VLLM) ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error) {
-	return nil, nil
+func (v *VLLM) metricsMap() map[store.MetricType]string {
+	return map[store.MetricType]string{
+		store.RunningQueueSize: "vllm:num_requests_running",
+		store.WaitingQueueSize: "vllm:num_requests_waiting",
+		store.KVCacheUsage:     "vllm:gpu_cache_usage_perc",
+	}
 }

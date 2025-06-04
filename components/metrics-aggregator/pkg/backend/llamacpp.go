@@ -19,6 +19,7 @@ package backend
 import (
 	dto "github.com/prometheus/client_model/go"
 
+	"github.com/inftyai/metrics-aggregator/pkg/store"
 	"github.com/inftyai/metrics-aggregator/pkg/util"
 )
 
@@ -26,22 +27,23 @@ var _ Backend = &LlamaCpp{}
 
 type LlamaCpp struct{}
 
-func (l *LlamaCpp) ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error) {
-	res := make(MetricValues)
+func (l *LlamaCpp) ParseMetrics(name string, metrics map[string]*dto.MetricFamily) (store.Indicator, error) {
+	res := make(store.MetricValues)
 
 	for k, v := range l.metricsMap() {
 		value, err := util.ParseMetricsWithNoLabel(v, metrics)
 		if err != nil {
-			return nil, err
+			return store.Indicator{}, err
 		}
 		res[k] = value
 	}
-	return res, nil
+	return store.MapToInstanceMetrics(name, res), nil
 }
 
-func (l *LlamaCpp) metricsMap() map[MetricType]string {
-	return map[MetricType]string{
-		RunningQueueSize: "llamacpp:requests_processing",
-		WaitingQueueSize: "llamacpp:requests_deferred",
+func (l *LlamaCpp) metricsMap() map[store.MetricType]string {
+	return map[store.MetricType]string{
+		store.RunningQueueSize: "llamacpp:requests_processing",
+		store.WaitingQueueSize: "llamacpp:requests_deferred",
+		store.KVCacheUsage:     "llamacpp:kv_cache_usage_ratio",
 	}
 }
