@@ -72,6 +72,22 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			models = append(models, model)
 		}
 
+		// Fetch global configuration.
+		cm := corev1.ConfigMap{}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, &cm); err != nil {
+			return err
+		}
+
+		data, err := helper.ParseGlobalConfigmap(&cm)
+		if err != nil {
+			return fmt.Errorf("failed to parse global configmap: %v", err)
+		}
+
+		initContainerImage := data.InitContainerImage
+		if initContainerImage == "" {
+			initContainerImage = pkg.LOADER_IMAGE
+		}
+
 		for index, model := range models {
 			if helper.SkipModelLoader(service) {
 				if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
@@ -85,11 +101,11 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			} else {
 				// Validate injecting modelLoaders
 				if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-					if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+					if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service, initContainerImage); err != nil {
 						return err
 					}
 				}
-				if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
+				if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service, initContainerImage); err != nil {
 					return err
 				}
 			}
@@ -122,7 +138,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
-func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service) error {
+func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service, initContainerImage string) error {
 	if model.Spec.Source.URI != nil {
 		protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
 		if protocol == modelSource.Ollama {
@@ -143,8 +159,9 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 		if initContainer.Name != containerName {
 			return fmt.Errorf("unexpected initContainer name, want %s, got %s", modelSource.MODEL_LOADER_CONTAINER_NAME, initContainer.Name)
 		}
-		if initContainer.Image != pkg.LOADER_IMAGE {
-			return fmt.Errorf("unexpected initContainer image, want %s, got %s", pkg.LOADER_IMAGE, initContainer.Image)
+
+		if initContainer.Image != initContainerImage {
+			return fmt.Errorf("unexpected initContainer image, want %s, got %s", initContainerImage, initContainer.Image)
 		}
 
 		var envStrings []string
