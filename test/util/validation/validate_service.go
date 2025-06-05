@@ -43,6 +43,7 @@ import (
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
 	"github.com/inftyai/llmaz/pkg"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 	pkgUtil "github.com/inftyai/llmaz/pkg/util"
 	"github.com/inftyai/llmaz/test/util"
@@ -59,7 +60,6 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		}
 
 		// TODO: multi-host
-
 		models := []*coreapi.OpenModel{}
 		for _, mr := range service.Spec.ModelClaims.Models {
 			model := &coreapi.OpenModel{}
@@ -70,14 +70,25 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		}
 
 		for index, model := range models {
-			// Validate injecting modelLoaders
-			if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-				if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+			if helper.SkipModelLoader(service) {
+				if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+					if err := ValidateSkipModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+						return err
+					}
+				}
+				if err := ValidateSkipModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
 					return err
 				}
-			}
-			if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
-				return err
+			} else {
+				// Validate injecting modelLoaders
+				if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+					if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+						return err
+					}
+				}
+				if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -242,64 +253,6 @@ func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *
 		}
 		return nil
 	}).Should(gomega.Succeed())
-}
-
-// ValidateSkipModelLoaderService validates the Playground resource with llmaz.io/skip-model-loader annotation
-func ValidateSkipModelLoaderService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
-	gomega.Eventually(func() error {
-		if service.Annotations == nil || service.Annotations["llmaz.io/skip-model-loader"] != "true" {
-			return fmt.Errorf("service %s does not have skip-model-loader annotation", service.Name)
-		}
-
-		workload := lws.LeaderWorkerSet{}
-		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &workload); err != nil {
-			return errors.New("failed to get lws")
-		}
-		if *service.Spec.Replicas != *workload.Spec.Replicas {
-			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.Replicas, *workload.Spec.Replicas)
-		}
-
-		models := []*coreapi.OpenModel{}
-		for _, mr := range service.Spec.ModelClaims.Models {
-			model := &coreapi.OpenModel{}
-			if err := k8sClient.Get(ctx, types.NamespacedName{Name: string(mr.Name)}, model); err != nil {
-				return errors.New("failed to get model")
-			}
-			models = append(models, model)
-		}
-
-		for index, model := range models {
-			if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-				if err := ValidateSkipModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
-					return err
-				}
-			}
-			if err := ValidateSkipModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
-				return err
-			}
-		}
-
-		mainModel := models[0]
-		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelNameLabelKey] != mainModel.Name {
-			return fmt.Errorf("unexpected model name %s in template, want %s", workload.Labels[coreapi.ModelNameLabelKey], mainModel.Name)
-		}
-		if workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey] != string(mainModel.Spec.FamilyName) {
-			return fmt.Errorf("unexpected model family name %s in template, want %s", workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Labels[coreapi.ModelFamilyNameLabelKey], mainModel.Spec.FamilyName)
-		}
-
-		// Validate injecting flavors.
-		if mainModel.Spec.InferenceConfig != nil && len(mainModel.Spec.InferenceConfig.Flavors) != 0 {
-			if err := ValidateModelFlavor(service, mainModel, &workload); err != nil {
-				return err
-			}
-		}
-
-		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name + "-lb", Namespace: service.Namespace}, &corev1.Service{}); err != nil {
-			return err
-		}
-
-		return nil
-	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
 // ValidateSkipModelLoader validates the model-loader initContainer is not injected into the template

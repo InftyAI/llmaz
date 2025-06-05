@@ -190,7 +190,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 
 		service := &inferenceapi.Service{}
 		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
-		validation.ValidateSkipModelLoaderService(ctx, k8sClient, service)
+		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
 		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
@@ -218,7 +218,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 
 		service := &inferenceapi.Service{}
 		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
-		validation.ValidateSkipModelLoaderService(ctx, k8sClient, service)
+		validation.ValidateService(ctx, k8sClient, service)
 		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
 		validation.ValidateServicePods(ctx, k8sClient, service)
 		gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
