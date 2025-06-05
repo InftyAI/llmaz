@@ -63,21 +63,16 @@ func (p *BackendRuntimeParser) Lifecycle() *corev1.Lifecycle {
 func (p *BackendRuntimeParser) Args() ([]string, error) {
 	mainModel := p.models[0]
 
-	skipModelLoader := false
-	if annotations := p.playground.GetAnnotations(); annotations != nil {
-		skipModelLoader = annotations[inferenceapi.SkipModelLoaderAnnoKey] == "true"
-	}
-
 	source := modelSource.NewModelSourceProvider(mainModel)
 	modelInfo := map[string]string{
-		"ModelPath": source.ModelPath(skipModelLoader),
+		"ModelPath": source.ModelPath(helper.SkipModelLoader(p.playground)),
 		"ModelName": source.ModelName(),
 	}
 
 	// TODO: This is not that reliable because two models doesn't always means speculative-decoding.
 	// Revisit this later.
 	if len(p.models) > 1 {
-		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(p.models[1]).ModelPath(skipModelLoader)
+		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(p.models[1]).ModelPath(helper.SkipModelLoader(p.playground))
 	}
 
 	for _, recommend := range p.backendRuntime.Spec.RecommendedConfigs {
