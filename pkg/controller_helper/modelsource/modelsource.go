@@ -52,8 +52,9 @@ type ModelSourceProvider interface {
 	ModelName() string
 	ModelPath() string
 	// InjectModelLoader will inject the model loader to the spec,
-	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
-	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
+	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1,
+	// initContainerImage is the image used for the model loader.
+	InjectModelLoader(spec *corev1.PodTemplateSpec, index int, initContainerImage string)
 }
 
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {

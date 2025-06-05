@@ -6,4 +6,4 @@ metadata:
 data:
   config.data: |
     scheduler-name: inftyai-scheduler
-    init-container-image: inftyai/model-loader:v0.0.10
+    init-container-image: docker.m.daocloud.io/inftyai/model-loader:v0.0.10
