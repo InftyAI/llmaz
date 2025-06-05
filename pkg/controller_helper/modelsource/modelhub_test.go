@@ -27,8 +27,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
-
-	"github.com/inftyai/llmaz/pkg"
 )
 
 func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
@@ -38,10 +36,11 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 	ignorePatterns := []string{"*.tmp"}
 
 	tests := []struct {
-		name            string
-		provider        *ModelHubProvider
-		index           int
-		expectMainModel bool
+		name               string
+		provider           *ModelHubProvider
+		index              int
+		expectMainModel    bool
+		initContainerImage string
 	}{
 		{
 			name: "inject full modelhub with fileName, revision, allow/ignore",
@@ -54,8 +53,9 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 				modelAllowPatterns:  allowPatterns,
 				modelIgnorePatterns: ignorePatterns,
 			},
-			index:           0,
-			expectMainModel: true,
+			index:              0,
+			expectMainModel:    true,
+			initContainerImage: "model-loader:latest",
 		},
 		{
 			name: "inject with index > 0 skips volume/container mount",
@@ -64,8 +64,20 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 				modelID:   "some/model",
 				modelHub:  "Huggingface",
 			},
-			index:           1,
-			expectMainModel: false,
+			index:              1,
+			expectMainModel:    false,
+			initContainerImage: "model-loader:latest",
+		},
+		{
+			name: "inject with custom initContainerImage",
+			provider: &ModelHubProvider{
+				modelName: "llama3",
+				modelID:   "meta/llama-3",
+				modelHub:  "Huggingface",
+			},
+			index:              0,
+			expectMainModel:    true,
+			initContainerImage: "custom-model-loader:latest",
 		},
 	}
 
@@ -83,7 +95,7 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 					),
 				)
 
-			tt.provider.InjectModelLoader(template, tt.index)
+			tt.provider.InjectModelLoader(template, tt.index, tt.initContainerImage)
 
 			assert.Len(t, template.Spec.InitContainers, 1)
 			initContainer := template.Spec.InitContainers[0]
@@ -92,8 +104,9 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 			if tt.index != 0 {
 				expectedName += "-" + strconv.Itoa(tt.index)
 			}
+			expectedImage := tt.initContainerImage
 			assert.Equal(t, expectedName, *initContainer.Name)
-			assert.Equal(t, pkg.LOADER_IMAGE, *initContainer.Image)
+			assert.Equal(t, expectedImage, *initContainer.Image)
 
 			wantEnv := buildExpectedEnv(tt.provider)
 			if diff := cmp.Diff(wantEnv, initContainer.Env, envSortOpt); diff != "" {

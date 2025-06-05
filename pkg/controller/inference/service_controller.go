@@ -116,10 +116,11 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	workloadApplyConfiguration, err := buildWorkloadApplyConfiguration(service, models)
+	workloadApplyConfiguration, err := buildWorkloadApplyConfiguration(service, models, configs)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
+
 	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -162,7 +163,7 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel) (*applyconfigurationv1.LeaderWorkerSetApplyConfiguration, error) {
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel, configs *helper.GlobalConfigs) (*applyconfigurationv1.LeaderWorkerSetApplyConfiguration, error) {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
@@ -193,7 +194,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	leaderWorkerTemplate.WithWorkerTemplate(&podTemplateSpecApplyConfiguration)
 
 	// The core logic to inject additional configurations.
-	injectModelProperties(leaderWorkerTemplate, models, service)
+	injectModelProperties(leaderWorkerTemplate, models, service, configs)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
@@ -215,7 +216,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	return workload, nil
 }
 
-func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service, configs *helper.GlobalConfigs) {
 	isMultiNodesInference := template.LeaderTemplate != nil
 
 	for i, model := range models {
@@ -223,9 +224,9 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 		// Skip model-loader initContainer if llmaz.io/skip-model-loader annotation is set.
 		if !helper.SkipModelLoader(service) {
 			if isMultiNodesInference {
-				source.InjectModelLoader(template.LeaderTemplate, i)
+				source.InjectModelLoader(template.LeaderTemplate, i, configs.InitContainerImage)
 			}
-			source.InjectModelLoader(template.WorkerTemplate, i)
+			source.InjectModelLoader(template.WorkerTemplate, i, configs.InitContainerImage)
 		} else {
 			if isMultiNodesInference {
 				source.InjectModelEnvVars(template.LeaderTemplate)

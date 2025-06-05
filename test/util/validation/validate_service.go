@@ -42,7 +42,6 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
-	"github.com/inftyai/llmaz/pkg"
 	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 	pkgUtil "github.com/inftyai/llmaz/pkg/util"
@@ -114,7 +113,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			return err
 		}
 
-		if err := ValidateConfigmap(ctx, k8sClient, service); err != nil {
+		if err := ValidateConfigmap(ctx, k8sClient, service, &workload); err != nil {
 			return err
 		}
 
@@ -143,8 +142,8 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 		if initContainer.Name != containerName {
 			return fmt.Errorf("unexpected initContainer name, want %s, got %s", modelSource.MODEL_LOADER_CONTAINER_NAME, initContainer.Name)
 		}
-		if initContainer.Image != pkg.LOADER_IMAGE {
-			return fmt.Errorf("unexpected initContainer image, want %s, got %s", pkg.LOADER_IMAGE, initContainer.Image)
+		if initContainer.Image == "" {
+			return fmt.Errorf("unexpected initContainer image, initContainer image should not be empty")
 		}
 
 		var envStrings []string
@@ -440,7 +439,7 @@ func CheckServiceAvaliable() error {
 	return nil
 }
 
-func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) error {
+func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service, workload *lws.LeaderWorkerSet) error {
 	cm := corev1.ConfigMap{}
 	if err := k8sClient.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, &cm); err != nil {
 		return err
@@ -451,6 +450,7 @@ func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *in
 		return fmt.Errorf("failed to parse global configmap: %v", err)
 	}
 
+	// Validate scheduler name.
 	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
 		if service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName != data.SchedulerName {
 			return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName, data.SchedulerName)
@@ -459,6 +459,23 @@ func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *in
 
 	if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName != data.SchedulerName {
 		return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName, data.SchedulerName)
+	}
+
+	if !helper.SkipModelLoader(service) {
+		// Validate init container image.
+		if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+			for _, initContainer := range workload.Spec.LeaderWorkerTemplate.LeaderTemplate.Spec.InitContainers {
+				if initContainer.Image != data.InitContainerImage {
+					return fmt.Errorf("unexpected init container image %s in leader template, want %s", initContainer.Image, data.InitContainerImage)
+				}
+			}
+		}
+
+		for _, initContainer := range workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers {
+			if initContainer.Image != data.InitContainerImage {
+				return fmt.Errorf("unexpected init container image %s in worker template, want %s", initContainer.Image, data.InitContainerImage)
+			}
+		}
 	}
 
 	return nil
