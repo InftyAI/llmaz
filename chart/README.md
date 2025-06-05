@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz-helm/main/docs/assets/logo.png">
-    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz-helm/main/docs/assets/logo.png" width=55%>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/logo.png">
+    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/logo.png" width=55%>
   </picture>
 </p>
 
