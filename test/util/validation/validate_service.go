@@ -51,6 +51,10 @@ import (
 
 func ValidateService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 	gomega.Eventually(func() error {
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, service); err != nil {
+			return errors.New("failed to get service")
+		}
+
 		workload := lws.LeaderWorkerSet{}
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &workload); err != nil {
 			return errors.New("failed to get lws")
@@ -59,7 +63,6 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.Replicas, *workload.Spec.Replicas)
 		}
 
-		// TODO: multi-host
 		models := []*coreapi.OpenModel{}
 		for _, mr := range service.Spec.ModelClaims.Models {
 			model := &coreapi.OpenModel{}
@@ -108,6 +111,10 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		}
 
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name + "-lb", Namespace: service.Namespace}, &corev1.Service{}); err != nil {
+			return err
+		}
+
+		if err := ValidateConfigmap(ctx, k8sClient, service); err != nil {
 			return err
 		}
 
@@ -427,5 +434,29 @@ func CheckServiceAvaliable() error {
 	if !strings.Contains(strings.ToLower(string(body)), "beijing") {
 		return fmt.Errorf("error response body: %s", string(body))
 	}
+	return nil
+}
+
+func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) error {
+	cm := corev1.ConfigMap{}
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, &cm); err != nil {
+		return err
+	}
+
+	data, err := helper.ParseGlobalConfigmap(&cm)
+	if err != nil {
+		return fmt.Errorf("failed to parse global configmap: %v", err)
+	}
+
+	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+		if service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName != data.SchedulerName {
+			return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName, data.SchedulerName)
+		}
+	}
+
+	if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName != data.SchedulerName {
+		return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName, data.SchedulerName)
+	}
+
 	return nil
 }

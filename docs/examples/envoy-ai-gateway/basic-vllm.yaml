@@ -1,0 +1,79 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen3-0--6b
+spec:
+  familyName: qwen3
+  source:
+    modelHub:
+      modelID: Qwen/Qwen3-0.6B
+  inferenceConfig:
+    flavors:
+      - name: t4 # GPU type
+        limits:
+          nvidia.com/gpu: 1
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen3-0--6b
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen3-0--6b
+  backendRuntimeConfig:
+    backendName: vllm
+    version: v0.8.5
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: default-envoy-ai-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: default-envoy-ai-gateway
+spec:
+  gatewayClassName: default-envoy-ai-gateway
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIGatewayRoute
+metadata:
+  name: default-envoy-ai-gateway
+spec:
+  schema:
+    name: OpenAI
+  targetRefs:
+    - name: default-envoy-ai-gateway
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: qwen3-0--6b
+      backendRefs:
+        - name: qwen3-0--6b
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIServiceBackend
+metadata:
+  name: qwen3-0--6b
+spec:
+  timeouts:
+    request: 3m
+  schema:
+    name: OpenAI
+  backendRef:
+    name: qwen3-0--6b-lb
+    kind: Service
+    port: 8080
+---

@@ -68,6 +68,9 @@ func NewServiceReconciler(client client.Client, scheme *runtime.Scheme, record r
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list
+//+kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets/status,verbs=get;update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -83,6 +86,31 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	logger.V(10).Info("reconcile Service", "Service", klog.KObj(service))
 
+	cm := &corev1.ConfigMap{}
+	if err := r.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, cm); err != nil {
+		if client.IgnoreNotFound(err) != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to get llmaz-global-config configmap: %w", err)
+		}
+	}
+	configs, err := helper.ParseGlobalConfigmap(cm)
+	if err != nil {
+		return ctrl.Result{}, fmt.Errorf("failed to parse global configurations: %w", err)
+	}
+
+	// Set the global configurations to the service.
+	if configs.SchedulerName != "" {
+		if service.Spec.WorkloadTemplate.LeaderTemplate != nil && service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName == "" {
+			service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName = configs.SchedulerName
+		}
+		if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName == "" {
+			service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName = configs.SchedulerName
+		}
+
+		if err := r.Client.Update(ctx, service); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to update service: %w", err)
+		}
+	}
+
 	models, err := helper.FetchModelsByService(ctx, r.Client, service)
 	if err != nil {
 		return ctrl.Result{}, err
@@ -92,8 +120,6 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
-
-	// TODO: handle fungibility
 
 	if err := util.Patch(ctx, r.Client, workloadApplyConfiguration); err != nil {
 		return ctrl.Result{}, err

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package aggregator
+package metricsAggregator
 
 import (
 	"context"
@@ -23,6 +23,8 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/inftyai/router/pkg/store"
 )
 
 func TestDefaultKeyFunc(t *testing.T) {
@@ -39,7 +41,8 @@ func TestDefaultKeyFunc(t *testing.T) {
 }
 
 func TestAggregator(t *testing.T) {
-	agg := NewAggregator(context.Background(), 500*time.Millisecond)
+	store := store.NewMemoryStore()
+	agg := NewAggregator(context.Background(), 500*time.Millisecond, store)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test-pod",

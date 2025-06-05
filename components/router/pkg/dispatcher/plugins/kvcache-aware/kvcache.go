@@ -1,5 +1,5 @@
 /*
-Copyright 2025 The InftyAI Team.
+Copyright 2025.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package backend
+package kvcacheAware
 
-import dto "github.com/prometheus/client_model/go"
-
-// var _ Backend = &VLLM{}
-
-type VLLM struct {
-}
-
-func (v *VLLM) metricsMap() map[MetricType]string {
-	return map[MetricType]string{}
-}
-
-func (v *VLLM) ParseMetrics(metrics map[string]*dto.MetricFamily) (MetricValues, error) {
-	return nil, nil
-}
+// TODO: make the router kvcache aware.

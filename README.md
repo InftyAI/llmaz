@@ -40,9 +40,9 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
 - **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp), [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM). Find the full list of supported backends [here](./site/content/en/docs/integrations/support-backends.md).
-- **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
+- **Heterogeneous Devices Support**: llmaz supports serving the same LLM with heterogeneous devices together with [InftyAI Kube-Scheduler](https://github.com/InftyAI/scheduler-plugins) for the sake of cost and performance.
 - **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores. llmaz will automatically handle the model loading, requiring no effort from users.
-- **Multi-Host Support**: llmaz supports both single-host and multi-host scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0. 
+- **Multi-Host Support**: llmaz supports both single-host and multi-host scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0.
 - **AI Gateway Support**: Offering capabilities like token-based rate limiting, model routing with the integration of [Envoy AI Gateway](https://aigateway.envoyproxy.io/).
 - **Build-in ChatUI**: Out-of-the-box chatbot support with the integration of [Open WebUI](https://github.com/open-webui/open-webui), offering capacities like function call, RAG, web search and more, see configurations [here](./site/content/en/docs/integrations/open-webui.md).
 - **Scaling Efficiency**: llmaz supports horizontal scaling with [HPA](./docs/examples/hpa/README.md) by default and will integrate with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) for smart scaling across different clouds.
@@ -52,7 +52,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 ### Installation
 
-Read the [Installation](./site/content/en/docs/installation.md) for guidance.
+Read the [Installation](./site/content/en/docs/getting-started/installation.md) for guidance.
 
 ### Deploy
 
