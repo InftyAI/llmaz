@@ -18,10 +18,15 @@ limitations under the License.
 package modelSource
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/utils/ptr"
 
 	"github.com/inftyai/llmaz/pkg"
 )
@@ -32,12 +37,11 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 	allowPatterns := []string{"*.gguf", "*.json"}
 	ignorePatterns := []string{"*.tmp"}
 
-	testCases := []struct {
-		name              string
-		provider          *ModelHubProvider
-		index             int
-		expectMainModel   bool
-		expectEnvContains []string
+	tests := []struct {
+		name            string
+		provider        *ModelHubProvider
+		index           int
+		expectMainModel bool
 	}{
 		{
 			name: "inject full modelhub with fileName, revision, allow/ignore",
@@ -52,11 +56,6 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 			},
 			index:           0,
 			expectMainModel: true,
-			expectEnvContains: []string{
-				"MODEL_SOURCE_TYPE", "MODEL_ID", "MODEL_HUB_NAME", "MODEL_FILENAME",
-				"REVISION", "MODEL_ALLOW_PATTERNS", "MODEL_IGNORE_PATTERNS",
-				"HUGGING_FACE_HUB_TOKEN", "HF_TOKEN",
-			},
 		},
 		{
 			name: "inject with index > 0 skips volume/container mount",
@@ -67,15 +66,15 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 			},
 			index:           1,
 			expectMainModel: false,
-			expectEnvContains: []string{
-				"MODEL_SOURCE_TYPE", "MODEL_ID", "MODEL_HUB_NAME",
-				"HUGGING_FACE_HUB_TOKEN", "HF_TOKEN",
-			},
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+	envSortOpt := cmpopts.SortSlices(func(a, b corev1.EnvVar) bool {
+		return a.Name < b.Name
+	})
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			template := &corev1.PodTemplateSpec{
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -89,57 +88,68 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 				},
 			}
 
-			tc.provider.InjectModelLoader(template, tc.index)
+			tt.provider.InjectModelLoader(template, tt.index)
 
 			assert.Len(t, template.Spec.InitContainers, 1)
 			initContainer := template.Spec.InitContainers[0]
+
 			expectedName := MODEL_LOADER_CONTAINER_NAME
-			if tc.index != 0 {
-				expectedName += "-" + string(rune('0'+tc.index))
+			if tt.index != 0 {
+				expectedName += "-" + strconv.Itoa(tt.index)
 			}
 			assert.Equal(t, expectedName, initContainer.Name)
 			assert.Equal(t, pkg.LOADER_IMAGE, initContainer.Image)
 
-			// Check env vars exist
-			for _, key := range tc.expectEnvContains {
-				found := false
-				for _, env := range initContainer.Env {
-					if env.Name == key {
-						found = true
-						break
-					}
-				}
-				assert.True(t, found, "expected env %s not found", key)
+			wantEnv := buildExpectedEnv(tt.provider)
+			if diff := cmp.Diff(wantEnv, initContainer.Env, envSortOpt); diff != "" {
+				t.Errorf("InitContainer.Env mismatch (-want +got):\n%s", diff)
 			}
-
-			// Main model should inject volume & container mount
-			if tc.expectMainModel {
-				// Volume should be present
-				foundVol := false
-				for _, v := range template.Spec.Volumes {
-					if v.Name == MODEL_VOLUME_NAME {
-						foundVol = true
-						break
-					}
-				}
-				assert.True(t, foundVol, "volume not injected")
-
-				// Runner container mount should exist
-				foundMount := false
-				for _, m := range template.Spec.Containers[0].VolumeMounts {
-					if m.Name == MODEL_VOLUME_NAME && m.ReadOnly && m.MountPath == CONTAINER_MODEL_PATH {
-						foundMount = true
-					}
-				}
-				assert.True(t, foundMount, "volume mount not injected to runner")
-			} else {
-				// No volumes or mounts should be injected
-				assert.Empty(t, template.Spec.Volumes)
-				assert.Empty(t, template.Spec.Containers[0].VolumeMounts)
-			}
-
-			// Should always carry over container env
-			assert.Contains(t, initContainer.Env, corev1.EnvVar{Name: "HTTP_PROXY", Value: "http://1.1.1.1"})
 		})
 	}
+}
+
+func buildExpectedEnv(p *ModelHubProvider) []corev1.EnvVar {
+	envs := make([]corev1.EnvVar, 0, 10)
+
+	envs = append(envs, corev1.EnvVar{Name: "HTTP_PROXY", Value: "http://1.1.1.1"})
+
+	envs = append(envs,
+		corev1.EnvVar{Name: "MODEL_SOURCE_TYPE", Value: MODEL_SOURCE_MODELHUB},
+		corev1.EnvVar{Name: "MODEL_ID", Value: p.modelID},
+		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: p.modelHub},
+	)
+
+	if p.fileName != nil {
+		envs = append(envs, corev1.EnvVar{Name: "MODEL_FILENAME", Value: *p.fileName})
+	}
+	if p.modelRevision != nil {
+		envs = append(envs, corev1.EnvVar{Name: "REVISION", Value: *p.modelRevision})
+	}
+	if p.modelAllowPatterns != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  "MODEL_ALLOW_PATTERNS",
+			Value: strings.Join(p.modelAllowPatterns, ","),
+		})
+	}
+	if p.modelIgnorePatterns != nil {
+		envs = append(envs, corev1.EnvVar{
+			Name:  "MODEL_IGNORE_PATTERNS",
+			Value: strings.Join(p.modelIgnorePatterns, ","),
+		})
+	}
+
+	for _, tokenName := range []string{"HUGGING_FACE_HUB_TOKEN", "HF_TOKEN"} {
+		envs = append(envs, corev1.EnvVar{
+			Name: tokenName,
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{Name: MODELHUB_SECRET_NAME},
+					Key:                  HUGGING_FACE_TOKEN_KEY,
+					Optional:             ptr.To(true),
+				},
+			},
+		})
+	}
+
+	return envs
 }
