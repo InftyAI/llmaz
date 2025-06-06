@@ -139,7 +139,7 @@ Please refer to [examples](./docs/examples/README.md) for more tutorials or read
 
 Join us for more discussions:
 
-- **Slack Channel**: [#llmaz](https://inftyai.slack.com/archives/C06D0BGEQ1G)
+- **Slack Channel**: [#llmaz](https://join.slack.com/t/inftyai/shared_invite/zt-3700res2c-_AuBGD3kixDJhzycFE6L5A)
 
 ## Contributions
 
