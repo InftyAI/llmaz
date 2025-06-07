@@ -72,14 +72,30 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			models = append(models, model)
 		}
 
+		// Fetch global configuration.
+		cm := corev1.ConfigMap{}
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, &cm); err != nil {
+			return err
+		}
+
+		data, err := helper.ParseGlobalConfigmap(&cm)
+		if err != nil {
+			return fmt.Errorf("failed to parse global configmap: %v", err)
+		}
+
+		initContainerImage := data.InitContainerImage
+		if initContainerImage == "" {
+			initContainerImage = pkg.LOADER_IMAGE
+		}
+
 		for index, model := range models {
 			// Validate injecting modelLoaders
 			if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-				if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+				if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service, initContainerImage); err != nil {
 					return err
 				}
 			}
-			if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
+			if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service, initContainerImage); err != nil {
 				return err
 			}
 		}
@@ -103,7 +119,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 			return err
 		}
 
-		if err := ValidateConfigmap(ctx, k8sClient, service); err != nil {
+		if err := ValidateSchedulerName(data.SchedulerName, service); err != nil {
 			return err
 		}
 
@@ -111,7 +127,7 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 	}, util.IntegrationTimeout, util.Interval).Should(gomega.Succeed())
 }
 
-func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service) error {
+func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service, initContainerImage string) error {
 	if model.Spec.Source.URI != nil {
 		protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
 		if protocol == modelSource.Ollama {
@@ -132,8 +148,9 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 		if initContainer.Name != containerName {
 			return fmt.Errorf("unexpected initContainer name, want %s, got %s", modelSource.MODEL_LOADER_CONTAINER_NAME, initContainer.Name)
 		}
-		if initContainer.Image != pkg.LOADER_IMAGE {
-			return fmt.Errorf("unexpected initContainer image, want %s, got %s", pkg.LOADER_IMAGE, initContainer.Image)
+
+		if initContainer.Image != initContainerImage {
+			return fmt.Errorf("unexpected initContainer image, want %s, got %s", initContainerImage, initContainer.Image)
 		}
 
 		var envStrings []string
@@ -356,25 +373,15 @@ func CheckServiceAvaliable() error {
 	return nil
 }
 
-func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) error {
-	cm := corev1.ConfigMap{}
-	if err := k8sClient.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, &cm); err != nil {
-		return err
-	}
-
-	data, err := helper.ParseGlobalConfigmap(&cm)
-	if err != nil {
-		return fmt.Errorf("failed to parse global configmap: %v", err)
-	}
-
+func ValidateSchedulerName(schedulerName string, service *inferenceapi.Service) error {
 	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-		if service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName != data.SchedulerName {
-			return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName, data.SchedulerName)
+		if service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName != schedulerName {
+			return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName, schedulerName)
 		}
 	}
 
-	if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName != data.SchedulerName {
-		return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName, data.SchedulerName)
+	if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName != schedulerName {
+		return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName, schedulerName)
 	}
 
 	return nil

@@ -22,8 +22,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
-
-	"github.com/inftyai/llmaz/pkg"
 )
 
 var _ ModelSourceProvider = &URIProvider{}
@@ -73,7 +71,7 @@ func (p *URIProvider) ModelPath() string {
 	return CONTAINER_MODEL_PATH + "models--" + splits[len(splits)-1]
 }
 
-func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
+func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int, initContainerImage string) {
 	// We don't have additional operations for Ollama, just load in runtime.
 	if p.protocol == Ollama {
 		return
@@ -111,7 +109,7 @@ func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index 
 	// Handle initContainer.
 	initContainer := &corev1.Container{
 		Name:  initContainerName,
-		Image: pkg.LOADER_IMAGE,
+		Image: initContainerImage,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      MODEL_VOLUME_NAME,

@@ -44,6 +44,7 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	"github.com/inftyai/llmaz/pkg"
 	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 	"github.com/inftyai/llmaz/pkg/util"
@@ -116,7 +117,12 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
+	initContainerImage := configs.InitContainerImage
+	if initContainerImage == "" {
+		initContainerImage = pkg.LOADER_IMAGE
+	}
+
+	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models, initContainerImage)
 	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -159,7 +165,7 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel, initContainerImage string) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
@@ -169,7 +175,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.WorkerTemplate)
 
 	// The core logic to inject additional configurations.
-	injectModelProperties(leaderWorkerTemplate, models, service)
+	injectModelProperties(leaderWorkerTemplate, models, service, initContainerImage)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
@@ -191,15 +197,15 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	return workload
 }
 
-func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service, initContainerImage string) {
 	isMultiNodesInference := template.LeaderTemplate != nil
 
 	for i, model := range models {
 		source := modelSource.NewModelSourceProvider(model)
 		if isMultiNodesInference {
-			source.InjectModelLoader(template.LeaderTemplate, i)
+			source.InjectModelLoader(template.LeaderTemplate, i, initContainerImage)
 		}
-		source.InjectModelLoader(template.WorkerTemplate, i)
+		source.InjectModelLoader(template.WorkerTemplate, i, initContainerImage)
 	}
 
 	// We only consider the main model's requirements for now.

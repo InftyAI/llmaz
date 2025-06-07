@@ -22,8 +22,6 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/ptr"
-
-	"github.com/inftyai/llmaz/pkg"
 )
 
 var _ ModelSourceProvider = &ModelHubProvider{}
@@ -57,7 +55,7 @@ func (p *ModelHubProvider) ModelPath() string {
 	return CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.modelID, "/", "--")
 }
 
-func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
+func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int, initContainerImage string) {
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
@@ -66,7 +64,7 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 	// Handle initContainer.
 	initContainer := &corev1.Container{
 		Name:  initContainerName,
-		Image: pkg.LOADER_IMAGE,
+		Image: initContainerImage,
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      MODEL_VOLUME_NAME,
