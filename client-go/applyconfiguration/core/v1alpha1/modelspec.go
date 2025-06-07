@@ -20,6 +20,7 @@ package v1alpha1
 
 import (
 	corev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // ModelSpecApplyConfiguration represents a declarative configuration of the ModelSpec type for use
@@ -28,6 +29,8 @@ type ModelSpecApplyConfiguration struct {
 	FamilyName      *corev1alpha1.ModelName            `json:"familyName,omitempty"`
 	Source          *ModelSourceApplyConfiguration     `json:"source,omitempty"`
 	InferenceConfig *InferenceConfigApplyConfiguration `json:"inferenceConfig,omitempty"`
+	OwnedBy         *string                            `json:"ownedBy,omitempty"`
+	CreatedAt       *v1.Time                           `json:"createdAt,omitempty"`
 }
 
 // ModelSpecApplyConfiguration constructs a declarative configuration of the ModelSpec type for use with
@@ -57,5 +60,21 @@ func (b *ModelSpecApplyConfiguration) WithSource(value *ModelSourceApplyConfigur
 // If called multiple times, the InferenceConfig field is set to the value of the last call.
 func (b *ModelSpecApplyConfiguration) WithInferenceConfig(value *InferenceConfigApplyConfiguration) *ModelSpecApplyConfiguration {
 	b.InferenceConfig = value
+	return b
+}
+
+// WithOwnedBy sets the OwnedBy field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the OwnedBy field is set to the value of the last call.
+func (b *ModelSpecApplyConfiguration) WithOwnedBy(value string) *ModelSpecApplyConfiguration {
+	b.OwnedBy = &value
+	return b
+}
+
+// WithCreatedAt sets the CreatedAt field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the CreatedAt field is set to the value of the last call.
+func (b *ModelSpecApplyConfiguration) WithCreatedAt(value v1.Time) *ModelSpecApplyConfiguration {
+	b.CreatedAt = &value
 	return b
 }

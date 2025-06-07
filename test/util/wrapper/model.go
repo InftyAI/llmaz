@@ -107,6 +107,11 @@ func (w *ModelWrapper) Label(k, v string) *ModelWrapper {
 	return w
 }
 
+func (w *ModelWrapper) OwnedBy(ownedBy string) *ModelWrapper {
+	w.Spec.OwnedBy = &ownedBy
+	return w
+}
+
 func MakeFlavor(name string) *FlavorWrapper {
 	return &FlavorWrapper{
 		coreapi.Flavor{
