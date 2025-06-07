@@ -50,7 +50,13 @@ func (p *ModelHubProvider) ModelName() string {
 //   - modelID: Qwen/Qwen2-0.5B-Instruct-GGUF
 //     fileName: qwen2-0_5b-instruct-q5_k_m.gguf
 //     modelPath: /workspace/models/qwen2-0_5b-instruct-q5_k_m.gguf
-func (p *ModelHubProvider) ModelPath() string {
+func (p *ModelHubProvider) ModelPath(skipModelLoader bool) string {
+	// Skip the model loader to allow the inference engine to handle loading models directly from model hub (e.g., Hugging Face, ModelScope).
+	// In this case, the model ID should be returned (e.g., facebook/opt-125m).
+	if skipModelLoader {
+		return p.modelID
+	}
+
 	if p.fileName != nil {
 		return CONTAINER_MODEL_PATH + *p.fileName
 	}
@@ -108,59 +114,87 @@ func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, i
 	// Both HUGGING_FACE_HUB_TOKEN and HF_TOKEN works.
 	initContainer.Env = append(initContainer.Env,
 		corev1.EnvVar{
-			Name: "HUGGING_FACE_HUB_TOKEN",
+			Name: HUGGING_FACE_HUB_TOKEN,
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: MODELHUB_SECRET_NAME, // if secret not exists, the env is empty.
 					},
-					Key:      HUGGINGFACE_TOKEN_KEY,
+					Key:      HUGGING_FACE_TOKEN_KEY,
 					Optional: ptr.To[bool](true),
 				},
 			},
-		}, corev1.EnvVar{
-			Name: "HF_TOKEN",
+		})
+
+	initContainer.Env = append(initContainer.Env,
+		corev1.EnvVar{
+			Name: HUGGING_FACE_TOKEN_KEY,
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
 					LocalObjectReference: corev1.LocalObjectReference{
 						Name: MODELHUB_SECRET_NAME,
 					},
-					Key:      HUGGINGFACE_TOKEN_KEY,
+					Key:      HUGGING_FACE_TOKEN_KEY,
 					Optional: ptr.To[bool](true),
 				},
 			},
-		},
-	)
+		})
+
 	template.Spec.InitContainers = append(template.Spec.InitContainers, *initContainer)
-
-	// Return once not the main model, because all the below has already been injected.
-	if index != 0 {
-		return
-	}
-
-	// Handle container.
-
-	for i := range template.Spec.Containers {
-		// We only consider this container.
-		if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
-			template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-				Name:      MODEL_VOLUME_NAME,
-				MountPath: CONTAINER_MODEL_PATH,
-				ReadOnly:  true,
-			})
-		}
-	}
-
-	// Handle spec.
-
-	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-		Name: MODEL_VOLUME_NAME,
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	})
 }
 
 func spreadEnvToInitContainer(containerEnv []corev1.EnvVar, initContainer *corev1.Container) {
 	initContainer.Env = append(initContainer.Env, containerEnv...)
+}
+
+func (p *ModelHubProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
+	for i := range template.Spec.Containers {
+		if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+			// Check if HuggingFace token environment variables already exist
+			hfHubTokenExists := false
+			hfTokenExists := false
+			for _, env := range template.Spec.Containers[i].Env {
+				if env.Name == HUGGING_FACE_HUB_TOKEN {
+					hfHubTokenExists = true
+				}
+				if env.Name == HUGGING_FACE_TOKEN_KEY {
+					hfTokenExists = true
+				}
+			}
+
+			// Add HUGGING_FACE_HUB_TOKEN if it doesn't exist
+			if !hfHubTokenExists {
+				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+					corev1.EnvVar{
+						Name: HUGGING_FACE_HUB_TOKEN,
+						ValueFrom: &corev1.EnvVarSource{
+							SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: MODELHUB_SECRET_NAME, // if secret not exists, the env is empty.
+								},
+								Key:      HUGGING_FACE_TOKEN_KEY,
+								Optional: ptr.To[bool](true),
+							},
+						},
+					})
+			}
+
+			// Add HF_TOKEN if it doesn't exist
+			if !hfTokenExists {
+				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
+					corev1.EnvVar{
+						Name: HUGGING_FACE_TOKEN_KEY,
+						ValueFrom: &corev1.EnvVarSource{
+							SecretKeyRef: &corev1.SecretKeySelector{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: MODELHUB_SECRET_NAME,
+								},
+								Key:      HUGGING_FACE_TOKEN_KEY,
+								Optional: ptr.To[bool](true),
+							},
+						},
+					})
+			}
+		}
+	}
 }

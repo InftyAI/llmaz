@@ -21,6 +21,7 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -121,4 +122,11 @@ func FirstAssignedFlavor(model *coreapi.OpenModel, playground *inferenceapi.Play
 	}
 
 	return nil
+}
+
+func SkipModelLoader(obj metav1.Object) bool {
+	if annotations := obj.GetAnnotations(); annotations != nil {
+		return annotations[inferenceapi.SkipModelLoaderAnnoKey] == "true"
+	}
+	return false
 }

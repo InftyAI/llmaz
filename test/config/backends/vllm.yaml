@@ -11,8 +11,8 @@ spec:
     - python3
     - -m
     - vllm.entrypoints.openai.api_server
-  image: vllm/vllm-openai
-  version: v0.6.0
+  image: public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
+  version: v0.9.0
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
   recommendedConfigs:
