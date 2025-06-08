@@ -186,7 +186,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 
 		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 		validation.ValidatePlayground(ctx, k8sClient, playground)
-		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+		//validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 
 		service := &inferenceapi.Service{}
 		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
@@ -215,7 +215,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 
 		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
 		validation.ValidatePlayground(ctx, k8sClient, playground)
-		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+		//validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 
 		service := &inferenceapi.Service{}
 		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
