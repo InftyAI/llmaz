@@ -25,10 +25,6 @@ controllerManager:
   replicas: 1
   serviceAccount:
     annotations: {}
-globalConfig:
-  configData: |-
-    scheduler-name: default-scheduler
-    # init-container-image: inftyai/model-loader:v0.0.10
 kubernetesClusterDomain: cluster.local
 metricsService:
   ports:

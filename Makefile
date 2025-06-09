@@ -317,7 +317,9 @@ $(HELMIFY): $(LOCALBIN)
 
 .PHONY: helm
 helm: manifests kustomize helmify
-	$(KUSTOMIZE) build config/default | $(HELMIFY) -crd-dir
+	$(KUSTOMIZE) build config/default \
+	| yq 'select(.kind and (.kind != "ConfigMap" or .metadata.name != "llmaz-global-config"))' \
+	| $(HELMIFY) -crd-dir
 
 .PHONY: helm-install
 helm-install: helm

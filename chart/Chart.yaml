@@ -25,6 +25,10 @@ dependencies:
     version: 0.6.1
     repository: "oci://registry.k8s.io/lws/charts"
     condition: leaderWorkerSet.enabled
+  - name: kube-scheduler
+    version: 0.0.1
+    repository: "oci://registry-1.docker.io/inftyai"
+    condition: kube-scheduler.enabled
   - name: open-webui
     version: "6.4.0"
     repository: "https://helm.openwebui.com"
