@@ -1,6 +1,6 @@
 ---
-title: Supported Inference Backends
-weight: 5
+title: Broad Inference Backends Support
+weight: 1
 ---
 
 If you want to integrate more backends into llmaz, please refer to this [PR](https://github.com/InftyAI/llmaz/pull/182). It's always welcomed.
@@ -8,6 +8,11 @@ If you want to integrate more backends into llmaz, please refer to this [PR](htt
 ## llama.cpp
 
 [llama.cpp](https://github.com/ggerganov/llama.cpp) is to enable LLM inference with minimal setup and state-of-the-art performance on a wide variety of hardware - locally and in the cloud.
+
+## ollama
+
+[ollama](https://github.com/ollama/ollama) is running with Llama 3.2, Mistral, Gemma 2, and other large language models, based on llama.cpp, aims for local deploy.
+
 
 ## SGLang
 
@@ -20,10 +25,6 @@ If you want to integrate more backends into llmaz, please refer to this [PR](htt
 ## Text-Generation-Inference
 
 [text-generation-inference](https://github.com/huggingface/text-generation-inference) is a Rust, Python and gRPC server for text generation inference. Used in production at Hugging Face to power Hugging Chat, the Inference API and Inference Endpoint.
-
-## ollama
-
-[ollama](https://github.com/ollama/ollama) is running with Llama 3.2, Mistral, Gemma 2, and other large language models, based on llama.cpp, aims for local deploy.
 
 ## vLLM
 
