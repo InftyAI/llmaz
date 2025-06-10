@@ -30,6 +30,12 @@ backendRuntime:
 leaderWorkerSet:
   enabled: true
 
+kube-scheduler:
+  # If kube-scheduler is enabled, please set the globalConfig.configData.scheduler-name with the name of the kube-scheduler.
+  enabled: false
+  # scheduler:
+  #   name: inftyai-scheduler
+
 prometheus:
   # Prometheus is required to enable smart routing.
   enabled: false
