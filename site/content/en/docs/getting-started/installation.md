@@ -10,7 +10,7 @@ description: >
 ### Install
 
 ```cmd
-helm install llmaz oci://registry-1.docker.io/inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.9
+helm install llmaz oci://registry-1.docker.io/inftyai/llmaz --namespace llmaz-system --create-namespace --version 0.0.10
 ```
 
 ### Uninstall
