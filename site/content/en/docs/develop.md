@@ -1,6 +1,6 @@
 ---
 title: Develop Guidance
-weight: 3
+weight: 4
 description: >
   This section contains a develop guidance for people who want to learn more about this project.
 ---
