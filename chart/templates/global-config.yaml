@@ -5,14 +5,4 @@ metadata:
   labels:
   {{- include "chart.labels" . | nindent 4 }}
 data:
-  config.data: |-
-    {{- $base := deepCopy .Values.globalConfig.configData }}
-    {{- $ks := get .Values "kube-scheduler" }}
-    {{- if and $ks (get $ks "enabled") (hasKey $ks "scheduler") }}
-      {{- $scheduler := get $ks "scheduler" }}
-      {{- $name := get $scheduler "name" }}
-      {{- if $name }}
-        {{- $_ := set $base "scheduler-name" $name }}
-      {{- end }}
-    {{- end }}
-    {{- toYaml $base | nindent 4 }}
+  config.data: {{ .Values.globalConfig.configData | toYaml | indent 1 }}

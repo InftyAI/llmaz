@@ -31,7 +31,8 @@ leaderWorkerSet:
   enabled: true
 
 kube-scheduler:
-  enabled: true
+  # If kube-scheduler is enabled, please set the globalConfig.configData.scheduler-name with the name of the kube-scheduler.
+  enabled: false
   # scheduler:
   #   name: inftyai-scheduler
 
@@ -63,11 +64,3 @@ envoy-gateway:
   enabled: true
 envoy-ai-gateway:
   enabled: true
-
-globalConfig:
-  configData:
-    # If kube-scheduler is enabled, the scheduler-name will
-    # be automatically overwritten by the kube-scheduler.scheduler.name,
-    # when generating the global-config ConfigMap.
-    scheduler-name: default-scheduler
-    # init-container-image: inftyai/model-loader:v0.0.10
