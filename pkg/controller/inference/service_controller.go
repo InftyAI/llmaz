@@ -196,10 +196,26 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 
 	for i, model := range models {
 		source := modelSource.NewModelSourceProvider(model)
-		if isMultiNodesInference {
-			source.InjectModelLoader(template.LeaderTemplate, i)
+		// Skip model-loader initContainer if llmaz.io/skip-model-loader annotation is set.
+		if !helper.SkipModelLoader(service) {
+			if isMultiNodesInference {
+				source.InjectModelLoader(template.LeaderTemplate, i)
+			}
+			source.InjectModelLoader(template.WorkerTemplate, i)
+		} else {
+			if isMultiNodesInference {
+				source.InjectModelEnvVars(template.LeaderTemplate)
+			}
+			source.InjectModelEnvVars(template.WorkerTemplate)
 		}
-		source.InjectModelLoader(template.WorkerTemplate, i)
+	}
+
+	// If model-loader initContainer is injected, we should mount the model-volume to the model-runner container.
+	if !helper.SkipModelLoader(service) {
+		if isMultiNodesInference {
+			modelSource.InjectModelVolume(template.LeaderTemplate)
+		}
+		modelSource.InjectModelVolume(template.WorkerTemplate)
 	}
 
 	// We only consider the main model's requirements for now.

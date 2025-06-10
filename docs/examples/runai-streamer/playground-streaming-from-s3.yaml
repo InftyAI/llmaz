@@ -1,0 +1,54 @@
+# This example demonstrates how to use the Run:ai Model Streamer to load models directly from S3.
+# Adding the annotation `llmaz.io/skip-model-loader: "true"` skips the model-loader initContainer,
+# allowing the inference engine to load models directly from remote storage (e.g., S3).
+# By using `--load-format runai_streamer`, the vLLM leverages the Run:ai Model Streamer to stream models from S3.
+# vLLM will load models into the CPU buffer and then into GPU memory, without the need to download them to local disk first.
+# This can significantly improve model loading speed and reduce disk usage.
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: deepseek-r1-distill-qwen-1-5b
+spec:
+  familyName: deepseek
+  source:
+    # Note: You need to replace <YOUR_S3_BUCKET> with your actual S3 bucket name
+    # If the s3 bucket need AWS credentials for authentication,
+    # please run `kubectl create secret generic aws-access-secret --from-literal=AWS_ACCESS_KEY_ID=<YOUR_ACCESS_KEY_ID> --from-literal=AWS_SECRET_ACCESS_KEY=<YOUR_SECRET_ACCESS_KEY>` ahead.
+    uri: s3://<YOUR_S3_BUCKET>/DeepSeek-R1-Distill-Qwen-1.5B
+  inferenceConfig:
+    flavors:
+      - name: t4 # GPU type
+        limits:
+          nvidia.com/gpu: 1
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: deepseek-r1-distill-qwen-1-5b
+  annotations:
+    llmaz.io/skip-model-loader: "true"
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: deepseek-r1-distill-qwen-1-5b
+  backendRuntimeConfig:
+    backendName: vllm # currently, only vllm supports runai streamer
+    args:
+      - --load-format
+      - runai_streamer
+    envs:
+      # The default value is 1 second. Increase it to 10 seconds to avoid timeouts in case of slow network conditions.
+      - name: RUNAI_STREAMER_S3_REQUEST_TIMEOUT_MS
+        value: "10000"
+      # Controls the level of concurrency and number of OS threads reading tensors from the file to the CPU buffer, the default value is 16
+      #- name: RUNAI_STREAMER_CONCURRENCY
+      #  value: "32"
+    resources:
+      limits:
+        cpu: "4"
+        memory: 16Gi
+        nvidia.com/gpu: "1"
+      requests:
+        cpu: "4"
+        memory: 16Gi
+        nvidia.com/gpu: "1"
