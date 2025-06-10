@@ -38,7 +38,6 @@ If you want to change the default configurations, please change the values in [v
 
 **Do not change** the values in _values.yaml_ because it's auto-generated and will be overwritten.
 
-
 ### Install
 
 ```cmd

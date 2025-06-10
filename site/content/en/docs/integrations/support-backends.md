@@ -1,6 +1,6 @@
 ---
 title: Supported Inference Backends
-weight: 4
+weight: 5
 ---
 
 If you want to integrate more backends into llmaz, please refer to this [PR](https://github.com/InftyAI/llmaz/pull/182). It's always welcomed.

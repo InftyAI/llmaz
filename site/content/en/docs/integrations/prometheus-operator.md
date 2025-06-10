@@ -1,6 +1,6 @@
 ---
 title: Prometheus Operator
-weight: 3
+weight: 4
 ---
 
 This document provides deployment steps to install and configure Prometheus Operator in a Kubernetes cluster.

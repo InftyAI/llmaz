@@ -1,6 +1,6 @@
 ---
 title: Integrations
-weight: 2
+weight: 3
 description: >
   This section contains the llmaz integration information.
 ---
