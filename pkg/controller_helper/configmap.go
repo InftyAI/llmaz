@@ -23,6 +23,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+const (
+	GlobalConfigMapName      = "llmaz-global-config"
+	GlobalConfigMapNamespace = "llmaz-system"
+)
+
+// GlobalConfigs defines the global configuration parameters used across services.
+// These configurations are typically provided via a ConfigMap named "llmaz-global-config"
 type GlobalConfigs struct {
 	SchedulerName      string `yaml:"scheduler-name"`
 	InitContainerImage string `yaml:"init-container-image"`
