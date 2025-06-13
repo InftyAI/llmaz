@@ -48,6 +48,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
 			gomega.Expect(model).To(gomega.BeComparableTo(tc.wantModel(),
 				cmpopts.IgnoreTypes(coreapi.ModelStatus{}),
+				cmpopts.IgnoreFields(coreapi.ModelSpec{}, "CreatedAt"),
 				cmpopts.IgnoreFields(metav1.ObjectMeta{}, "UID", "ResourceVersion", "Generation", "CreationTimestamp", "ManagedFields")))
 		},
 		ginkgo.Entry("apply model family name", &testDefaultingCase{
@@ -55,7 +56,7 @@ var _ = ginkgo.Describe("model default and validation", func() {
 				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "", nil, nil).FamilyName("llama3").Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("meta-llama/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("Huggingface").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy(coreapi.DefaultOwnedBy).Obj()
 			},
 		}),
 		ginkgo.Entry("apply modelscope model hub name", &testDefaultingCase{
@@ -63,7 +64,15 @@ var _ = ginkgo.Describe("model default and validation", func() {
 				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "", nil, nil).Obj()
 			},
 			wantModel: func() *coreapi.OpenModel {
-				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").Obj()
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy(coreapi.DefaultOwnedBy).Obj()
+			},
+		}),
+		ginkgo.Entry("custom ownedBy should not be overwritten", &testDefaultingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "", nil, nil).OwnedBy("custom-owner").Obj()
+			},
+			wantModel: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy("custom-owner").Obj()
 			},
 		}),
 	)
