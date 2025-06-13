@@ -23,22 +23,29 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type GlobalConfigs struct {
+const (
+	GlobalConfigMapName      = "llmaz-global-config"
+	GlobalConfigMapNamespace = "llmaz-system"
+)
+
+// GlobalConfig defines the global configuration parameters used across services.
+// These configurations are typically provided via a ConfigMap named "llmaz-global-config"
+type GlobalConfig struct {
 	SchedulerName      string `yaml:"scheduler-name"`
 	InitContainerImage string `yaml:"init-container-image"`
 }
 
-func ParseGlobalConfigmap(cm *corev1.ConfigMap) (*GlobalConfigs, error) {
+func ParseGlobalConfigmap(cm *corev1.ConfigMap) (*GlobalConfig, error) {
 	rawConfig, ok := cm.Data["config.data"]
 	if !ok {
 		return nil, fmt.Errorf("config.data not found in ConfigMap")
 	}
 
-	var configs GlobalConfigs
-	err := yaml.Unmarshal([]byte(rawConfig), &configs)
+	var config GlobalConfig
+	err := yaml.Unmarshal([]byte(rawConfig), &config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config.data: %v", err)
 	}
 
-	return &configs, nil
+	return &config, nil
 }
