@@ -207,7 +207,6 @@ func TestBackendRuntimeParser_BasicFields(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
 			p := tc.parser
 			if diff := cmp.Diff(tc.want.cmd, p.Command()); diff != "" {
