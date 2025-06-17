@@ -181,7 +181,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	}
 
 	// construct pod template spec configuration
-	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(service.Spec.WorkloadTemplate.WorkerTemplate)
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&service.Spec.WorkloadTemplate.WorkerTemplate)
 	if err != nil {
 		return nil, err
 	}
