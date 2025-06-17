@@ -554,8 +554,8 @@ func setControllerReferenceForScalingConfiguration(owner metav1.Object, hpa *aut
 			Kind:               gvk.Kind,
 			Name:               owner.GetName(),
 			UID:                owner.GetUID(),
-			BlockOwnerDeletion: ptr.To[bool](true),
-			Controller:         ptr.To[bool](true),
+			BlockOwnerDeletion: ptr.To(true),
+			Controller:         ptr.To(true),
 		},
 	}
 	return nil

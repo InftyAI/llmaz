@@ -20,8 +20,7 @@ import (
 	"strconv"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/ptr"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 
 	"github.com/inftyai/llmaz/pkg"
 )
@@ -63,137 +62,102 @@ func (p *ModelHubProvider) ModelPath(skipModelLoader bool) string {
 	return CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.modelID, "/", "--")
 }
 
-func (p *ModelHubProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
+func (p *ModelHubProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApplyConfiguration, index int) {
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
 	}
 
 	// Handle initContainer.
-	initContainer := &corev1.Container{
-		Name:  initContainerName,
-		Image: pkg.LOADER_IMAGE,
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      MODEL_VOLUME_NAME,
-				MountPath: CONTAINER_MODEL_PATH,
-			},
-		},
-	}
+	initContainer := coreapplyv1.Container().
+		WithName(initContainerName).
+		WithImage(pkg.LOADER_IMAGE).
+		WithVolumeMounts(coreapplyv1.VolumeMount().WithName(MODEL_VOLUME_NAME).WithMountPath(CONTAINER_MODEL_PATH))
 
 	// We have exactly one container in the template.Spec.Containers.
 	spreadEnvToInitContainer(template.Spec.Containers[0].Env, initContainer)
 
 	// This is related to the model loader logics which will read the environment when loading models weights.
-	initContainer.Env = append(
-		initContainer.Env,
-		corev1.EnvVar{Name: "MODEL_SOURCE_TYPE", Value: MODEL_SOURCE_MODELHUB},
-		corev1.EnvVar{Name: "MODEL_ID", Value: p.modelID},
-		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: p.modelHub},
-	)
+	initContainer.WithEnv(
+		coreapplyv1.EnvVar().WithName("MODEL_SOURCE_TYPE").WithValue(MODEL_SOURCE_MODELHUB),
+		coreapplyv1.EnvVar().WithName("MODEL_ID").WithValue(p.modelID),
+		coreapplyv1.EnvVar().WithName("MODEL_HUB_NAME").WithValue(p.modelHub))
 	if p.fileName != nil {
-		initContainer.Env = append(initContainer.Env,
-			corev1.EnvVar{Name: "MODEL_FILENAME", Value: *p.fileName})
+		initContainer.WithEnv(coreapplyv1.EnvVar().WithName("MODEL_FILENAME").WithValue(*p.fileName))
 	}
 	if p.modelRevision != nil {
-		initContainer.Env = append(initContainer.Env,
-			corev1.EnvVar{Name: "REVISION", Value: *p.modelRevision},
-		)
+		initContainer.WithEnv(coreapplyv1.EnvVar().WithName("REVISION").WithValue(*p.modelRevision))
 	}
 	if p.modelAllowPatterns != nil {
-		initContainer.Env = append(initContainer.Env,
-			corev1.EnvVar{Name: "MODEL_ALLOW_PATTERNS", Value: strings.Join(p.modelAllowPatterns, ",")},
-		)
+		initContainer.WithEnv(coreapplyv1.EnvVar().WithName("MODEL_ALLOW_PATTERNS").WithValue(strings.Join(p.modelAllowPatterns, ",")))
 	}
 	if p.modelIgnorePatterns != nil {
-		initContainer.Env = append(initContainer.Env,
-			corev1.EnvVar{Name: "MODEL_IGNORE_PATTERNS", Value: strings.Join(p.modelIgnorePatterns, ",")},
-		)
+		initContainer.WithEnv(coreapplyv1.EnvVar().WithName("MODEL_IGNORE_PATTERNS").WithValue(strings.Join(p.modelIgnorePatterns, ",")))
 	}
 
 	// Both HUGGING_FACE_HUB_TOKEN and HF_TOKEN works.
-	initContainer.Env = append(initContainer.Env,
-		corev1.EnvVar{
-			Name: HUGGING_FACE_HUB_TOKEN,
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: MODELHUB_SECRET_NAME, // if secret not exists, the env is empty.
-					},
-					Key:      HUGGING_FACE_TOKEN_KEY,
-					Optional: ptr.To[bool](true),
-				},
-			},
-		})
+	initContainer.WithEnv(
+		coreapplyv1.EnvVar().
+			WithName(HUGGING_FACE_HUB_TOKEN).
+			WithValueFrom(coreapplyv1.EnvVarSource().
+				WithSecretKeyRef(coreapplyv1.SecretKeySelector().
+					WithName(MODELHUB_SECRET_NAME). // if secret not exists, the env is empty.
+					WithKey(HUGGING_FACE_TOKEN_KEY).
+					WithOptional(true))),
+		coreapplyv1.EnvVar().
+			WithName(HUGGING_FACE_TOKEN_KEY).
+			WithValueFrom(coreapplyv1.EnvVarSource().
+				WithSecretKeyRef(coreapplyv1.SecretKeySelector().
+					WithName(MODELHUB_SECRET_NAME).
+					WithKey(HUGGING_FACE_TOKEN_KEY).
+					WithOptional(true))))
 
-	initContainer.Env = append(initContainer.Env,
-		corev1.EnvVar{
-			Name: HUGGING_FACE_TOKEN_KEY,
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: MODELHUB_SECRET_NAME,
-					},
-					Key:      HUGGING_FACE_TOKEN_KEY,
-					Optional: ptr.To[bool](true),
-				},
-			},
-		})
-
-	template.Spec.InitContainers = append(template.Spec.InitContainers, *initContainer)
+	template.Spec.WithInitContainers(initContainer)
 }
 
-func spreadEnvToInitContainer(containerEnv []corev1.EnvVar, initContainer *corev1.Container) {
-	initContainer.Env = append(initContainer.Env, containerEnv...)
+func spreadEnvToInitContainer(containerEnv []coreapplyv1.EnvVarApplyConfiguration, initContainer *coreapplyv1.ContainerApplyConfiguration) {
+	for i := range containerEnv {
+		initContainer.WithEnv(&containerEnv[i])
+	}
 }
 
-func (p *ModelHubProvider) InjectModelEnvVars(template *corev1.PodTemplateSpec) {
+func (p *ModelHubProvider) InjectModelEnvVars(template *coreapplyv1.PodTemplateSpecApplyConfiguration) {
 	for i := range template.Spec.Containers {
-		if template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+		if *template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
 			// Check if HuggingFace token environment variables already exist
 			hfHubTokenExists := false
 			hfTokenExists := false
 			for _, env := range template.Spec.Containers[i].Env {
-				if env.Name == HUGGING_FACE_HUB_TOKEN {
+				if *env.Name == HUGGING_FACE_HUB_TOKEN {
 					hfHubTokenExists = true
 				}
-				if env.Name == HUGGING_FACE_TOKEN_KEY {
+				if *env.Name == HUGGING_FACE_TOKEN_KEY {
 					hfTokenExists = true
 				}
 			}
 
 			// Add HUGGING_FACE_HUB_TOKEN if it doesn't exist
 			if !hfHubTokenExists {
-				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
-					corev1.EnvVar{
-						Name: HUGGING_FACE_HUB_TOKEN,
-						ValueFrom: &corev1.EnvVarSource{
-							SecretKeyRef: &corev1.SecretKeySelector{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: MODELHUB_SECRET_NAME, // if secret not exists, the env is empty.
-								},
-								Key:      HUGGING_FACE_TOKEN_KEY,
-								Optional: ptr.To[bool](true),
-							},
-						},
-					})
+				template.Spec.Containers[i].WithEnv(
+					coreapplyv1.EnvVar().
+						WithName(HUGGING_FACE_HUB_TOKEN).
+						WithValueFrom(coreapplyv1.EnvVarSource().
+							WithSecretKeyRef(coreapplyv1.SecretKeySelector().
+								WithName(MODELHUB_SECRET_NAME). // if secret not exists, the env is empty.
+								WithKey(HUGGING_FACE_TOKEN_KEY).
+								WithOptional(true))))
 			}
 
 			// Add HF_TOKEN if it doesn't exist
 			if !hfTokenExists {
-				template.Spec.Containers[i].Env = append(template.Spec.Containers[i].Env,
-					corev1.EnvVar{
-						Name: HUGGING_FACE_TOKEN_KEY,
-						ValueFrom: &corev1.EnvVarSource{
-							SecretKeyRef: &corev1.SecretKeySelector{
-								LocalObjectReference: corev1.LocalObjectReference{
-									Name: MODELHUB_SECRET_NAME,
-								},
-								Key:      HUGGING_FACE_TOKEN_KEY,
-								Optional: ptr.To[bool](true),
-							},
-						},
-					})
+				template.Spec.Containers[i].WithEnv(
+					coreapplyv1.EnvVar().
+						WithName(HUGGING_FACE_TOKEN_KEY).
+						WithValueFrom(coreapplyv1.EnvVarSource().
+							WithSecretKeyRef(coreapplyv1.SecretKeySelector().
+								WithName(MODELHUB_SECRET_NAME).
+								WithKey(HUGGING_FACE_TOKEN_KEY).
+								WithOptional(true))))
 			}
 		}
 	}

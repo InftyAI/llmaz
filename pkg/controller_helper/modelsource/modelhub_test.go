@@ -26,6 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"k8s.io/utils/ptr"
 
 	"github.com/inftyai/llmaz/pkg"
@@ -75,18 +76,13 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			template := &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: MODEL_RUNNER_CONTAINER_NAME,
-							Env: []corev1.EnvVar{
-								{Name: "HTTP_PROXY", Value: "http://1.1.1.1"},
-							},
-						},
-					},
-				},
-			}
+			template := coreapplyv1.PodTemplateSpec().
+				WithSpec(coreapplyv1.PodSpec().
+					WithContainers(coreapplyv1.Container().
+						WithName(MODEL_RUNNER_CONTAINER_NAME).
+						WithEnv(coreapplyv1.EnvVar().WithName("HTTP_PROXY").WithValue("http://1.1.1.1")),
+					),
+				)
 
 			tt.provider.InjectModelLoader(template, tt.index)
 

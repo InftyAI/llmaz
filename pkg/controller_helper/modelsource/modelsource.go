@@ -17,9 +17,10 @@ limitations under the License.
 package modelSource
 
 import (
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
+
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/util"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -58,10 +59,10 @@ type ModelSourceProvider interface {
 	ModelPath(skipModelLoader bool) string
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
-	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
+	InjectModelLoader(spec *coreapplyv1.PodTemplateSpecApplyConfiguration, index int)
 	// InjectModelEnvVars will inject the model credentials env to the model-runner container.
 	// This is used when the model-loader initContainer is not injected, and the model loading is handled by the model-runner container.
-	InjectModelEnvVars(spec *corev1.PodTemplateSpec)
+	InjectModelEnvVars(spec *coreapplyv1.PodTemplateSpecApplyConfiguration)
 }
 
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
@@ -105,35 +106,18 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 // InjectModelVolume mounts the model-volume to the pod template
 // The logic for mounting model-volume to model-runner container is identical in both ModelHubProvider and URIProvider,
 // so this function can be reused and only needs to be configured once
-func InjectModelVolume(template *corev1.PodTemplateSpec) {
+func InjectModelVolume(template *coreapplyv1.PodTemplateSpecApplyConfiguration) {
 	// Handle container.
 	for i, container := range template.Spec.Containers {
 		// We only consider this container.
-		if container.Name == MODEL_RUNNER_CONTAINER_NAME {
-			template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-				Name:      MODEL_VOLUME_NAME,
-				MountPath: CONTAINER_MODEL_PATH,
-				ReadOnly:  true,
-			})
+		if *container.Name == MODEL_RUNNER_CONTAINER_NAME {
+			template.Spec.Containers[i].WithVolumeMounts(coreapplyv1.VolumeMount().WithName(MODEL_VOLUME_NAME).WithMountPath(CONTAINER_MODEL_PATH).WithReadOnly(true))
 		}
 	}
 
 	// Handle spec.
-	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-		Name: MODEL_VOLUME_NAME,
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	})
+	template.Spec.WithVolumes(coreapplyv1.Volume().WithName(MODEL_VOLUME_NAME).WithEmptyDir(coreapplyv1.EmptyDirVolumeSource()))
 
 	// TODO: support OCI image volume
-	// template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-	// 	Name: MODEL_VOLUME_NAME,
-	// 	VolumeSource: corev1.VolumeSource{
-	// 		Image: &corev1.ImageVolumeSource{
-	// 			Reference:  url,
-	// 			PullPolicy: corev1.PullIfNotPresent,
-	// 		},
-	// 	},
-	// })
+	// template.Spec.WithVolumes(coreapplyv1.Volume().WithName(MODEL_VOLUME_NAME).WithImage(coreapplyv1.ImageVolumeSource().WithReference(url).WithPullPolicy(corev1.PullIfNotPresent)))
 }
