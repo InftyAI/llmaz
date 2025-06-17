@@ -23,11 +23,11 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
@@ -116,7 +116,10 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
+	workloadApplyConfiguration, err := buildWorkloadApplyConfiguration(service, models)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
 		return ctrl.Result{}, err
 	}
@@ -159,14 +162,35 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel) (*applyconfigurationv1.LeaderWorkerSetApplyConfiguration, error) {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
 	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-		leaderWorkerTemplate.WithLeaderTemplate(*service.Spec.WorkloadTemplate.LeaderTemplate)
+		// construct pod template spec configuration
+		obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(service.Spec.WorkloadTemplate.LeaderTemplate)
+		if err != nil {
+			return nil, err
+		}
+		var podTemplateSpecApplyConfiguration coreapplyv1.PodTemplateSpecApplyConfiguration
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(obj, &podTemplateSpecApplyConfiguration)
+		if err != nil {
+			return nil, err
+		}
+		leaderWorkerTemplate.WithLeaderTemplate(&podTemplateSpecApplyConfiguration)
 	}
-	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.WorkerTemplate)
+
+	// construct pod template spec configuration
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&service.Spec.WorkloadTemplate.WorkerTemplate)
+	if err != nil {
+		return nil, err
+	}
+	var podTemplateSpecApplyConfiguration coreapplyv1.PodTemplateSpecApplyConfiguration
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(obj, &podTemplateSpecApplyConfiguration)
+	if err != nil {
+		return nil, err
+	}
+	leaderWorkerTemplate.WithWorkerTemplate(&podTemplateSpecApplyConfiguration)
 
 	// The core logic to inject additional configurations.
 	injectModelProperties(leaderWorkerTemplate, models, service)
@@ -188,7 +212,7 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	spec.WithStartupPolicy(lws.LeaderReadyStartupPolicy)
 
 	workload.WithSpec(spec)
-	return workload
+	return workload, nil
 }
 
 func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
@@ -234,14 +258,14 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 	}
 }
 
-func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenModel, service *inferenceapi.Service) {
+func injectModelFlavor(template *coreapplyv1.PodTemplateSpecApplyConfiguration, model *coreapi.OpenModel, service *inferenceapi.Service) {
 	if model.Spec.InferenceConfig == nil || len(model.Spec.InferenceConfig.Flavors) == 0 {
 		return
 	}
 
-	container := &corev1.Container{}
+	container := &coreapplyv1.ContainerApplyConfiguration{}
 	for i, c := range template.Spec.Containers {
-		if c.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
+		if *c.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			container = &template.Spec.Containers[i]
 		}
 	}
@@ -256,17 +280,20 @@ func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenMode
 		if flavor.Name == flavorName {
 			limits := model.Spec.InferenceConfig.Flavors[i].Limits
 			for k, v := range limits {
+				if container.Resources == nil {
+					container.WithResources(coreapplyv1.ResourceRequirements())
+				}
 				if container.Resources.Requests == nil {
-					container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
+					container.Resources.WithRequests(corev1.ResourceList{})
 				}
 				// overwrite the requests and limits.
-				container.Resources.Requests[k] = v
+				(*container.Resources.Requests)[k] = v
 
 				if container.Resources.Limits == nil {
-					container.Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
+					container.Resources.WithLimits(corev1.ResourceList{})
 				}
 				// overwrite the requests and limits.
-				container.Resources.Limits[k] = v
+				(*container.Resources.Limits)[k] = v
 			}
 			break
 		}

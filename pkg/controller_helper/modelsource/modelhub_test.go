@@ -26,7 +26,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/ptr"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 
 	"github.com/inftyai/llmaz/pkg"
 )
@@ -75,18 +75,13 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			template := &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: MODEL_RUNNER_CONTAINER_NAME,
-							Env: []corev1.EnvVar{
-								{Name: "HTTP_PROXY", Value: "http://1.1.1.1"},
-							},
-						},
-					},
-				},
-			}
+			template := coreapplyv1.PodTemplateSpec().
+				WithSpec(coreapplyv1.PodSpec().
+					WithContainers(coreapplyv1.Container().
+						WithName(MODEL_RUNNER_CONTAINER_NAME).
+						WithEnv(coreapplyv1.EnvVar().WithName("HTTP_PROXY").WithValue("http://1.1.1.1")),
+					),
+				)
 
 			tt.provider.InjectModelLoader(template, tt.index)
 
@@ -97,8 +92,8 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 			if tt.index != 0 {
 				expectedName += "-" + strconv.Itoa(tt.index)
 			}
-			assert.Equal(t, expectedName, initContainer.Name)
-			assert.Equal(t, pkg.LOADER_IMAGE, initContainer.Image)
+			assert.Equal(t, expectedName, *initContainer.Name)
+			assert.Equal(t, pkg.LOADER_IMAGE, *initContainer.Image)
 
 			wantEnv := buildExpectedEnv(tt.provider)
 			if diff := cmp.Diff(wantEnv, initContainer.Env, envSortOpt); diff != "" {
@@ -108,47 +103,32 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 	}
 }
 
-func buildExpectedEnv(p *ModelHubProvider) []corev1.EnvVar {
-	envs := make([]corev1.EnvVar, 0, 10)
+func buildExpectedEnv(p *ModelHubProvider) []coreapplyv1.EnvVarApplyConfiguration {
+	envs := make([]coreapplyv1.EnvVarApplyConfiguration, 0, 10)
 
-	envs = append(envs, corev1.EnvVar{Name: "HTTP_PROXY", Value: "http://1.1.1.1"})
+	envs = append(envs, *coreapplyv1.EnvVar().WithName("HTTP_PROXY").WithValue("http://1.1.1.1"))
 
 	envs = append(envs,
-		corev1.EnvVar{Name: "MODEL_SOURCE_TYPE", Value: MODEL_SOURCE_MODELHUB},
-		corev1.EnvVar{Name: "MODEL_ID", Value: p.modelID},
-		corev1.EnvVar{Name: "MODEL_HUB_NAME", Value: p.modelHub},
+		*coreapplyv1.EnvVar().WithName("MODEL_SOURCE_TYPE").WithValue(MODEL_SOURCE_MODELHUB),
+		*coreapplyv1.EnvVar().WithName("MODEL_ID").WithValue(p.modelID),
+		*coreapplyv1.EnvVar().WithName("MODEL_HUB_NAME").WithValue(p.modelHub),
 	)
 
 	if p.fileName != nil {
-		envs = append(envs, corev1.EnvVar{Name: "MODEL_FILENAME", Value: *p.fileName})
+		envs = append(envs, *coreapplyv1.EnvVar().WithName("MODEL_FILENAME").WithValue(*p.fileName))
 	}
 	if p.modelRevision != nil {
-		envs = append(envs, corev1.EnvVar{Name: "REVISION", Value: *p.modelRevision})
+		envs = append(envs, *coreapplyv1.EnvVar().WithName("REVISION").WithValue(*p.modelRevision))
 	}
 	if p.modelAllowPatterns != nil {
-		envs = append(envs, corev1.EnvVar{
-			Name:  "MODEL_ALLOW_PATTERNS",
-			Value: strings.Join(p.modelAllowPatterns, ","),
-		})
+		envs = append(envs, *coreapplyv1.EnvVar().WithName("MODEL_ALLOW_PATTERNS").WithValue(strings.Join(p.modelAllowPatterns, ",")))
 	}
 	if p.modelIgnorePatterns != nil {
-		envs = append(envs, corev1.EnvVar{
-			Name:  "MODEL_IGNORE_PATTERNS",
-			Value: strings.Join(p.modelIgnorePatterns, ","),
-		})
+		envs = append(envs, *coreapplyv1.EnvVar().WithName("MODEL_IGNORE_PATTERNS").WithValue(strings.Join(p.modelIgnorePatterns, ",")))
 	}
 
 	for _, tokenName := range []string{"HUGGING_FACE_HUB_TOKEN", "HF_TOKEN"} {
-		envs = append(envs, corev1.EnvVar{
-			Name: tokenName,
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{Name: MODELHUB_SECRET_NAME},
-					Key:                  HUGGING_FACE_TOKEN_KEY,
-					Optional:             ptr.To(true),
-				},
-			},
-		})
+		envs = append(envs, *coreapplyv1.EnvVar().WithName(tokenName).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(MODELHUB_SECRET_NAME).WithKey(HUGGING_FACE_TOKEN_KEY).WithOptional(true))))
 	}
 
 	return envs

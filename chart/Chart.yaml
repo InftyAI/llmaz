@@ -22,7 +22,7 @@ appVersion: 0.1.4
 
 dependencies:
   - name: lws
-    version: 0.6.1
+    version: 0.6.2
     repository: "oci://registry.k8s.io/lws/charts"
     condition: leaderWorkerSet.enabled
   - name: kube-scheduler

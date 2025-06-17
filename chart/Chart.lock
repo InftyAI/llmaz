@@ -1,7 +1,7 @@
 dependencies:
 - name: lws
   repository: oci://registry.k8s.io/lws/charts
-  version: 0.6.1
+  version: 0.6.2
 - name: kube-scheduler
   repository: oci://registry-1.docker.io/inftyai
   version: 0.0.1
@@ -14,5 +14,5 @@ dependencies:
 - name: ai-gateway-helm
   repository: oci://registry-1.docker.io/envoyproxy
   version: v0.1.5
-digest: sha256:b2b856b107e9e03d175f381a93b83b001211df02f1c1ef1ee13b23147aed50e8
-generated: "2025-06-09T10:04:15.540138+08:00"
+digest: sha256:d4ca67d95b86b66af01991f1a2eab307db36ebd9a627f06581c0292e10cad259
+generated: "2025-06-17T11:08:57.411227+08:00"
