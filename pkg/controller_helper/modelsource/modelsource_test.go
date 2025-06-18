@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	corev1 "k8s.io/api/core/v1"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	"github.com/inftyai/llmaz/test/util"
@@ -96,47 +96,35 @@ func TestEnvInjectModelLoader(t *testing.T) {
 	tests := []struct {
 		name     string
 		provider ModelSourceProvider
-		template *corev1.PodTemplateSpec
+		template *coreapplyv1.PodTemplateSpecApplyConfiguration
 	}{
 		{
 			name: "Spread container env to initContiner using modelhub",
 			provider: &ModelHubProvider{
 				modelName: "test-model",
 			},
-			template: &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "model-runner",
-							Image: "vllm:test",
-							Env: []corev1.EnvVar{
-								{Name: "http_proxy", Value: "1.1.1.1:1234"},
-								{Name: "https_proxy", Value: "1.1.1.1:1234"},
-							},
-						},
-					},
-				},
-			},
+			template: coreapplyv1.PodTemplateSpec().WithSpec(
+				coreapplyv1.PodSpec().WithContainers(
+					coreapplyv1.Container().WithName(MODEL_RUNNER_CONTAINER_NAME).WithImage("vllm:test").WithEnv(
+						coreapplyv1.EnvVar().WithName("http_proxy").WithValue("1.1.1.1:1234"),
+						coreapplyv1.EnvVar().WithName("https_proxy").WithValue("1.1.1.1:1234"),
+					),
+				),
+			),
 		},
 		{
 			name: "Spread container env to initContiner using objstores",
 			provider: &URIProvider{
 				modelName: "test-model",
 			},
-			template: &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "model-runner",
-							Image: "vllm:test",
-							Env: []corev1.EnvVar{
-								{Name: "http_proxy", Value: "1.1.1.1:1234"},
-								{Name: "https_proxy", Value: "1.1.1.1:1234"},
-							},
-						},
-					},
-				},
-			},
+			template: coreapplyv1.PodTemplateSpec().WithSpec(
+				coreapplyv1.PodSpec().WithContainers(
+					coreapplyv1.Container().WithName(MODEL_RUNNER_CONTAINER_NAME).WithImage("vllm:test").WithEnv(
+						coreapplyv1.EnvVar().WithName("http_proxy").WithValue("1.1.1.1:1234"),
+						coreapplyv1.EnvVar().WithName("https_proxy").WithValue("1.1.1.1:1234"),
+					),
+				),
+			),
 		},
 	}
 
@@ -153,7 +141,7 @@ func TestInjectModelEnvVars(t *testing.T) {
 	tests := []struct {
 		name            string
 		provider        ModelSourceProvider
-		template        *corev1.PodTemplateSpec
+		template        *coreapplyv1.PodTemplateSpecApplyConfiguration
 		expectEnvVars   []string
 		expectSecretRef string
 	}{
@@ -163,15 +151,11 @@ func TestInjectModelEnvVars(t *testing.T) {
 				modelName: "test-model",
 				protocol:  S3,
 			},
-			template: &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: MODEL_RUNNER_CONTAINER_NAME,
-						},
-					},
-				},
-			},
+			template: coreapplyv1.PodTemplateSpec().WithSpec(
+				coreapplyv1.PodSpec().WithContainers(
+					coreapplyv1.Container().WithName(MODEL_RUNNER_CONTAINER_NAME),
+				),
+			),
 			expectEnvVars:   []string{AWS_ACCESS_KEY_ID, AWS_ACCESS_KEY_SECRET},
 			expectSecretRef: AWS_ACCESS_SECRET_NAME,
 		},
@@ -181,15 +165,11 @@ func TestInjectModelEnvVars(t *testing.T) {
 				modelName: "test-model",
 				protocol:  OSS,
 			},
-			template: &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: MODEL_RUNNER_CONTAINER_NAME,
-						},
-					},
-				},
-			},
+			template: coreapplyv1.PodTemplateSpec().WithSpec(
+				coreapplyv1.PodSpec().WithContainers(
+					coreapplyv1.Container().WithName(MODEL_RUNNER_CONTAINER_NAME),
+				),
+			),
 			expectEnvVars:   []string{OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET},
 			expectSecretRef: OSS_ACCESS_SECRET_NAME,
 		},
@@ -198,15 +178,11 @@ func TestInjectModelEnvVars(t *testing.T) {
 			provider: &ModelHubProvider{
 				modelName: "test-model",
 			},
-			template: &corev1.PodTemplateSpec{
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name: MODEL_RUNNER_CONTAINER_NAME,
-						},
-					},
-				},
-			},
+			template: coreapplyv1.PodTemplateSpec().WithSpec(
+				coreapplyv1.PodSpec().WithContainers(
+					coreapplyv1.Container().WithName(MODEL_RUNNER_CONTAINER_NAME),
+				),
+			),
 			expectEnvVars:   []string{"HUGGING_FACE_HUB_TOKEN", "HF_TOKEN"},
 			expectSecretRef: MODELHUB_SECRET_NAME,
 		},
@@ -218,9 +194,9 @@ func TestInjectModelEnvVars(t *testing.T) {
 			tt.provider.InjectModelEnvVars(tt.template)
 
 			// Find the model-runner container
-			var container *corev1.Container
+			var container *coreapplyv1.ContainerApplyConfiguration
 			for i, c := range tt.template.Spec.Containers {
-				if c.Name == MODEL_RUNNER_CONTAINER_NAME {
+				if *c.Name == MODEL_RUNNER_CONTAINER_NAME {
 					container = &tt.template.Spec.Containers[i]
 					break
 				}
@@ -232,9 +208,9 @@ func TestInjectModelEnvVars(t *testing.T) {
 			secretRefFound := false
 
 			for _, env := range container.Env {
-				envVarMap[env.Name] = true
+				envVarMap[*env.Name] = true
 				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
-					if env.ValueFrom.SecretKeyRef.LocalObjectReference.Name == tt.expectSecretRef {
+					if *env.ValueFrom.SecretKeyRef.LocalObjectReferenceApplyConfiguration.Name == tt.expectSecretRef {
 						secretRefFound = true
 					}
 				}
