@@ -18,8 +18,6 @@ package store
 
 import (
 	"context"
-	"fmt"
-	"sync"
 )
 
 type Store interface {
@@ -30,58 +28,4 @@ type Store interface {
 
 	// Should only used for testing.
 	Len() int32
-}
-
-type DataStore struct {
-	mu   sync.RWMutex
-	data map[string]Indicator // Key: name, Value: Indicator
-
-	// Keep track of the min/max values for each metric, 0-index is min and 1-index is max.
-	// They will be used in score plugins.
-	RunningQueueSize [2]float64
-	WaitingQueueSize [2]float64
-	KVCacheUsage     [2]float64
-}
-
-func (d *DataStore) Get(ctx context.Context, name string) (Indicator, error) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-
-	metrics, exists := d.data[name]
-	if !exists {
-		return Indicator{}, fmt.Errorf("metrics for datastore %s not found", name)
-	}
-	return metrics, nil
-}
-
-// TODO: we should not iterate all the dataStore which may lead to performance issue.
-func (d *DataStore) FilterIterate(ctx context.Context, fn func(context.Context, Indicator) bool) (names []string) {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-
-	for name, indicator := range d.data {
-		if fn(ctx, indicator) {
-			names = append(names, name)
-		}
-	}
-	return
-
-}
-
-func (d *DataStore) ScoreIterate(ctx context.Context, fn func(context.Context, Indicator) float32) string {
-	d.mu.RLock()
-	defer d.mu.RUnlock()
-
-	var highestScore float32
-	var candidate string
-
-	for name, indicator := range d.data {
-		score := fn(ctx, indicator)
-		// Iterate the d.data is already in random order, so we can just pick the first one with the highest score.
-		if score > highestScore {
-			highestScore = score
-			candidate = name
-		}
-	}
-	return candidate
 }
