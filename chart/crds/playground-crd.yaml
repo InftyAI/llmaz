@@ -15,7 +15,24 @@ spec:
     singular: playground
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Model used in the Playground
+      jsonPath: .spec.modelClaim.modelName
+      name: MODEL
+      type: string
+    - description: Current number of replicas
+      jsonPath: .status.replicas
+      name: REPLICAS
+      type: integer
+    - description: Current status (Available/Progressing)
+      jsonPath: .status.conditions[?(@.type=='Available')].reason
+      name: STATUS
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Playground is the Schema for the playgrounds API
@@ -1017,4 +1034,3 @@ spec:
         specReplicasPath: .spec.replicas
         statusReplicasPath: .status.replicas
       status: {}
-
