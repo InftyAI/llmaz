@@ -407,7 +407,10 @@ func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg 
 
 func CheckServiceAvaliable() error {
 	url := fmt.Sprintf("http://localhost:%d/completions", modelSource.DEFAULT_BACKEND_PORT)
-	reqBody := `{"prompt":"What is the capital city of China?","stream":false}`
+	reqBody := `{
+		"prompt": "<|im_start|>user\nWhat is the capital city of China?\n<|im_end|>\n<|im_start|>assistant\n",
+		"stream": false
+	  }`
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(reqBody))
 	if err != nil {

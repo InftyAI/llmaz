@@ -86,7 +86,7 @@ helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --vers
   --set controller.resources.limits.cpu=1 \
   --set controller.resources.limits.memory=1Gi \
   --wait \
-  --set controller.image.repository=inftyai/aws-karpenter \
+  --set controller.image.repository=inftyai/karpenter-provider-aws \
   --set "controller.image.tag=${KARPENTER_VERSION}" \
   --set controller.image.digest=""
 ```
