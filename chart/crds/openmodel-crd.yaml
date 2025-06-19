@@ -25,7 +25,28 @@ spec:
     singular: openmodel
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Owner of the model
+      jsonPath: .spec.ownedBy
+      name: OWNEDBY
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    - description: Model hub name
+      jsonPath: .spec.source.modelHub.name
+      name: MODELHUB
+      type: string
+    - description: Model ID on the model hub
+      jsonPath: .spec.source.modelHub.modelID
+      name: MODELID
+      type: string
+    - description: URI of the model when using a custom source (e.g., s3://, ollama://)
+      jsonPath: .spec.source.uri
+      name: URI
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: OpenModel is the Schema for the open models API
@@ -50,6 +71,13 @@ spec:
           spec:
             description: ModelSpec defines the desired state of Model
             properties:
+              createdAt:
+                description: |-
+                  CreatedAt represents the creation timestamp of the running models serving by the backends,
+                  which will be exported as the field of "Created" in openai-compatible API "/models".
+                  It follows the format of RFC 3339, for example "2024-05-21T10:00:00Z".
+                format: date-time
+                type: string
               familyName:
                 description: |-
                   FamilyName represents the model type, like llama2, which will be auto injected
@@ -115,6 +143,13 @@ spec:
                     maxItems: 8
                     type: array
                 type: object
+              ownedBy:
+                default: llmaz
+                description: |-
+                  OwnedBy represents the owner of the running models serving by the backends,
+                  which will be exported as the field of "OwnedBy" in openai-compatible API "/models".
+                  Default to "llmaz" if not set.
+                type: string
               source:
                 description: |-
                   Source represents the source of the model, there're several ways to load
@@ -240,4 +275,3 @@ spec:
     storage: true
     subresources:
       status: {}
-
