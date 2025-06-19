@@ -73,6 +73,10 @@ type ServiceStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName={isvc}
 //+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
+//+kubebuilder:printcolumn:name="NAME",type=string,JSONPath=`.metadata.name`,description="Name of the Inference Service"
+//+kubebuilder:printcolumn:name="REPLICAS",type=integer,JSONPath=`.status.replicas`,description="Current number of replicas"
+//+kubebuilder:printcolumn:name="STATUS",type=string,JSONPath=`.status.conditions[?(@.type=='Available')].reason`,description="Current status (Available/Progressing)"
+//+kubebuilder:printcolumn:name="AGE",type=date,JSONPath=`.metadata.creationTimestamp`,description="Time since creation"
 
 // Service is the Schema for the services API
 type Service struct {

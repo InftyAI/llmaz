@@ -228,6 +228,11 @@ type ModelStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=om,scope=Cluster
+//+kubebuilder:printcolumn:name="OWNEDBY",type=string,JSONPath=`.spec.ownedBy`,description="Owner of the model"
+//+kubebuilder:printcolumn:name="AGE",type=date,JSONPath=`.metadata.creationTimestamp`,description="Time since creation"
+//+kubebuilder:printcolumn:name="MODELHUB",type=string,JSONPath=`.spec.source.modelHub.name`,description="Model hub name"
+//+kubebuilder:printcolumn:name="MODELID",type=string,JSONPath=`.spec.source.modelHub.modelID`,description="Model ID on the model hub"
+//+kubebuilder:printcolumn:name="URI",type=string,JSONPath=`.spec.source.uri`,description="URI of the model when using a custom source (e.g., s3://, ollama://)"
 
 // OpenModel is the Schema for the open models API
 type OpenModel struct {

@@ -16,7 +16,28 @@ spec:
     singular: openmodel
   scope: Cluster
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Owner of the model
+      jsonPath: .spec.ownedBy
+      name: OWNEDBY
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    - description: Model hub name
+      jsonPath: .spec.source.modelHub.name
+      name: MODELHUB
+      type: string
+    - description: Model ID on the model hub
+      jsonPath: .spec.source.modelHub.modelID
+      name: MODELID
+      type: string
+    - description: URI of the model when using a custom source (e.g., s3://, ollama://)
+      jsonPath: .spec.source.uri
+      name: URI
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: OpenModel is the Schema for the open models API
