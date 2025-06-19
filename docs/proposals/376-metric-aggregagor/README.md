@@ -1,4 +1,4 @@
-# Proposal-376: Gateway Metric Aggregator
+# Proposal-376: Metric Aggregator
 
 <!--
 This is the title of your Proposal. Keep it short, simple, and descriptive. A good
@@ -85,9 +85,8 @@ List the specific goals of the Proposal. What is it trying to achieve? How will 
 know that this has succeeded?
 -->
 
-- A simple implementation with least-latency scheduling algorithm
-- Extensible with different consumers in the cluster, like the Lora autoscaler or the ai gateway
-- Metrics visualization support, like Grafana
+- A simple implementation with latency aware dispatching algorithm
+- Extensible with different consumers in the cluster, like the HPA autoscaler or the ai gateway
 
 ### Non-Goals
 
@@ -99,6 +98,7 @@ and make progress.
 - Different scheduling algorithm implementations in ai gateway, like prefix-cache aware
 - LoRA aware scheduling implementation, will be left to another KEP
 - Performance consideration in big clusters should be left to the Beta level
+- How HPA consumers the metrics should be left to another KEP.
 
 ## Proposal
 
@@ -175,41 +175,16 @@ The overall flow looks like:
 Let's break down the flow into several steps:
 
 - Step 1: we'll collect the metrics from the inference workloads in metrics aggregator.
-- Step 2: the aggregator will parse the metrics and store them in the redis, this is for HA consideration and cache sharing. Once the instance is down, we can still retrieve the metrics from redis. And if we have multiple instances, we can share the metrics with each other via redis. Considering Envoy AI gateway already uses Redis for limit rating, we'll reuse the Redis here.
-- Step 3 & 4: Traffic comes, the gateway plugin (we'll call it router later) will retrieve the metrics from Redis and make routing decisions based on different algorithms, like queue size aware scheduling.
+- Step 2: the aggregator will parse the metrics and store them in the disk memory. We'll use the disk memory at first for quick starting and fast access. We may upgrade the architecture in the future, see Drawbacks section for more details.
+- Step 3 & 4: Traffic comes, the gateway plugin (we'll call it router later) will retrieve the metrics from the storage and make routing decisions based on different algorithms, like latency aware scheduling.
 - Step 5: The router will send the request to the selected instance, and the instance will return the result to the router, return to the user finally.
 
 ### Additional components introduced:
 
-- Metrics Aggregator (MA): MA is working as the controller plane to sync the metrics, this is also one of the reason why we want to decouple it from the router, which working as a data plane. MA has several components:
-  - A Pod controller to manage the Pod lifecycle, for example, once a Pod is ready, it will add it to the internal store, and each Pod will fork a background goroutine to sync the metrics continuously, 50ms interval by default. Once the Pod is deleted, the goroutine will be stopped and removed from the store.
-  - A internal store to parse the metric results, and store it in the backend storage, like Redis.
-- Redis: a Redis instance is necessary for the metrics storage and sharing, we can use the existing Redis instance in the cluster, or deploy a new one if necessary. We should have storage interface to support different backends in the future.
-- Router: a new router or [DynamicLoadBalancingBackend](https://github.com/envoyproxy/ai-gateway/blob/be2b479b04bc7a219b0c8239143bfbabebdcd615/filterapi/filterconfig.go#L199-L208) specifically in Envoy AI gateway to pick the best-fit Pod endpoints. However, we may block by the upstream issue [here](https://github.com/envoyproxy/ai-gateway/issues/604), we'll work with the Envoy AI Gateway team to resolve it ASAP. Maybe the final design will impact our implementation a bit but not much I think.
-
-### Data Structure
-
-The data structure could be varied based on the metrics we want to collect, let's take the queue size as an example:
-
-Because redis is a kv store, we'll use the ZSET to store the results, `LeastLatency::ModelName` as the key, Pod name as the member and the (runningQueueSize * 0.3 + waitingQueueSize * 0.7) as the score, the factor of waitingQueueSize is higher because metric is a delayed indicator. RunningQueueSize and WaitingQueueSize are two metrics most of the inference engines support.
-
-We'll also have another key to record the update timestamp. For example, a Pod named "default/fake-pod" with the score = 0.5, the set commands look like:
-
-```bash
-# set the update timestamp
-SET default/fake-pod "2025-05-12T06:16:27Z"
-
-# set the score
-ZADD LeastLatency::ModelName 0.5 default/fake-pod
-```
-
-When collecting, we'll update the timestamp and score together. Setting the top 5 is enough for us to help reduce the storage pressure since it's a memory-based database. We don't use the expiration key here is just because most of the time, the metrics should be updated at a regular interval.
-
-When retrieving, we'll first query the ZSET to get the top 5 records, and iterate them one by one to verify that `currentTimestamp - recordTimestamp < 5s`, if not, skipping to the next one. This is to avoid outdated metrics. Once picked the exact endpoint, we'll reset the score with waitingQueueSize + 1 to avoid hotspot issues, especially when metrics update is blocked by some reasons.
-
-If all metrics are outdated, we'll fallback to the default service.
-
-Note: the algorithm is not the final one, we'll have more discussions with the community to find the best one.
+- Metrics Aggregator (MA): MA is working as the controller plane to sync the metrics, however, it works as a data plane as well at this moment, we will revisit this once we graduate to Beta/GA. MA has several components:
+  - A Pod controller to manage the Pod lifecycle, for example, once a Pod is ready, it will add it to the internal store, and each Pod will fork a background goroutine to sync the metrics continuously, 100ms interval by default. Once the Pod is deleted, the goroutine will be stopped and removed from the store.
+  - A internal store to parse the metric results, and store it in the backend storage, right now we only support disk memory, but the interface is defined and we can extend it later.
+- Router: A LLM request dispatcher to route the requests to specific Pods based on the metrics reading from the MA. However, we may block by the upstream issue [here](https://github.com/envoyproxy/ai-gateway/issues/604), we'll work with the Envoy AI Gateway team to resolve it ASAP. Maybe the final design will impact our implementation a bit but not much I think.
 
 ### Test Plan
 
@@ -308,10 +283,8 @@ milestones with these graduation criteria:
 
 Beta:
 
-- Other storages rather than KV store who supports only key-value pairs which might be not enough for more complex scenarios, like the prefix-cache aware scenario.
-- HA support, once the metrics aggregator is down, the system should still work.
-- No performance issues in big clusters, we may use daemonsets to report metrics.
-- Once the picked Pod is down after the routing decision, router will fallback to the default service. Fallback mode is already supported in Envoy AI gateway.
+- No performance issues in big clusters, especially we have multiple router instances there.
+- The data plane and the control plane should be decoupled.
 
 ## Implementation History
 
@@ -327,12 +300,11 @@ Major milestones might include:
 -->
 
 - 2025-05-08: Proposal initialized and submitted for review
+- 2025-05-19: Proposal polished with the new architecture design and flow diagram.
 
 ## Drawbacks
 
-<!--
-Why should this Proposal _not_ be implemented?
--->
+The biggest drawback of this proposal is that the router is now coupled with the metrics aggregator because of the shared memory store. In the future, we should optimize this either by using a database or hammer the metric report logics to the inference engines directly, which works as a event driven architecture, then the router instances will watch the events to build a local memory, together with the metrics aggregator.
 
 ## Alternatives
 
