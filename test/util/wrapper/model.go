@@ -112,6 +112,11 @@ func (w *ModelWrapper) OwnedBy(ownedBy string) *ModelWrapper {
 	return w
 }
 
+func (w *ModelWrapper) CreatedAt(createdAt metav1.Time) *ModelWrapper {
+	w.Spec.CreatedAt = &createdAt
+	return w
+}
+
 func MakeFlavor(name string) *FlavorWrapper {
 	return &FlavorWrapper{
 		coreapi.Flavor{
