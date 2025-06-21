@@ -17,6 +17,8 @@ limitations under the License.
 package webhook
 
 import (
+	"time"
+
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/onsi/gomega"
@@ -24,6 +26,10 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	"github.com/inftyai/llmaz/test/util/wrapper"
+)
+
+var (
+	testTime = metav1.Date(2025, 6, 20, 10, 0, 0, 0, time.UTC)
 )
 
 var _ = ginkgo.Describe("model default and validation", func() {
@@ -73,6 +79,14 @@ var _ = ginkgo.Describe("model default and validation", func() {
 			},
 			wantModel: func() *coreapi.OpenModel {
 				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy("custom-owner").Obj()
+			},
+		}),
+		ginkgo.Entry("set custom createdAt", &testDefaultingCase{
+			model: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").FamilyName("llama3").ModelSourceWithModelHub("ModelScope").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "", nil, nil).CreatedAt(testTime).Obj()
+			},
+			wantModel: func() *coreapi.OpenModel {
+				return wrapper.MakeModel("llama3-8b").ModelSourceWithModelID("LLM-Research/Meta-Llama-3-8B", "", "main", nil, nil).ModelSourceWithModelHub("ModelScope").FamilyName("llama3").Label(coreapi.ModelFamilyNameLabelKey, "llama3").OwnedBy(coreapi.DefaultOwnedBy).CreatedAt(testTime).Obj()
 			},
 		}),
 	)
