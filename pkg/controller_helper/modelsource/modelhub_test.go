@@ -38,10 +38,11 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 	ignorePatterns := []string{"*.tmp"}
 
 	tests := []struct {
-		name            string
-		provider        *ModelHubProvider
-		index           int
-		expectMainModel bool
+		name               string
+		provider           *ModelHubProvider
+		index              int
+		expectMainModel    bool
+		initContainerImage string
 	}{
 		{
 			name: "inject full modelhub with fileName, revision, allow/ignore",
@@ -67,6 +68,17 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 			index:           1,
 			expectMainModel: false,
 		},
+		{
+			name: "inject with custom initContainerImage",
+			provider: &ModelHubProvider{
+				modelName: "llama3",
+				modelID:   "meta/llama-3",
+				modelHub:  "Huggingface",
+			},
+			index:              0,
+			expectMainModel:    true,
+			initContainerImage: "custom-loader-image:latest",
+		},
 	}
 
 	envSortOpt := cmpopts.SortSlices(func(a, b corev1.EnvVar) bool {
@@ -83,7 +95,7 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 					),
 				)
 
-			tt.provider.InjectModelLoader(template, tt.index)
+			tt.provider.InjectModelLoader(template, tt.index, tt.initContainerImage)
 
 			assert.Len(t, template.Spec.InitContainers, 1)
 			initContainer := template.Spec.InitContainers[0]
@@ -92,8 +104,12 @@ func Test_ModelHubProvider_InjectModelLoader(t *testing.T) {
 			if tt.index != 0 {
 				expectedName += "-" + strconv.Itoa(tt.index)
 			}
+			expectedImage := tt.initContainerImage
+			if expectedImage == "" {
+				expectedImage = pkg.LOADER_IMAGE
+			}
 			assert.Equal(t, expectedName, *initContainer.Name)
-			assert.Equal(t, pkg.LOADER_IMAGE, *initContainer.Image)
+			assert.Equal(t, expectedImage, *initContainer.Image)
 
 			wantEnv := buildExpectedEnv(tt.provider)
 			if diff := cmp.Diff(wantEnv, initContainer.Env, envSortOpt); diff != "" {

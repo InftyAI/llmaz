@@ -62,16 +62,20 @@ func (p *ModelHubProvider) ModelPath(skipModelLoader bool) string {
 	return CONTAINER_MODEL_PATH + "models--" + strings.ReplaceAll(p.modelID, "/", "--")
 }
 
-func (p *ModelHubProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApplyConfiguration, index int) {
+func (p *ModelHubProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApplyConfiguration, index int, initContainerImage string) {
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
 	}
 
+	if initContainerImage == "" {
+		initContainerImage = pkg.LOADER_IMAGE
+	}
+
 	// Handle initContainer.
 	initContainer := coreapplyv1.Container().
 		WithName(initContainerName).
-		WithImage(pkg.LOADER_IMAGE).
+		WithImage(initContainerImage).
 		WithVolumeMounts(coreapplyv1.VolumeMount().WithName(MODEL_VOLUME_NAME).WithMountPath(CONTAINER_MODEL_PATH))
 
 	// We have exactly one container in the template.Spec.Containers.

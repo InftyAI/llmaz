@@ -80,7 +80,7 @@ func (p *URIProvider) ModelPath(skipModelLoader bool) string {
 	return CONTAINER_MODEL_PATH + "models--" + splits[len(splits)-1]
 }
 
-func (p *URIProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApplyConfiguration, index int) {
+func (p *URIProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApplyConfiguration, index int, initContainerImage string) {
 	// We don't have additional operations for Ollama, just load in runtime.
 	if p.protocol == Ollama {
 		return
@@ -112,10 +112,16 @@ func (p *URIProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApp
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
 	}
+
+	// Handle the image of initContainer.
+	if initContainerImage == "" {
+		initContainerImage = pkg.LOADER_IMAGE
+	}
+
 	// Handle initContainer.
 	initContainer := coreapplyv1.Container().
 		WithName(initContainerName).
-		WithImage(pkg.LOADER_IMAGE).
+		WithImage(initContainerImage).
 		WithVolumeMounts(
 			coreapplyv1.VolumeMount().
 				WithName(MODEL_VOLUME_NAME).

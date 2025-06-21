@@ -23,6 +23,7 @@ import (
 	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
+	"github.com/inftyai/llmaz/pkg"
 	"github.com/inftyai/llmaz/test/util"
 	"github.com/inftyai/llmaz/test/util/wrapper"
 )
@@ -130,7 +131,7 @@ func TestEnvInjectModelLoader(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.provider.InjectModelLoader(tt.template, 0)
+			tt.provider.InjectModelLoader(tt.template, 0, pkg.LOADER_IMAGE)
 			initContainer := tt.template.Spec.InitContainers[0]
 			assert.Subset(t, initContainer.Env, tt.template.Spec.Containers[0].Env)
 		})
