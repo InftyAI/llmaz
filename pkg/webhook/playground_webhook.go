@@ -103,6 +103,9 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 	if playground.Spec.ModelClaim == nil && playground.Spec.ModelClaims == nil {
 		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and modelClaims couldn't be both nil"))
 	}
+	if playground.Spec.ModelClaim != nil && playground.Spec.ModelClaims != nil {
+		allErrs = append(allErrs, field.Forbidden(specPath, "modelClaim and modelClaims couldn't be both not nil"))
+	}
 	if playground.Spec.ModelClaims != nil {
 		mainModelCount := 0
 
