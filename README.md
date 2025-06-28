@@ -138,7 +138,7 @@ Please refer to [examples](./docs/examples/README.md) for more tutorials or read
 
 Join us for more discussions:
 
-- **Discord**(recommended): [#llmaz](https://discord.gg/UWnjUG6X8j)
+- **Discord**: [#llmaz](https://discord.gg/UWnjUG6X8j)
 - **Slack**: [#llmaz](https://join.slack.com/t/inftyai/shared_invite/zt-3700res2c-_AuBGD3kixDJhzycFE6L5A)
 
 ## Contributions
