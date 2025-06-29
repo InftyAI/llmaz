@@ -26,6 +26,11 @@ backendRuntime:
     image:
       repository: vllm/vllm-openai
       tag: v0.7.3
+  vllmcpu:
+    image:
+      # more image detail: https://gallery.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
+      repository: public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
+      tag: v0.8.5
 
 leaderWorkerSet:
   enabled: true
