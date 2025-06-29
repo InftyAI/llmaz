@@ -130,7 +130,7 @@ func TestEnvInjectModelLoader(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.provider.InjectModelLoader(tt.template, 0)
+			tt.provider.InjectModelLoader(tt.template, 0, "model-loader:latest")
 			initContainer := tt.template.Spec.InitContainers[0]
 			assert.Subset(t, initContainer.Env, tt.template.Spec.Containers[0].Env)
 		})

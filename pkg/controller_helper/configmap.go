@@ -40,5 +40,16 @@ func ParseGlobalConfigmap(cm *corev1.ConfigMap) (*GlobalConfigs, error) {
 		return nil, fmt.Errorf("failed to unmarshal config.data: %v", err)
 	}
 
+	if err := configs.validate(); err != nil {
+		return nil, fmt.Errorf("invalid global config: %v", err)
+	}
+
 	return &configs, nil
+}
+
+func (c *GlobalConfigs) validate() error {
+	if c.InitContainerImage == "" {
+		return fmt.Errorf("init-container-image is required")
+	}
+	return nil
 }

@@ -59,7 +59,7 @@ type ModelSourceProvider interface {
 	ModelPath(skipModelLoader bool) string
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
-	InjectModelLoader(spec *coreapplyv1.PodTemplateSpecApplyConfiguration, index int)
+	InjectModelLoader(spec *coreapplyv1.PodTemplateSpecApplyConfiguration, index int, initContainerImage string)
 	// InjectModelEnvVars will inject the model credentials env to the model-runner container.
 	// This is used when the model-loader initContainer is not injected, and the model loading is handled by the model-runner container.
 	InjectModelEnvVars(spec *coreapplyv1.PodTemplateSpecApplyConfiguration)
