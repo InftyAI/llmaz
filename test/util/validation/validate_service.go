@@ -292,9 +292,10 @@ func ValidateSkipModelLoader(model *coreapi.OpenModel, index int, template corev
 					envStrings = append(envStrings, modelSource.HUGGING_FACE_TOKEN_KEY, modelSource.HUGGING_FACE_HUB_TOKEN)
 				} else if model.Spec.Source.URI != nil {
 					protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
-					if protocol == modelSource.S3 || protocol == modelSource.GCS {
+					switch protocol {
+					case modelSource.S3, modelSource.GCS:
 						envStrings = append(envStrings, modelSource.AWS_ACCESS_KEY_ID, modelSource.AWS_ACCESS_KEY_SECRET)
-					} else if protocol == modelSource.OSS {
+					case modelSource.OSS:
 						envStrings = append(envStrings, modelSource.OSS_ACCESS_KEY_ID, modelSource.OSS_ACCESS_KEY_SECRET)
 					}
 				}

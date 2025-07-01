@@ -130,7 +130,7 @@ func renderFlags(flags []string, modelInfo map[string]string) ([]string, error) 
 			if !exists || replacement == "" {
 				return nil, fmt.Errorf("missing flag or the flag has format error: %s", flag)
 			}
-			value = strings.Replace(value, match[0], replacement, -1)
+			value = strings.ReplaceAll(value, match[0], replacement)
 		}
 
 		res = append(res, value)
