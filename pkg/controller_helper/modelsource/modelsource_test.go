@@ -210,7 +210,7 @@ func TestInjectModelEnvVars(t *testing.T) {
 			for _, env := range container.Env {
 				envVarMap[*env.Name] = true
 				if env.ValueFrom != nil && env.ValueFrom.SecretKeyRef != nil {
-					if *env.ValueFrom.SecretKeyRef.LocalObjectReferenceApplyConfiguration.Name == tt.expectSecretRef {
+					if *env.ValueFrom.SecretKeyRef.Name == tt.expectSecretRef {
 						secretRefFound = true
 					}
 				}

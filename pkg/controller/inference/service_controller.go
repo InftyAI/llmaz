@@ -106,7 +106,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 			service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName = configs.SchedulerName
 		}
 
-		if err := r.Client.Update(ctx, service); err != nil {
+		if err := r.Update(ctx, service); err != nil {
 			return ctrl.Result{}, fmt.Errorf("failed to update service: %w", err)
 		}
 	}
