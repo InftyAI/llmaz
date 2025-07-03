@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -39,6 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 	applyconfigurationv1 "sigs.k8s.io/lws/client-go/applyconfiguration/leaderworkerset/v1"
 
@@ -52,8 +54,10 @@ import (
 // ServiceReconciler reconciles a Service object
 type ServiceReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Record record.EventRecorder
+	Scheme             *runtime.Scheme
+	Record             record.EventRecorder
+	GlobalConfigsMutex sync.RWMutex
+	GlobalConfigs      *helper.GlobalConfigs
 }
 
 func NewServiceReconciler(client client.Client, scheme *runtime.Scheme, record record.EventRecorder) *ServiceReconciler {
@@ -86,15 +90,12 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	logger.V(10).Info("reconcile Service", "Service", klog.KObj(service))
 
-	cm := &corev1.ConfigMap{}
-	if err := r.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, cm); err != nil {
-		if client.IgnoreNotFound(err) != nil {
-			return ctrl.Result{}, fmt.Errorf("failed to get llmaz-global-config configmap: %w", err)
-		}
-	}
-	configs, err := helper.ParseGlobalConfigmap(cm)
-	if err != nil {
-		return ctrl.Result{}, fmt.Errorf("failed to parse global configurations: %w", err)
+	r.GlobalConfigsMutex.RLock()
+	configs := r.GlobalConfigs
+	r.GlobalConfigsMutex.RUnlock()
+
+	if configs == nil {
+		return ctrl.Result{}, fmt.Errorf("globel configs not init")
 	}
 
 	// Set the global configurations to the service.
@@ -160,7 +161,37 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					return !reflect.DeepEqual(oldBar.Status, newBar.Status)
 				},
 			})).
+		Watches(&corev1.ConfigMap{}, handler.EnqueueRequestsFromMapFunc(r.updateGlobalConfig),
+			builder.WithPredicates(predicate.Funcs{
+				UpdateFunc: func(e event.UpdateEvent) bool {
+					cm := e.ObjectOld.(*corev1.ConfigMap)
+					return cm.Name == helper.GlobalConfigMapName && cm.Namespace == helper.GlobalConfigMapNamespace
+				},
+				CreateFunc: func(e event.CreateEvent) bool {
+					cm := e.Object.(*corev1.ConfigMap)
+					return cm.Name == helper.GlobalConfigMapName && cm.Namespace == helper.GlobalConfigMapNamespace
+				},
+			})).
 		Complete(r)
+}
+
+func (r *ServiceReconciler) updateGlobalConfig(ctx context.Context, obj client.Object) []reconcile.Request {
+	logger := log.FromContext(ctx)
+	cm, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		return nil
+	}
+
+	newConfig, err := helper.ParseGlobalConfigmap(cm)
+	if err != nil {
+		logger.Error(err, "failed to parse global config")
+		return nil
+	}
+	r.GlobalConfigsMutex.Lock()
+	defer r.GlobalConfigsMutex.Unlock()
+	r.GlobalConfigs = newConfig
+	logger.Info("global config updated", "config", newConfig)
+	return nil
 }
 
 func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel, configs *helper.GlobalConfigs) (*applyconfigurationv1.LeaderWorkerSetApplyConfiguration, error) {
