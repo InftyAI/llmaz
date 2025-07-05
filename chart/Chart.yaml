@@ -38,6 +38,10 @@ dependencies:
     repository: "oci://registry-1.docker.io/envoyproxy"
     condition: envoy-gateway.enabled
   - name: ai-gateway-helm
-    version: v0.1.5
+    version: v0.2.1
+    repository: "oci://registry-1.docker.io/envoyproxy"
+    condition: envoy-ai-gateway.enabled
+  - name: ai-gateway-crds-helm
+    version: v0.2.1
     repository: "oci://registry-1.docker.io/envoyproxy"
     condition: envoy-ai-gateway.enabled
