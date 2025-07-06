@@ -85,6 +85,9 @@ spec:
               value: qwen2-0--5b
       backendRefs:
         - name: qwen2-0--5b
+      modelsOwnedBy: "llmaz"
+      timeouts:
+        request: 3m
     - matches:
         - headers:
             - type: Exact
@@ -92,31 +95,52 @@ spec:
               value: qwen2--5-coder
       backendRefs:
         - name: qwen2--5-coder
+      modelsOwnedBy: "llmaz"
+      timeouts:
+        request: 3m
 ---
 apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIServiceBackend
 metadata:
   name: qwen2-0--5b
 spec:
-  timeouts:
-    request: 3m
   schema:
     name: OpenAI
   backendRef:
-    name: qwen2-0--5b-lb
-    kind: Service
-    port: 8080
+    name: qwen2-0--5b
+    kind: Backend
+    group: gateway.envoyproxy.io
 ---
 apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIServiceBackend
 metadata:
   name: qwen2--5-coder
 spec:
-  timeouts:
-    request: 3m
   schema:
     name: OpenAI
   backendRef:
-    name: qwen2--5-coder-lb
-    kind: Service
-    port: 8080
+    name: qwen2--5-coder
+    kind: Backend
+    group: gateway.envoyproxy.io
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen2-0--5b
+  namespace: default
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen2-0--5b-lb.default.svc.cluster.local
+        port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen2--5-coder
+  namespace: default
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen2--5-coder-lb.default.svc.cluster.local
+        port: 8080
