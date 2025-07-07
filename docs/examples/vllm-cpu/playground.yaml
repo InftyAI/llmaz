@@ -1,0 +1,20 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen3-0--6b
+spec:
+  familyName: qwen3
+  source:
+    modelHub:
+      modelID: Qwen/Qwen3-0.6B
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen3-0--6b
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen3-0--6b
+  backendRuntimeConfig:
+    backendName: vllmcpu
