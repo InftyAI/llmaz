@@ -35,6 +35,11 @@ const (
 	// Once either of them qualified, we'll expose this as a field in Model.
 	ModelPreheatAnnoKey = "llmaz.io/model-preheat"
 
+	// ModelActivatorAnnotationKey is used to indicate whether the model is activated by the activator.
+	ModelActivatorAnnoKey = "activator.llmaz.io/playground"
+	// CachedModelActivatorAnnotationKey is used to cache the activator info of the model.
+	CachedModelActivatorAnnoKey = "cached.activator.llmaz.io"
+
 	HUGGING_FACE = "Huggingface"
 	MODEL_SCOPE  = "ModelScope"
 

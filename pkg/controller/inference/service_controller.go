@@ -357,6 +357,12 @@ func modelAnnotations(service *inferenceapi.Service) map[string]string {
 	return nil
 }
 
+func activatorAnnotations(model *coreapi.OpenModel) map[string]string {
+	return map[string]string{
+		coreapi.ModelActivatorAnnoKey: model.Name,
+	}
+}
+
 func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWorkerSet) {
 	defer func() {
 		if service.Status.Selector != workload.Status.HPAPodSelector {
@@ -419,7 +425,7 @@ func setControllerReferenceForWorkload(owner metav1.Object, lws *applyconfigurat
 	return nil
 }
 
-func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service) error {
+func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service, model []*coreapi.OpenModel) error {
 	log := ctrl.LoggerFrom(ctx)
 	// The load balancing service name.
 	svcName := service.Name + "-lb"
@@ -433,6 +439,8 @@ func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Sche
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      svcName,
 				Namespace: service.Namespace,
+				// For activator service, we can ignore it if serverless config is not enabled.
+				Annotations: activatorAnnotations(model[0]),
 			},
 			Spec: corev1.ServiceSpec{
 				Ports: []corev1.ServicePort{
