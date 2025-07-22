@@ -14,10 +14,11 @@ spec:
     modelHub:
       # name: Huggingface
       modelID: "facebook/opt-125m"
-  inferenceFlavors:
-  - name: a100
-    requests:
-      nvidia.com/gpu: 1
+  inferenceConfig:
+    flavors:
+    - name: a100
+      limits:
+        nvidia.com/gpu: 1
     # nodeSelector:
     #   cloud-provider.com/accelerator: nvidia-a100
     # params:
