@@ -131,7 +131,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Create a service for the leader pods of the lws for loadbalancing.
-	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service); err != nil {
+	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service, models); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -419,7 +419,7 @@ func setControllerReferenceForWorkload(owner metav1.Object, lws *applyconfigurat
 	return nil
 }
 
-func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service) error {
+func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service, model []*coreapi.OpenModel) error {
 	log := ctrl.LoggerFrom(ctx)
 	// The load balancing service name.
 	svcName := service.Name + "-lb"
@@ -433,6 +433,7 @@ func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Sche
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      svcName,
 				Namespace: service.Namespace,
+				Labels:      modelLabels(model[0]),
 			},
 			Spec: corev1.ServiceSpec{
 				Ports: []corev1.ServicePort{
