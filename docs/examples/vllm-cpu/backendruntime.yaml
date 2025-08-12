@@ -1,0 +1,74 @@
+apiVersion: inference.llmaz.io/v1alpha1
+kind: BackendRuntime
+metadata:
+  labels:
+    app.kubernetes.io/name: backendruntime
+    app.kubernetes.io/part-of: llmaz
+    app.kubernetes.io/created-by: llmaz
+  name: vllmcpu
+spec:
+  # more image detail: https://gallery.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
+  image: public.ecr.aws/q9t5s3a7/vllm-cpu-release-repo
+  version: v0.8.5
+  envs:
+    - name: VLLM_CPU_KVCACHE_SPACE
+      value: "8"
+  lifecycle:
+    preStop:
+      exec:
+        command:
+          - /bin/sh
+          - -c
+          - |
+            while true; do
+              RUNNING=$(curl -s http://localhost:8000/metrics | grep 'vllm:num_requests_running' | grep -v '#' | awk '{print $2}')
+              WAITING=$(curl -s http://localhost:8000/metrics | grep 'vllm:num_requests_waiting' | grep -v '#' | awk '{print $2}')
+              if [ "$RUNNING" = "0.0" ] && [ "$WAITING" = "0.0" ]; then
+                echo "Terminating: No active or waiting requests, safe to terminate" >> /proc/1/fd/1
+                exit 0
+              else
+                echo "Terminating: Running: $RUNNING, Waiting: $WAITING" >> /proc/1/fd/1
+                sleep 5
+              fi
+            done
+  # Do not edit the preset argument name unless you know what you're doing.
+  # Free to add more arguments with your requirements.
+  recommendedConfigs:
+    - name: default
+      args:
+        - --model
+        - "{{`{{ .ModelPath }}`}}"
+        - --served-model-name
+        - "{{`{{ .ModelName }}`}}"
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "8080"
+      sharedMemorySize: 2Gi
+      resources:
+        requests:
+          cpu: 10
+          memory: 32Gi
+        limits:
+          cpu: 10
+          memory: 32Gi
+  startupProbe:
+    periodSeconds: 10
+    failureThreshold: 30
+    httpGet:
+      path: /health
+      port: 8080
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 8080
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 8080
