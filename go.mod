@@ -9,7 +9,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.38.0
 	github.com/open-policy-agent/cert-controller v0.12.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.32.7
 	k8s.io/apiextensions-apiserver v0.32.7
