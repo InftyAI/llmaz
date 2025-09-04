@@ -128,7 +128,7 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 
 	if model.Spec.Source.ModelHub != nil {
 		if model.Spec.Source.ModelHub.Filename != nil && model.Spec.Source.ModelHub.Name != nil && *model.Spec.Source.ModelHub.Name == coreapi.MODEL_SCOPE {
-			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modeHub is Huggingface"))
+			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modelHub is Huggingface"))
 		}
 	}
 
