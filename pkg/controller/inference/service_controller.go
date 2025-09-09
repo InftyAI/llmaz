@@ -439,7 +439,7 @@ func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Sche
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      svcName,
 				Namespace: service.Namespace,
-				Labels:      modelLabels(model[0]),
+				Labels:    modelLabels(model[0]),
 				// For activator service, we can ignore it if serverless config is not enabled.
 				Annotations: activatorAnnotations(model[0]),
 			},
