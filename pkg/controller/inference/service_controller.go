@@ -433,7 +433,7 @@ func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Sche
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      svcName,
 				Namespace: service.Namespace,
-				Labels:      modelLabels(model[0]),
+				Labels:    modelLabels(model[0]),
 			},
 			Spec: corev1.ServiceSpec{
 				Ports: []corev1.ServicePort{
