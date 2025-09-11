@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/dynamic"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -179,7 +180,6 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}, enableServerle
 		setupLog.Error(err, "unable to create controller", "controller", "BackendRuntime")
 		os.Exit(1)
 	}
-
 
 	if enableServerless {
 		dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
