@@ -42,7 +42,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	llmazcoreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	llmazcorev1alpha1 "github.com/inftyai/llmaz/api/core/v1alpha1"
 )
 
@@ -93,6 +92,7 @@ func (r *ActivatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{}, err
 	}
 
+	// nolint:staticcheck
 	ep := &corev1.Endpoints{}
 	if err := r.Get(ctx, req.NamespacedName, ep); err != nil {
 		if errors.IsNotFound(err) {
@@ -113,8 +113,7 @@ func (r *ActivatorReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	if len(ep.Subsets) == 0 {
 		// If the endpoints are empty, inject the activator IP
 		return ctrl.Result{}, r.injectEndpoint(ctx, ep, svc, ports)
-	} else if ep.Subsets[0].Addresses != nil &&
-		len(ep.Subsets[0].Addresses) > 0 &&
+	} else if len(ep.Subsets[0].Addresses) > 0 &&
 		ep.Subsets[0].Addresses[0].IP != r.ip {
 		// If the endpoints are not empty and not the activator IP, forward the traffic
 		return ctrl.Result{}, r.forwardEndpoint(ctx, ep, ports)
@@ -127,7 +126,7 @@ func (r *ActivatorReconciler) needInject(svc *corev1.Service) ([]corev1.ServiceP
 	if svc == nil || svc.Annotations == nil {
 		return nil, false
 	}
-	if _, ok := svc.Annotations[llmazcoreapi.ModelActivatorAnnoKey]; !ok {
+	if _, ok := svc.Annotations[llmazcorev1alpha1.ModelActivatorAnnoKey]; !ok {
 		return nil, false
 	}
 	if len(svc.Spec.Ports) == 0 || svc.Spec.Type != corev1.ServiceTypeClusterIP {
@@ -148,7 +147,7 @@ func (r *ActivatorReconciler) needInject(svc *corev1.Service) ([]corev1.ServiceP
 }
 
 func (r *ActivatorReconciler) restoreSelectorIfNeeded(ctx context.Context, svc *corev1.Service) error {
-	selectorStr := svc.Annotations[llmazcoreapi.CachedModelActivatorAnnoKey]
+	selectorStr := svc.Annotations[llmazcorev1alpha1.CachedModelActivatorAnnoKey]
 	if selectorStr == "" {
 		return nil
 	}
@@ -160,7 +159,7 @@ func (r *ActivatorReconciler) restoreSelectorIfNeeded(ctx context.Context, svc *
 	}
 
 	updatedSvc := svc.DeepCopy()
-	delete(updatedSvc.Annotations, llmazcoreapi.CachedModelActivatorAnnoKey)
+	delete(updatedSvc.Annotations, llmazcorev1alpha1.CachedModelActivatorAnnoKey)
 	updatedSvc.Spec.Selector = sel
 
 	if err := r.Update(ctx, updatedSvc); err != nil {
@@ -172,7 +171,9 @@ func (r *ActivatorReconciler) restoreSelectorIfNeeded(ctx context.Context, svc *
 	return nil
 }
 
+// nolint:staticcheck
 func (r *ActivatorReconciler) injectEndpoint(ctx context.Context, ep *corev1.Endpoints, svc *corev1.Service, ports []corev1.ServicePort) error {
+	// nolint:staticcheck
 	subsets := make([]corev1.EndpointSubset, 0, len(ports))
 	for _, port := range ports {
 		ds, err := r.portManager.AddTarget(ep.Name, ep.Namespace, int(port.Port))
@@ -185,6 +186,7 @@ func (r *ActivatorReconciler) injectEndpoint(ctx context.Context, ep *corev1.End
 			"listenerPort", ds.Listener.Port(),
 		)
 
+		// nolint:staticcheck
 		subsets = append(subsets, corev1.EndpointSubset{
 			Addresses: []corev1.EndpointAddress{{IP: r.ip}},
 			Ports: []corev1.EndpointPort{{
@@ -207,7 +209,7 @@ func (r *ActivatorReconciler) injectEndpoint(ctx context.Context, ep *corev1.End
 	if updatedSvc.Annotations == nil {
 		updatedSvc.Annotations = make(map[string]string)
 	}
-	updatedSvc.Annotations[llmazcoreapi.CachedModelActivatorAnnoKey] = string(selectorBytes)
+	updatedSvc.Annotations[llmazcorev1alpha1.CachedModelActivatorAnnoKey] = string(selectorBytes)
 	updatedSvc.Spec.Selector = nil
 	return r.Update(ctx, updatedSvc)
 }
@@ -226,7 +228,8 @@ func (r *ActivatorReconciler) handleServiceDeletion(namespace, name string) {
 	}
 }
 
-func (r *ActivatorReconciler) forwardEndpoint(ctx context.Context, ep *corev1.Endpoints, ports []corev1.ServicePort) error {
+// nolint:staticcheck
+func (r *ActivatorReconciler) forwardEndpoint(_ context.Context, ep *corev1.Endpoints, ports []corev1.ServicePort) error {
 	for _, port := range ports {
 		ds := r.portManager.RemoveTarget(ep.Name, ep.Namespace, int(port.Port))
 		if ds == nil {
@@ -256,12 +259,13 @@ func (r *ActivatorReconciler) forwardEndpoint(ctx context.Context, ep *corev1.En
 		err = ds.Listener.Close()
 		if err != nil {
 			activatorControllerLog.Error(err, "Failed to close listener")
-			continue
+			return err
 		}
 	}
 	return nil
 }
 
+// nolint:staticcheck
 func (r *ActivatorReconciler) getEndpointAddress(ep *corev1.Endpoints, ports []corev1.ServicePort, target *Target) (string, error) {
 	for _, port := range ports {
 		if int(port.Port) != target.Port {
@@ -293,7 +297,7 @@ func (r *ActivatorReconciler) scaleUp(pi *PortInformation) {
 		return
 	}
 
-	name := svc.Annotations[llmazcoreapi.ModelActivatorAnnoKey]
+	name := svc.Annotations[llmazcorev1alpha1.ModelActivatorAnnoKey]
 	if name == "" {
 		activatorControllerLog.Error(nil, "Scale annotation not found")
 		return
@@ -356,7 +360,7 @@ func (r *ActivatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	hasActivatorAnnotation := func(obj client.Object) bool {
 		// Make sure the object has the activator annotation
 		annotations := obj.GetAnnotations()
-		_, ok := annotations[llmazcoreapi.ModelActivatorAnnoKey]
+		_, ok := annotations[llmazcorev1alpha1.ModelActivatorAnnoKey]
 		if ok {
 			activatorControllerLog.V(4).Info("Object has activator annotation", "object", obj.GetName())
 		}
@@ -378,6 +382,7 @@ func (r *ActivatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			},
 		})).
 		Watches(
+			// nolint:staticcheck
 			&corev1.Endpoints{},
 			handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, obj client.Object) []reconcile.Request {
 				return []reconcile.Request{
@@ -403,8 +408,17 @@ func (r *ActivatorReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func tunnel(a, b net.Conn) {
-	go io.Copy(a, b)
-	go io.Copy(b, a)
+	go func() {
+		if _, err := io.Copy(a, b); err != nil {
+			activatorControllerLog.Error(err, "Failed to copy")
+		}
+	}()
+
+	go func() {
+		if _, err := io.Copy(b, a); err != nil {
+			activatorControllerLog.Error(err, "Failed to copy")
+		}
+	}()
 }
 
 type Listener interface {

@@ -131,7 +131,7 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	// Create a service for the leader pods of the lws for loadbalancing.
-	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service); err != nil {
+	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service, models); err != nil {
 		return ctrl.Result{}, err
 	}
 
