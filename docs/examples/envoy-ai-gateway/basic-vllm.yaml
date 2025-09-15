@@ -62,18 +62,29 @@ spec:
               value: qwen3-0--6b
       backendRefs:
         - name: qwen3-0--6b
+      modelsOwnedBy: "llmaz"
+      timeouts:
+        request: 3m
 ---
 apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIServiceBackend
 metadata:
   name: qwen3-0--6b
 spec:
-  timeouts:
-    request: 3m
   schema:
     name: OpenAI
   backendRef:
-    name: qwen3-0--6b-lb
-    kind: Service
-    port: 8080
+    name: qwen3-0--6b
+    kind: Backend
+    group: gateway.envoyproxy.io
 ---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: qwen3-0--6b
+  namespace: default
+spec:
+  endpoints:
+    - fqdn:
+        hostname: qwen3-0--6b-lb.default.svc.cluster.local
+        port: 8080
