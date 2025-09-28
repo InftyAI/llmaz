@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/dynamic"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -63,10 +64,14 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var namespace string
+	var enableServerless bool
+	var podIP string
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "llmaz-system", "The namespace of the llmaz to deploy")
+	flag.BoolVar(&enableServerless, "enable-serverless", false, "Enable the serverless feature")
+	flag.StringVar(&podIP, "pod-ip", "", "The pod IP of the llmaz controller manager")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -120,7 +125,7 @@ func main() {
 	// Cert won't be ready until manager starts, so start a goroutine here which
 	// will block until the cert is ready before setting up the controllers.
 	// Controllers who register after manager starts will start directly.
-	go setupControllers(mgr, certsReady)
+	go setupControllers(mgr, certsReady, enableServerless, podIP)
 
 	//+kubebuilder:scaffold:builder
 
@@ -140,7 +145,7 @@ func main() {
 	}
 }
 
-func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
+func setupControllers(mgr ctrl.Manager, certsReady chan struct{}, enableServerless bool, podIP string) {
 	// The controllers won't work until the webhooks are operating,
 	// and the webhook won't work until the certs are all in places.
 	setupLog.Info("waiting for the cert generation to complete")
@@ -174,6 +179,20 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}) {
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "BackendRuntime")
 		os.Exit(1)
+	}
+
+	if enableServerless {
+		dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
+		if err != nil {
+			setupLog.Error(err, "unable to create dynamic client")
+			os.Exit(1)
+		}
+
+		activatorReconciler := inferencecontroller.NewActivatorReconciler(mgr, dynamicClient, podIP)
+		if err := activatorReconciler.SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "Activator")
+			os.Exit(1)
+		}
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
