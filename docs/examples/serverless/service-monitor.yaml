@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: qwen2-0--5b-lb-monitor
+  namespace: llmaz-system
+  labels:
+    control-plane: controller-manager
+    app.kubernetes.io/name: servicemonitor
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      llmaz.io/model-name: qwen2-0--5b
+  endpoints:
+    - port: http
+      path: /metrics
+      scheme: http
