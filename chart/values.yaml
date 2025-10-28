@@ -5,7 +5,7 @@ controllerManager:
     - --metrics-bind-address=:8443
     - --leader-elect
     - --namespace=llmaz-system
-    - --enable-serverless
+    - --enable-service-activator
     - --pod-ip=$(POD_IP)
     containerSecurityContext:
       allowPrivilegeEscalation: false

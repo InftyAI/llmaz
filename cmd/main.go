@@ -64,14 +64,14 @@ func main() {
 	var enableLeaderElection bool
 	var probeAddr string
 	var namespace string
-	var enableServerless bool
+	var enableServiceActivator bool
 	var podIP string
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.StringVar(&namespace, "namespace", "llmaz-system", "The namespace of the llmaz to deploy")
-	flag.BoolVar(&enableServerless, "enable-serverless", false, "Enable the serverless feature")
-	flag.StringVar(&podIP, "pod-ip", "", "The pod IP of the llmaz controller manager")
+	flag.BoolVar(&enableServiceActivator, "enable-service-activator", false, "Enable the service activator feature. This is an experimental feature.")
+	flag.StringVar(&podIP, "pod-ip", "", "The pod IP of the llmaz controller manager. Only used when service activator is enabled.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
@@ -125,7 +125,7 @@ func main() {
 	// Cert won't be ready until manager starts, so start a goroutine here which
 	// will block until the cert is ready before setting up the controllers.
 	// Controllers who register after manager starts will start directly.
-	go setupControllers(mgr, certsReady, enableServerless, podIP)
+	go setupControllers(mgr, certsReady, enableServiceActivator, podIP)
 
 	//+kubebuilder:scaffold:builder
 
@@ -145,7 +145,7 @@ func main() {
 	}
 }
 
-func setupControllers(mgr ctrl.Manager, certsReady chan struct{}, enableServerless bool, podIP string) {
+func setupControllers(mgr ctrl.Manager, certsReady chan struct{}, enableServiceActivator bool, podIP string) {
 	// The controllers won't work until the webhooks are operating,
 	// and the webhook won't work until the certs are all in places.
 	setupLog.Info("waiting for the cert generation to complete")
@@ -181,7 +181,7 @@ func setupControllers(mgr ctrl.Manager, certsReady chan struct{}, enableServerle
 		os.Exit(1)
 	}
 
-	if enableServerless {
+	if enableServiceActivator {
 		dynamicClient, err := dynamic.NewForConfig(mgr.GetConfig())
 		if err != nil {
 			setupLog.Error(err, "unable to create dynamic client")
