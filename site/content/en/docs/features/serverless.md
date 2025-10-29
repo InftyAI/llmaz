@@ -7,11 +7,33 @@ weight: 4
 
 This comprehensive guide provides enterprise-grade configuration patterns for serverless environments on Kubernetes, focusing on advanced integrations between Prometheus monitoring and KEDA autoscaling. The architecture delivers optimal resource efficiency through event-driven scaling while maintaining observability and resilience for AI/ML workloads and other latency-sensitive applications.
 
+### Relationship Between Activator and KEDA
+
+The serverless architecture combines two complementary components:
+
+- **KEDA (Kubernetes Event-driven Autoscaling)**: Handles dynamic scaling based on metrics from Prometheus or other event sources. KEDA monitors application metrics (such as request queue length, processing time, or custom metrics) and automatically adjusts the number of replicas between `minReplicaCount` and `maxReplicaCount` to meet demand.
+
+- **Activator**: Serves as a request interceptor and buffer for scale-from-zero scenarios. When KEDA scales a workload down to zero replicas (to save resources during idle periods), the activator intercepts incoming requests, triggers KEDA to scale up the workload, buffers the requests during the cold start period, and forwards them once the workload is ready.
+
+Together, these components enable true serverless behavior: workloads can scale to zero when idle (minimizing costs) and automatically scale up on-demand when requests arrive (maintaining responsiveness). KEDA provides the scaling mechanism, while the activator ensures no requests are lost during the scale-from-zero process.
+
 ## Concepts
 
 ### Prometheus Configuration
 
-Prometheus is utilized for monitoring and alerting purposes. To enable cross-namespace ServiceMonitor discovery, configure the `namespaceSelector`. In Prometheus, define the `serviceMonitorSelector` to associate with ServiceMonitors.
+Prometheus is utilized for monitoring and alerting purposes in the serverless architecture. It collects and stores metrics from your workloads, which KEDA can then query to make scaling decisions.
+
+#### ServiceMonitor Explained
+
+A ServiceMonitor is a Kubernetes custom resource that tells Prometheus which services to monitor and how to scrape metrics from them. The key configuration aspects are:
+
+- **Cross-namespace Discovery**: The `namespaceSelector` field allows Prometheus to discover and monitor services across different namespaces. Setting `any: true` enables monitoring of services in any namespace, not just the namespace where the ServiceMonitor is deployed.
+
+- **Label Matching**: The `selector.matchLabels` field defines which services to monitor based on their labels. In this example, it monitors all services with the label `llmaz.io/model-name: qwen2-0--5b`.
+
+- **Metrics Endpoint**: The `endpoints` section specifies how to scrape metrics - which port to use, the HTTP path where metrics are exposed, and the protocol (HTTP/HTTPS).
+
+Here's an example ServiceMonitor configuration:
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -27,6 +49,7 @@ spec:
     any: true
   selector:
     matchLabels:
+      # Service label, you can change this to match your service label
       llmaz.io/model-name: qwen2-0--5b
   endpoints:
     - port: http
@@ -34,12 +57,32 @@ spec:
       scheme: http
 ```
 
-- Ensure the `namespaceSelector` is configured to allow cross-namespace monitoring.
-- Appropriately label your services to be discovered by Prometheus.
+**Important Configuration Notes:**
+
+- Ensure the `namespaceSelector` is configured to allow cross-namespace monitoring if your services are in different namespaces than your ServiceMonitor.
+- Your Kubernetes Services must have matching labels (as specified in `selector.matchLabels`) for Prometheus to discover them.
+- The service must expose a `/metrics` endpoint (or the path you specify) that returns metrics in Prometheus format.
+- Verify that your Prometheus instance is configured with a `serviceMonitorSelector` that matches the labels on this ServiceMonitor (in this example, `control-plane: controller-manager` and `app.kubernetes.io/name: servicemonitor`).
 
 ### KEDA Configuration
 
-KEDA (Kubernetes Event-driven Autoscaling) is employed for scaling applications based on custom metrics. It can be integrated with Prometheus to trigger scaling actions.
+KEDA (Kubernetes Event-driven Autoscaling) is employed for scaling applications based on custom metrics. It extends Kubernetes' native autoscaling capabilities by allowing you to scale based on external event sources like Prometheus metrics, message queues, or cloud events.
+
+#### ScaledObject Explained
+
+A ScaledObject is the core KEDA resource that defines how to scale your workload. The key configuration aspects are:
+
+- **Scale Target**: The `scaleTargetRef` field specifies which Kubernetes resource to scale. In this example, it targets a custom resource of type `Playground` from the `inference.llmaz.io` API group. KEDA can scale Deployments, StatefulSets, or any custom resource that implements the scale subresource.
+
+- **Replica Boundaries**: The `minReplicaCount` and `maxReplicaCount` fields define the scaling limits. Setting `minReplicaCount: 0` enables scale-to-zero functionality, which requires the activator component to handle cold starts.
+
+- **Timing Parameters**:
+  - `pollingInterval` (30s in this example): How frequently KEDA checks the metrics from the trigger source
+  - `cooldownPeriod` (50s in this example): The waiting period after the last trigger activation before scaling back down to prevent flapping
+
+- **Prometheus Trigger**: The `triggers` section defines what metrics to monitor and when to scale. The Prometheus trigger queries a specific metric and compares it against a threshold. When the metric value exceeds the threshold, KEDA scales up; when it falls below, KEDA scales down (after the cooldown period).
+
+Here's an example ScaledObject configuration:
 
 ```yaml
 apiVersion: keda.sh/v1alpha1
@@ -65,8 +108,20 @@ spec:
       threshold: "0.2"
 ```
 
-- Ensure the `serverAddress` correctly points to the Prometheus service.
-- Adjust `pollingInterval` and `cooldownPeriod` to optimize scaling behavior and prevent conflicts with other scaling mechanisms.
+**Important Configuration Notes:**
+
+- **Prometheus Connection**: Ensure the `serverAddress` correctly points to your Prometheus service. The format is typically `http://<service-name>.<namespace>.svc.cluster.local:<port>`.
+
+- **Metric Query**: The `query` field should be a valid PromQL (Prometheus Query Language) expression. In this example, `sum(llamacpp:requests_processing)` aggregates all processing requests across instances.
+
+- **Threshold Tuning**: The `threshold` value determines when scaling occurs. For example, `"0.2"` means KEDA will scale up when the metric value exceeds 0.2. Adjust this based on your workload characteristics and desired responsiveness.
+
+- **Timing Optimization**:
+  - Set `pollingInterval` based on how quickly you need to respond to load changes (shorter intervals = faster response but more API calls)
+  - Set `cooldownPeriod` long enough to avoid scaling down too quickly during temporary traffic drops, but short enough to save resources during idle periods
+  - Ensure these values don't conflict with HPA (Horizontal Pod Autoscaler) if you're using both
+
+- **Scale-to-Zero Requirements**: When using `minReplicaCount: 0`, you must deploy the activator component to handle requests during cold starts and trigger the scale-up process.
 
 ### Integration with Activator
 
