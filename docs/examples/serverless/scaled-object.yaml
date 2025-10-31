@@ -1,0 +1,21 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: qwen2-0--5b-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: inference.llmaz.io/v1alpha1
+    kind: Playground
+    name: qwen2-0--5b
+  pollingInterval: 30
+  cooldownPeriod: 50
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  triggers:
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus-operated.llmaz-system.svc.cluster.local:9090
+      metricName: llamacpp:requests_processing
+      query: sum(llamacpp:requests_processing)
+      threshold: "0.2"
