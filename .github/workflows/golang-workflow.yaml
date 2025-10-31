@@ -94,3 +94,6 @@ jobs:
       - name: Run e2e tests
         run: |
           make test-e2e
+        timeout-minutes: 20
+        env:
+          GINKGO_TIMEOUT: "15m"
