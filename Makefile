@@ -129,7 +129,7 @@ test: manifests fmt vet envtest gotestsum ## Run tests.
 .PHONY: test-integration
 test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
-	$(GINKGO) --junit-report=junit.xml --output-dir=$(ARTIFACTS) -v $(INTEGRATION_TARGET)
+	$(GINKGO) --junit-report=junit.xml --output-dir=$(ARTIFACTS) -vv $(INTEGRATION_TARGET)
 
 .PHONY: test-e2e
 test-e2e: kustomize manifests fmt vet envtest ginkgo kind-image-build
