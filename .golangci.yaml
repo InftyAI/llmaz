@@ -1,4 +1,3 @@
-version: 1
 run:
   timeout: 5m
   allow-parallel-runners: true
