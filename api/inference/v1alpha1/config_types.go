@@ -42,7 +42,6 @@ type BackendRuntimeConfig struct {
 	// ConfigName represents the recommended configuration name for the backend,
 	// It will be inferred from the models in the runtime if not specified, e.g. default,
 	// speculative-decoding.
-	// +kubebuilder:default=default
 	ConfigName *string `json:"configName,omitempty"`
 	// Args defined here will "append" the args defined in the recommendedConfig,
 	// either explicitly configured in configName or inferred in the runtime.

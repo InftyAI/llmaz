@@ -73,6 +73,9 @@ const (
 	PlaygroundProgressing = "Progressing"
 	// PlaygroundAvailable indicates the corresponding inference service is available now.
 	PlaygroundAvailable string = "Available"
+	// SkipModelLoaderAnnoKey indicates whether to skip the model loader,
+	// enabling the inference engine to manage model loading directly.
+	SkipModelLoaderAnnoKey = "llmaz.io/skip-model-loader"
 )
 
 // PlaygroundStatus defines the observed state of Playground
@@ -90,6 +93,10 @@ type PlaygroundStatus struct {
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName={pl}
 //+kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.selector
+//+kubebuilder:printcolumn:name="MODEL",type=string,JSONPath=`.spec.modelClaim.modelName`,description="Model used in the Playground"
+//+kubebuilder:printcolumn:name="REPLICAS",type=integer,JSONPath=`.status.replicas`,description="Current number of replicas"
+//+kubebuilder:printcolumn:name="STATUS",type=string,JSONPath=`.status.conditions[?(@.type=='Available')].reason`,description="Current status (Available/Progressing)"
+//+kubebuilder:printcolumn:name="AGE",type=date,JSONPath=`.metadata.creationTimestamp`,description="Time since creation"
 
 // Playground is the Schema for the playgrounds API
 type Playground struct {

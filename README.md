@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/logo.png">
-    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/logo.png" width=55%>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/logo.png">
+    <img alt="llmaz" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/logo.png" width=55%>
   </picture>
 </p>
 
@@ -24,7 +24,7 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 <p align="center">
   <picture>
-    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/infra.png" width=70%>
+    <img alt="infrastructure" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/infra.png" width=70%>
   </picture>
 </p>
 
@@ -32,27 +32,26 @@ Easy, advanced inference platform for large language models on Kubernetes
 
 <p align="center">
   <picture>
-    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/docs/assets/arch.png" width=100%>
+    <img alt="architecture" src="https://raw.githubusercontent.com/inftyai/llmaz/main/site/static/images/arch.png" width=100%>
   </picture>
 </p>
 
 ## Key Features
 
 - **Easy of Use**: People can quick deploy a LLM service with minimal configurations.
-- **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp). Find the full list of supported backends [here](./docs/support-backends.md).
-- **Accelerator Fungibility**: llmaz supports serving the same LLM with various accelerators to optimize cost and performance.
+- **Broad Backends Support**: llmaz supports a wide range of advanced inference backends for different scenarios, like [vLLM](https://github.com/vllm-project/vllm), [Text-Generation-Inference](https://github.com/huggingface/text-generation-inference), [SGLang](https://github.com/sgl-project/sglang), [llama.cpp](https://github.com/ggerganov/llama.cpp), [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM). Find the full list of supported backends [here](./site/content/en/docs/integrations/support-backends.md).
+- **Heterogeneous Cluster Support**: llmaz supports serving the same LLM with heterogeneous devices together with [InftyAI Scheduler](https://github.com/InftyAI/scheduler-plugins) for the sake of cost and performance.
 - **Various Model Providers**: llmaz supports a wide range of model providers, such as [HuggingFace](https://huggingface.co/), [ModelScope](https://www.modelscope.cn), ObjectStores. llmaz will automatically handle the model loading, requiring no effort from users.
-- **Multi-Host Support**: llmaz supports both single-host and multi-host scenarios with [LWS](https://github.com/kubernetes-sigs/lws) from day 0. 
+- **Distributed Inference**: Multi-host & homogeneous xPyD support with [LWS](https://github.com/kubernetes-sigs/lws) from day 0. Will implement the heterogeneous xPyD in the future.
 - **AI Gateway Support**: Offering capabilities like token-based rate limiting, model routing with the integration of [Envoy AI Gateway](https://aigateway.envoyproxy.io/).
-- **Build-in ChatUI**: Out-of-the-box chatbot support with the integration of [Open WebUI](https://github.com/open-webui/open-webui), offering capacities like function call, RAG, web search and more, see configurations [here](./docs/open-webui.md).
-- **Scaling Efficiency**: llmaz supports horizontal scaling with [HPA](./docs/examples/hpa/README.md) by default and will integrate with autoscaling components like [Cluster-Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) or [Karpenter](https://github.com/kubernetes-sigs/karpenter) for smart scaling across different clouds.
-- **Efficient Model Distribution (WIP)**: Out-of-the-box model cache system support with [Manta](https://github.com/InftyAI/Manta), still under development right now with architecture reframing.
+- **Scaling Efficiency**: Horizontal Pod scaling with [HPA](./docs/examples/hpa/README.md) with LLM-based metrics and node(spot instance) autoscaling with [Karpenter](https://github.com/kubernetes-sigs/karpenter).
+- **Build-in ChatUI**: Out-of-the-box chatbot support with the integration of [Open WebUI](https://github.com/open-webui/open-webui), offering capacities like function call, RAG, web search and more, see configurations [here](./site/content/en/docs/integrations/open-webui.md).
 
 ## Quick Start
 
 ### Installation
 
-Read the [Installation](./docs/installation.md) for guidance.
+Read the [Installation](./site/content/en/docs/getting-started/installation.md) for guidance.
 
 ### Deploy
 
@@ -126,7 +125,7 @@ curl http://localhost:8080/v1/completions \
 
 ### More than quick-start
 
-Please refer to [examples](./docs/examples/README.md) for more tutorials or read [develop.md](./docs/develop.md) to learn more about the project.
+Please refer to [examples](./docs/examples/README.md) for more tutorials or read [develop.md](./site/content/en/docs/develop.md) to learn more about the project.
 
 ## Roadmap
 
@@ -139,7 +138,8 @@ Please refer to [examples](./docs/examples/README.md) for more tutorials or read
 
 Join us for more discussions:
 
-- **Slack Channel**: [#llmaz](https://inftyai.slack.com/archives/C06D0BGEQ1G)
+- **Discord**: [#llmaz](https://discord.gg/UWnjUG6X8j)
+- **Slack**: [#llmaz](https://join.slack.com/t/inftyai/shared_invite/zt-3700res2c-_AuBGD3kixDJhzycFE6L5A)
 
 ## Contributions
 

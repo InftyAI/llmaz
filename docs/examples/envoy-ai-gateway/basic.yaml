@@ -59,7 +59,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: default-envoy-ai-gateway
-  namespace: default
 spec:
   gatewayClassName: default-envoy-ai-gateway
   listeners:
@@ -71,7 +70,6 @@ apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIGatewayRoute
 metadata:
   name: default-envoy-ai-gateway
-  namespace: default
 spec:
   schema:
     name: OpenAI
@@ -84,14 +82,14 @@ spec:
         - headers:
             - type: Exact
               name: x-ai-eg-model
-              value: qwen2-0.5b
+              value: qwen2-0--5b
       backendRefs:
         - name: qwen2-0--5b
     - matches:
         - headers:
             - type: Exact
               name: x-ai-eg-model
-              value: qwen2.5-coder
+              value: qwen2--5-coder
       backendRefs:
         - name: qwen2--5-coder
 ---
@@ -99,7 +97,6 @@ apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIServiceBackend
 metadata:
   name: qwen2-0--5b
-  namespace: default
 spec:
   timeouts:
     request: 3m
@@ -114,7 +111,6 @@ apiVersion: aigateway.envoyproxy.io/v1alpha1
 kind: AIServiceBackend
 metadata:
   name: qwen2--5-coder
-  namespace: default
 spec:
   timeouts:
     request: 3m

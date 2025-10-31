@@ -1,0 +1,44 @@
+name: Deploy Hugo site to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Node.js dependencies
+        working-directory: ./site
+        run: |
+          npm ci || npm install
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.134.2'
+          extended: true
+
+      - name: Build Hugo site
+        run: hugo --source site --minify
+
+      - name: Generate CNAME
+        run: echo 'llmaz.inftyai.com' > ./site/public/CNAME
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.AGENT_TOKEN }}
+          publish_dir: ./site/public
+          publish_branch: gh-pages

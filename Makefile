@@ -2,7 +2,6 @@ include Makefile-deps.mk
 
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.32.0
-ENVTEST_LWS_VERSION = v0.5.1
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -84,7 +83,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 		rbac:roleName=manager-role output:rbac:artifacts:config=config/rbac \
 		crd:generateEmbeddedObjectMeta=true output:crd:artifacts:config=config/crd/bases \
 		webhook output:webhook:artifacts:config=config/webhook \
-		paths="./..."
+		paths="./api/...;./pkg/...;./cmd/..."
 
 .PHONY: generate
 generate: controller-gen code-generator ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -93,7 +92,7 @@ generate: controller-gen code-generator ## Generate code containing DeepCopy, De
 
 .PHONY: generate-apiref
 generate-apiref: genref
-	cd $(PROJECT_DIR)/hack/genref/ && $(GENREF) -o $(PROJECT_DIR)/docs/reference
+	cd $(PROJECT_DIR)/hack/genref/ && $(GENREF) -o $(PROJECT_DIR)/site/content/en/docs/reference
 
 # Use same code-generator version as k8s.io/api
 CODEGEN_VERSION := $(shell go list -m -f '{{.Version}}' k8s.io/api)
@@ -124,18 +123,23 @@ gotestsum: ## Download gotestsum locally if necessary.
 test: manifests fmt vet envtest gotestsum ## Run tests.
 	$(GOTESTSUM) --junitfile $(ARTIFACTS)/junit.xml -- ./api/... ./pkg/... -coverprofile  $(ARTIFACTS)/cover.out
 
+	# Test the components.
+	cd components/router && make test
+
 .PHONY: test-integration
 test-integration: manifests fmt vet envtest ginkgo ## Run integration tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" \
 	$(GINKGO) --junit-report=junit.xml --output-dir=$(ARTIFACTS) -v $(INTEGRATION_TARGET)
 
 .PHONY: test-e2e
-# FIXME: we should install lws CRD.
 test-e2e: kustomize manifests fmt vet envtest ginkgo kind-image-build
-	E2E_KIND_NODE_VERSION=$(E2E_KIND_NODE_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) KUSTOMIZE=$(KUSTOMIZE) GINKGO=$(GINKGO) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) ENVTEST_LWS_VERSION=$(ENVTEST_LWS_VERSION) ./hack/e2e-test.sh
+	E2E_KIND_NODE_VERSION=$(E2E_KIND_NODE_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) KUSTOMIZE=$(KUSTOMIZE) GINKGO=$(GINKGO) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) ./hack/e2e-test.sh
+
+test-deploy-with-helm: kind-image-build
+	E2E_KIND_NODE_VERSION=$(E2E_KIND_NODE_VERSION) KIND_CLUSTER_NAME=$(KIND_CLUSTER_NAME) KIND=$(KIND) KUBECTL=$(KUBECTL) USE_EXISTING_CLUSTER=$(USE_EXISTING_CLUSTER) IMAGE_TAG=$(IMG) TAG=$(GIT_TAG) ./hack/test-deploy-with-helm.sh
 
 GOLANGCI_LINT = $(shell pwd)/bin/golangci-lint
-GOLANGCI_LINT_VERSION ?= v1.63.4
+GOLANGCI_LINT_VERSION ?= v2.2.1
 golangci-lint:
 	@[ -f $(GOLANGCI_LINT) ] || { \
 	set -e ;\
@@ -157,6 +161,10 @@ lint: golangci-lint pythonci-lint
 .PHONY: lint-fix
 lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
 	$(GOLANGCI_LINT) run --fix
+
+.PHONY: lint-config
+lint-config: golangci-lint ## Verify golangci-lint linter configuration
+	$(GOLANGCI_LINT) config verify
 
 ##@ Build
 
@@ -264,6 +272,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v5.2.1
 CONTROLLER_TOOLS_VERSION ?= v0.16.1
+HELM_EXT_OPTS ?=
 
 .PHONY: kustomize
 kustomize: $(KUSTOMIZE) ## Download kustomize locally if necessary. If wrong version is installed, it will be removed before downloading.
@@ -316,13 +325,10 @@ helm: manifests kustomize helmify
 
 .PHONY: helm-install
 helm-install: helm
-	helm upgrade --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update
+	helm upgrade --namespace llmaz-system --install llmaz ./chart -f ./chart/values.global.yaml --dependency-update --create-namespace $(HELM_EXT_OPTS)
 
 .PHONY: helm-upgrade
 helm-upgrade: image-push artifacts helm-install
-
-.PHONY: install-chatbot
-install-chatbot: helm-install
 
 .PHONY: helm-package
 helm-package: helm
@@ -335,3 +341,8 @@ helm-package: helm
 
 	# To recover values.yaml
 	make helm
+
+.PHONY: launch-website
+launch-website:
+	cd site && \
+	hugo server

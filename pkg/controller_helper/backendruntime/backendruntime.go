@@ -65,14 +65,14 @@ func (p *BackendRuntimeParser) Args() ([]string, error) {
 
 	source := modelSource.NewModelSourceProvider(mainModel)
 	modelInfo := map[string]string{
-		"ModelPath": source.ModelPath(),
+		"ModelPath": source.ModelPath(helper.SkipModelLoader(p.playground)),
 		"ModelName": source.ModelName(),
 	}
 
 	// TODO: This is not that reliable because two models doesn't always means speculative-decoding.
 	// Revisit this later.
 	if len(p.models) > 1 {
-		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(p.models[1]).ModelPath()
+		modelInfo["DraftModelPath"] = modelSource.NewModelSourceProvider(p.models[1]).ModelPath(helper.SkipModelLoader(p.playground))
 	}
 
 	for _, recommend := range p.backendRuntime.Spec.RecommendedConfigs {
@@ -130,7 +130,7 @@ func renderFlags(flags []string, modelInfo map[string]string) ([]string, error) 
 			if !exists || replacement == "" {
 				return nil, fmt.Errorf("missing flag or the flag has format error: %s", flag)
 			}
-			value = strings.Replace(value, match[0], replacement, -1)
+			value = strings.ReplaceAll(value, match[0], replacement)
 		}
 
 		res = append(res, value)

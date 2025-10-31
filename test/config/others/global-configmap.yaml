@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: llmaz-global-config
+  namespace: llmaz-system
+data:
+  config.data: |
+    scheduler-name: inftyai-scheduler
+    init-container-image: inftyai/model-loader:v0.0.10

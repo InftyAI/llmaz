@@ -12,7 +12,7 @@ spec:
     - -m
     - sglang.launch_server
   image: lmsysorg/sglang
-  version: v0.2.10-cu121
+  version: v0.4.5-cu121
   # Do not edit the preset argument name unless you know what you're doing.
   # Free to add more arguments with your requirements.
   recommendedConfigs:

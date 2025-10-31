@@ -5,6 +5,8 @@ controllerManager:
     - --metrics-bind-address=:8443
     - --leader-elect
     - --namespace=llmaz-system
+    - --enable-service-activator
+    - --pod-ip=$(POD_IP)
     containerSecurityContext:
       allowPrivilegeEscalation: false
       capabilities:
@@ -12,7 +14,7 @@ controllerManager:
         - ALL
     image:
       repository: inftyai/llmaz
-      tag: v0.1.3
+      tag: v0.1.4
     resources:
       limits:
         cpu: 500m
@@ -25,6 +27,10 @@ controllerManager:
   replicas: 1
   serviceAccount:
     annotations: {}
+globalConfig:
+  configData: |-
+    scheduler-name: default-scheduler
+    # init-container-image: inftyai/model-loader:v0.0.10
 kubernetesClusterDomain: cluster.local
 metricsService:
   ports:

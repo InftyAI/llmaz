@@ -35,8 +35,15 @@ const (
 	// Once either of them qualified, we'll expose this as a field in Model.
 	ModelPreheatAnnoKey = "llmaz.io/model-preheat"
 
+	// ModelActivatorAnnoKey is used to indicate the model name activated by the activator.
+	ModelActivatorAnnoKey = "activator.llmaz.io/model-name"
+	// CachedModelActivatorAnnoKey is used to cache the activator state of the model.
+	CachedModelActivatorAnnoKey = "activator.llmaz.io/cached-state"
+
 	HUGGING_FACE = "Huggingface"
 	MODEL_SCOPE  = "ModelScope"
+
+	DefaultOwnedBy = "llmaz"
 )
 
 // ModelHub represents the model registry for model downloads.
@@ -70,11 +77,6 @@ type ModelHub struct {
 
 // URIProtocol represents the protocol of the URI.
 type URIProtocol string
-
-// Add roles for operating leaderWorkerSet.
-//
-// +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets/status,verbs=get;update;patch
 
 // ModelSource represents the source of the model.
 // Only one model source will be used.
@@ -184,7 +186,7 @@ type ModelClaims struct {
 	Models []ModelRef `json:"models,omitempty"`
 	// InferenceFlavors represents a list of flavor names with fungibility supported
 	// to serve the model.
-	// - If not set, always apply with the 0-index model by default.
+	// - If not set, will employ the model configured flavors by default.
 	// - If set, will lookup the flavor names following the model orders.
 	// +optional
 	InferenceFlavors []FlavorName `json:"inferenceFlavors,omitempty"`
@@ -200,6 +202,18 @@ type ModelSpec struct {
 	Source ModelSource `json:"source"`
 	// InferenceConfig represents the inference configurations for the model.
 	InferenceConfig *InferenceConfig `json:"inferenceConfig,omitempty"`
+	// OwnedBy represents the owner of the running models serving by the backends,
+	// which will be exported as the field of "OwnedBy" in openai-compatible API "/models".
+	// Default to "llmaz" if not set.
+	// +optional
+	// +kubebuilder:default="llmaz"
+	OwnedBy *string `json:"ownedBy,omitempty"`
+	// CreatedAt represents the creation timestamp of the running models serving by the backends,
+	// which will be exported as the field of "Created" in openai-compatible API "/models".
+	// It follows the format of RFC 3339, for example "2024-05-21T10:00:00Z".
+	// +optional
+	// +kubebuilder:validation:Format=date-time
+	CreatedAt *metav1.Time `json:"createdAt,omitempty"`
 }
 
 const (
@@ -219,6 +233,11 @@ type ModelStatus struct {
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 //+kubebuilder:resource:shortName=om,scope=Cluster
+//+kubebuilder:printcolumn:name="OWNEDBY",type=string,JSONPath=`.spec.ownedBy`,description="Owner of the model"
+//+kubebuilder:printcolumn:name="AGE",type=date,JSONPath=`.metadata.creationTimestamp`,description="Time since creation"
+//+kubebuilder:printcolumn:name="MODELHUB",type=string,JSONPath=`.spec.source.modelHub.name`,description="Model hub name"
+//+kubebuilder:printcolumn:name="MODELID",type=string,JSONPath=`.spec.source.modelHub.modelID`,description="Model ID on the model hub"
+//+kubebuilder:printcolumn:name="URI",type=string,JSONPath=`.spec.source.uri`,description="URI of the model when using a custom source (e.g., s3://, ollama://)"
 
 // OpenModel is the Schema for the open models API
 type OpenModel struct {

@@ -42,7 +42,7 @@ import (
 
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	inferenceapi "github.com/inftyai/llmaz/api/inference/v1alpha1"
-	"github.com/inftyai/llmaz/pkg"
+	helper "github.com/inftyai/llmaz/pkg/controller_helper"
 	modelSource "github.com/inftyai/llmaz/pkg/controller_helper/modelsource"
 	pkgUtil "github.com/inftyai/llmaz/pkg/util"
 	"github.com/inftyai/llmaz/test/util"
@@ -50,6 +50,10 @@ import (
 
 func ValidateService(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service) {
 	gomega.Eventually(func() error {
+		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, service); err != nil {
+			return errors.New("failed to get service")
+		}
+
 		workload := lws.LeaderWorkerSet{}
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &workload); err != nil {
 			return errors.New("failed to get lws")
@@ -57,8 +61,6 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		if *service.Spec.Replicas != *workload.Spec.Replicas {
 			return fmt.Errorf("unexpected replicas %d, got %d", *service.Spec.Replicas, *workload.Spec.Replicas)
 		}
-
-		// TODO: multi-host
 
 		models := []*coreapi.OpenModel{}
 		for _, mr := range service.Spec.ModelClaims.Models {
@@ -70,14 +72,25 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		}
 
 		for index, model := range models {
-			// Validate injecting modelLoaders
-			if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-				if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+			if helper.SkipModelLoader(service) {
+				if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+					if err := ValidateSkipModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+						return err
+					}
+				}
+				if err := ValidateSkipModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
 					return err
 				}
-			}
-			if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
-				return err
+			} else {
+				// Validate injecting modelLoaders
+				if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+					if err := ValidateModelLoader(model, index, *workload.Spec.LeaderWorkerTemplate.LeaderTemplate, service); err != nil {
+						return err
+					}
+				}
+				if err := ValidateModelLoader(model, index, workload.Spec.LeaderWorkerTemplate.WorkerTemplate, service); err != nil {
+					return err
+				}
 			}
 		}
 
@@ -97,6 +110,10 @@ func ValidateService(ctx context.Context, k8sClient client.Client, service *infe
 		}
 
 		if err := k8sClient.Get(ctx, types.NamespacedName{Name: service.Name + "-lb", Namespace: service.Namespace}, &corev1.Service{}); err != nil {
+			return err
+		}
+
+		if err := ValidateConfigmap(ctx, k8sClient, service, &workload); err != nil {
 			return err
 		}
 
@@ -125,14 +142,14 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 		if initContainer.Name != containerName {
 			return fmt.Errorf("unexpected initContainer name, want %s, got %s", modelSource.MODEL_LOADER_CONTAINER_NAME, initContainer.Name)
 		}
-		if initContainer.Image != pkg.LOADER_IMAGE {
-			return fmt.Errorf("unexpected initContainer image, want %s, got %s", pkg.LOADER_IMAGE, initContainer.Image)
+		if initContainer.Image == "" {
+			return fmt.Errorf("unexpected initContainer image, initContainer image should not be empty")
 		}
 
 		var envStrings []string
 
 		if model.Spec.Source.ModelHub != nil {
-			envStrings = []string{"MODEL_SOURCE_TYPE", "MODEL_ID", "MODEL_HUB_NAME", "HF_TOKEN", "HUGGING_FACE_HUB_TOKEN"}
+			envStrings = []string{"MODEL_SOURCE_TYPE", "MODEL_ID", "MODEL_HUB_NAME", modelSource.HUGGING_FACE_TOKEN_KEY, modelSource.HUGGING_FACE_HUB_TOKEN}
 			if model.Spec.Source.ModelHub.Revision != nil {
 				envStrings = append(envStrings, "REVISION")
 			}
@@ -144,7 +161,7 @@ func ValidateModelLoader(model *coreapi.OpenModel, index int, template corev1.Po
 			}
 		}
 		if model.Spec.Source.URI != nil {
-			envStrings = []string{"MODEL_SOURCE_TYPE", "PROVIDER", "ENDPOINT", "BUCKET", "MODEL_PATH", "OSS_ACCESS_KEY_ID", "OSS_ACCESS_KEY_SECRET"}
+			envStrings = []string{"MODEL_SOURCE_TYPE", "PROVIDER", "ENDPOINT", "BUCKET", "MODEL_PATH", modelSource.OSS_ACCESS_KEY_ID, modelSource.OSS_ACCESS_KEY_SECRET}
 		}
 
 		for _, str := range envStrings {
@@ -244,6 +261,77 @@ func ValidateServicePods(ctx context.Context, k8sClient client.Client, service *
 	}).Should(gomega.Succeed())
 }
 
+// ValidateSkipModelLoader validates the model-loader initContainer is not injected into the template
+// and checks if the model-runner contains model credentials environment variables
+func ValidateSkipModelLoader(model *coreapi.OpenModel, index int, template corev1.PodTemplateSpec, service *inferenceapi.Service) error {
+	if model.Spec.Source.URI != nil {
+		protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
+		if protocol == modelSource.Ollama {
+			return nil
+		}
+	}
+
+	if model.Spec.Source.ModelHub != nil || model.Spec.Source.URI != nil {
+		// Check if the template does not contain the model-loader initContainer
+		containerName := modelSource.MODEL_LOADER_CONTAINER_NAME
+		if index != 0 {
+			containerName += "-" + strconv.Itoa(index)
+		}
+
+		for _, container := range template.Spec.InitContainers {
+			if container.Name == containerName {
+				return fmt.Errorf("template has model-loader initContainer: %s", container.Name)
+			}
+		}
+
+		for _, container := range template.Spec.Containers {
+			if container.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
+				// Check if the model-runner container contains model credentials environment variables
+				var envStrings []string
+				if model.Spec.Source.ModelHub != nil {
+					envStrings = append(envStrings, modelSource.HUGGING_FACE_TOKEN_KEY, modelSource.HUGGING_FACE_HUB_TOKEN)
+				} else if model.Spec.Source.URI != nil {
+					protocol, _, _ := pkgUtil.ParseURI(string(*model.Spec.Source.URI))
+					switch protocol {
+					case modelSource.S3, modelSource.GCS:
+						envStrings = append(envStrings, modelSource.AWS_ACCESS_KEY_ID, modelSource.AWS_ACCESS_KEY_SECRET)
+					case modelSource.OSS:
+						envStrings = append(envStrings, modelSource.OSS_ACCESS_KEY_ID, modelSource.OSS_ACCESS_KEY_SECRET)
+					}
+				}
+
+				for _, str := range envStrings {
+					envExist := false
+					for _, env := range container.Env {
+						if env.Name == str {
+							envExist = true
+							break
+						}
+					}
+					if !envExist {
+						return fmt.Errorf("env %s doesn't exist", str)
+					}
+				}
+
+				// The model-runner container should not mount the model-volume if the model-loader initContainer is not injected
+				for _, v := range container.VolumeMounts {
+					if v.Name == modelSource.MODEL_VOLUME_NAME {
+						return fmt.Errorf("model-runner container has volume mount %s", v.Name)
+					}
+				}
+			}
+		}
+
+		for _, v := range template.Spec.Volumes {
+			if v.Name == modelSource.MODEL_VOLUME_NAME {
+				return errors.New("when skip the model-loader initContainer, the model-volume should not be created")
+			}
+		}
+	}
+
+	return nil
+}
+
 type CheckServiceAvailableFunc func() error
 
 func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg *rest.Config, service *inferenceapi.Service, check CheckServiceAvailableFunc) error {
@@ -319,7 +407,10 @@ func ValidateServiceAvaliable(ctx context.Context, k8sClient client.Client, cfg 
 
 func CheckServiceAvaliable() error {
 	url := fmt.Sprintf("http://localhost:%d/completions", modelSource.DEFAULT_BACKEND_PORT)
-	reqBody := `{"prompt":"What is the capital city of China?","stream":false}`
+	reqBody := `{
+		"prompt": "<|im_start|>user\nWhat is the capital city of China?\n<|im_end|>\n<|im_start|>assistant\n",
+		"stream": false
+	  }`
 
 	req, err := http.NewRequest("POST", url, strings.NewReader(reqBody))
 	if err != nil {
@@ -346,5 +437,47 @@ func CheckServiceAvaliable() error {
 	if !strings.Contains(strings.ToLower(string(body)), "beijing") {
 		return fmt.Errorf("error response body: %s", string(body))
 	}
+	return nil
+}
+
+func ValidateConfigmap(ctx context.Context, k8sClient client.Client, service *inferenceapi.Service, workload *lws.LeaderWorkerSet) error {
+	cm := corev1.ConfigMap{}
+	if err := k8sClient.Get(ctx, types.NamespacedName{Name: "llmaz-global-config", Namespace: "llmaz-system"}, &cm); err != nil {
+		return err
+	}
+
+	data, err := helper.ParseGlobalConfigmap(&cm)
+	if err != nil {
+		return fmt.Errorf("failed to parse global configmap: %v", err)
+	}
+
+	// Validate scheduler name.
+	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+		if service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName != data.SchedulerName {
+			return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName, data.SchedulerName)
+		}
+	}
+
+	if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName != data.SchedulerName {
+		return fmt.Errorf("unexpected scheduler name %s, want %s", service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName, data.SchedulerName)
+	}
+
+	if !helper.SkipModelLoader(service) {
+		// Validate init container image.
+		if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
+			for _, initContainer := range workload.Spec.LeaderWorkerTemplate.LeaderTemplate.Spec.InitContainers {
+				if initContainer.Image != data.InitContainerImage {
+					return fmt.Errorf("unexpected init container image %s in leader template, want %s", initContainer.Image, data.InitContainerImage)
+				}
+			}
+		}
+
+		for _, initContainer := range workload.Spec.LeaderWorkerTemplate.WorkerTemplate.Spec.InitContainers {
+			if initContainer.Image != data.InitContainerImage {
+				return fmt.Errorf("unexpected init container image %s in worker template, want %s", initContainer.Image, data.InitContainerImage)
+			}
+		}
+	}
+
 	return nil
 }

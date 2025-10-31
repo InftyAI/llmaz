@@ -15,7 +15,24 @@ spec:
     singular: service
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - description: Name of the Inference Service
+      jsonPath: .metadata.name
+      name: NAME
+      type: string
+    - description: Current number of replicas
+      jsonPath: .status.replicas
+      name: REPLICAS
+      type: integer
+    - description: Current status (Available/Progressing)
+      jsonPath: .status.conditions[?(@.type=='Available')].reason
+      name: STATUS
+      type: string
+    - description: Time since creation
+      jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: Service is the Schema for the services API
@@ -51,7 +68,7 @@ spec:
                     description: |-
                       InferenceFlavors represents a list of flavor names with fungibility supported
                       to serve the model.
-                      - If not set, always apply with the 0-index model by default.
+                      - If not set, will employ the model configured flavors by default.
                       - If set, will lookup the flavor names following the model orders.
                     items:
                       type: string
@@ -8300,6 +8317,15 @@ spec:
                       SubGroupPolicy describes the policy that will be applied when creating subgroups
                       in each replica.
                     properties:
+                      subGroupPolicyType:
+                        default: LeaderWorker
+                        description: |-
+                          Defines what type of Subgroups to create. Defaults to
+                          LeaderWorker
+                        enum:
+                        - LeaderWorker
+                        - LeaderExcluded
+                        type: string
                       subGroupSize:
                         description: |-
                           The number of pods per subgroup. This value is immutable,

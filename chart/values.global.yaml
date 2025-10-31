@@ -13,7 +13,11 @@ backendRuntime:
   sglang:
     image:
       repository: lmsysorg/sglang
-      tag: v0.2.10-cu121
+      tag: v0.4.5-cu121
+  tensorrt_llm:
+    image:
+      repository: nvcr.io/nvidia/tritonserver
+      tag: 25.03-trtllm-python-py3
   tgi:
     image:
       repository: ghcr.io/huggingface/text-generation-inference
@@ -25,20 +29,25 @@ backendRuntime:
 
 leaderWorkerSet:
   enabled: true
-  namespace: "llmaz-system"
-  controller:
-    replicas: 1
+
+kube-scheduler:
+  # If kube-scheduler is enabled, please set the globalConfig.configData.scheduler-name with the name of the kube-scheduler.
+  enabled: false
+  # scheduler:
+  #   name: inftyai-scheduler
 
 prometheus:
   # Prometheus is required to enable smart routing.
-  enabled: true
+  enabled: false
 
 open-webui:
   enabled: true
   persistence:
     enabled: false
   enableOpenaiApi: true
-  openaiBaseApiUrl: "https://api.openai.com/v1"
+  # Assumes the OpenAI-compatible API is exposed via the Envoy AI Gateway. Please replace this value if you
+  # deployed the envoy-ai-gateway example to a namespace other than "default".
+  openaiBaseApiUrl: "http://envoy-default-default-envoy-ai-gateway-dbec795a.llmaz-system.svc.cluster.local/v1"
   extraEnvVars:
   - name: OPENAI_API_KEY
     value: "ChangeMe"

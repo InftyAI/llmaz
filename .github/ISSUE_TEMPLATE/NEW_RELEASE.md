@@ -35,8 +35,5 @@ Please do not remove items from the checklist
     - [ ] `manifests.yaml` under artifacts
     - [ ] new generated helm chart `*.zip` file
 - [ ] Publish the draft release prepared at the [Github releases page](https://github.com/inftyai/llmaz/releases)
-- [ ] Publish the helm chart
-  - [ ] Run `git checkout gh-pages`
-  - [ ] Copy the `index.yaml` from main branch
-  - [ ] Submit a PR and merge it.
+- [ ] Publish the helm chart: `helm push llmaz-<version>.tgz oci://docker.io/inftyai`
 - [ ] Close this issue

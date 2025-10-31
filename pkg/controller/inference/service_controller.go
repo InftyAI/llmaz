@@ -20,14 +20,15 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"sync"
 
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metaapplyv1 "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
@@ -39,6 +40,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	lws "sigs.k8s.io/lws/api/leaderworkerset/v1"
 	applyconfigurationv1 "sigs.k8s.io/lws/client-go/applyconfiguration/leaderworkerset/v1"
 
@@ -52,8 +54,10 @@ import (
 // ServiceReconciler reconciles a Service object
 type ServiceReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	Record record.EventRecorder
+	Scheme             *runtime.Scheme
+	Record             record.EventRecorder
+	GlobalConfigsMutex sync.RWMutex
+	GlobalConfigs      *helper.GlobalConfigs
 }
 
 func NewServiceReconciler(client client.Client, scheme *runtime.Scheme, record record.EventRecorder) *ServiceReconciler {
@@ -68,6 +72,9 @@ func NewServiceReconciler(client client.Client, scheme *runtime.Scheme, record r
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=inference.llmaz.io,resources=services/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list
+//+kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=leaderworkerset.x-k8s.io,resources=leaderworkersets/status,verbs=get;update;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -83,24 +90,48 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 	logger.V(10).Info("reconcile Service", "Service", klog.KObj(service))
 
+	r.GlobalConfigsMutex.RLock()
+	configs := r.GlobalConfigs
+	r.GlobalConfigsMutex.RUnlock()
+
+	if configs == nil {
+		return ctrl.Result{}, fmt.Errorf("globel configs not init")
+	}
+
+	// Set the global configurations to the service.
+	if configs.SchedulerName != "" {
+		if service.Spec.WorkloadTemplate.LeaderTemplate != nil && service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName == "" {
+			service.Spec.WorkloadTemplate.LeaderTemplate.Spec.SchedulerName = configs.SchedulerName
+		}
+		if service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName == "" {
+			service.Spec.WorkloadTemplate.WorkerTemplate.Spec.SchedulerName = configs.SchedulerName
+		}
+
+		if err := r.Update(ctx, service); err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to update service: %w", err)
+		}
+	}
+
 	models, err := helper.FetchModelsByService(ctx, r.Client, service)
 	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	workloadApplyConfiguration := buildWorkloadApplyConfiguration(service, models)
-	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
+	workloadApplyConfiguration, err := buildWorkloadApplyConfiguration(service, models, configs)
+	if err != nil {
 		return ctrl.Result{}, err
 	}
 
-	// TODO: handle fungibility
+	if err := setControllerReferenceForWorkload(service, workloadApplyConfiguration, r.Scheme); err != nil {
+		return ctrl.Result{}, err
+	}
 
 	if err := util.Patch(ctx, r.Client, workloadApplyConfiguration); err != nil {
 		return ctrl.Result{}, err
 	}
 
 	// Create a service for the leader pods of the lws for loadbalancing.
-	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service); err != nil {
+	if err := CreateServiceIfNotExists(ctx, r.Client, r.Scheme, service, models); err != nil {
 		return ctrl.Result{}, err
 	}
 
@@ -130,20 +161,71 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 					return !reflect.DeepEqual(oldBar.Status, newBar.Status)
 				},
 			})).
+		Watches(&corev1.ConfigMap{}, handler.EnqueueRequestsFromMapFunc(r.updateGlobalConfig),
+			builder.WithPredicates(predicate.Funcs{
+				UpdateFunc: func(e event.UpdateEvent) bool {
+					cm := e.ObjectOld.(*corev1.ConfigMap)
+					return cm.Name == helper.GlobalConfigMapName && cm.Namespace == helper.GlobalConfigMapNamespace
+				},
+				CreateFunc: func(e event.CreateEvent) bool {
+					cm := e.Object.(*corev1.ConfigMap)
+					return cm.Name == helper.GlobalConfigMapName && cm.Namespace == helper.GlobalConfigMapNamespace
+				},
+			})).
 		Complete(r)
 }
 
-func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel) *applyconfigurationv1.LeaderWorkerSetApplyConfiguration {
+func (r *ServiceReconciler) updateGlobalConfig(ctx context.Context, obj client.Object) []reconcile.Request {
+	logger := log.FromContext(ctx)
+	cm, ok := obj.(*corev1.ConfigMap)
+	if !ok {
+		return nil
+	}
+
+	newConfig, err := helper.ParseGlobalConfigmap(cm)
+	if err != nil {
+		logger.Error(err, "failed to parse global config")
+		return nil
+	}
+	r.GlobalConfigsMutex.Lock()
+	defer r.GlobalConfigsMutex.Unlock()
+	r.GlobalConfigs = newConfig
+	logger.Info("global config updated", "config", newConfig)
+	return nil
+}
+
+func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*coreapi.OpenModel, configs *helper.GlobalConfigs) (*applyconfigurationv1.LeaderWorkerSetApplyConfiguration, error) {
 	workload := applyconfigurationv1.LeaderWorkerSet(service.Name, service.Namespace)
 
 	leaderWorkerTemplate := applyconfigurationv1.LeaderWorkerTemplate()
 	if service.Spec.WorkloadTemplate.LeaderTemplate != nil {
-		leaderWorkerTemplate.WithLeaderTemplate(*service.Spec.WorkloadTemplate.LeaderTemplate)
+		// construct pod template spec configuration
+		obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(service.Spec.WorkloadTemplate.LeaderTemplate)
+		if err != nil {
+			return nil, err
+		}
+		var podTemplateSpecApplyConfiguration coreapplyv1.PodTemplateSpecApplyConfiguration
+		err = runtime.DefaultUnstructuredConverter.FromUnstructured(obj, &podTemplateSpecApplyConfiguration)
+		if err != nil {
+			return nil, err
+		}
+		leaderWorkerTemplate.WithLeaderTemplate(&podTemplateSpecApplyConfiguration)
 	}
-	leaderWorkerTemplate.WithWorkerTemplate(service.Spec.WorkloadTemplate.WorkerTemplate)
+
+	// construct pod template spec configuration
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&service.Spec.WorkloadTemplate.WorkerTemplate)
+	if err != nil {
+		return nil, err
+	}
+	var podTemplateSpecApplyConfiguration coreapplyv1.PodTemplateSpecApplyConfiguration
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(obj, &podTemplateSpecApplyConfiguration)
+	if err != nil {
+		return nil, err
+	}
+	leaderWorkerTemplate.WithWorkerTemplate(&podTemplateSpecApplyConfiguration)
 
 	// The core logic to inject additional configurations.
-	injectModelProperties(leaderWorkerTemplate, models, service)
+	injectModelProperties(leaderWorkerTemplate, models, service, configs)
 
 	spec := applyconfigurationv1.LeaderWorkerSetSpec()
 	spec.WithLeaderWorkerTemplate(leaderWorkerTemplate)
@@ -162,18 +244,34 @@ func buildWorkloadApplyConfiguration(service *inferenceapi.Service, models []*co
 	spec.WithStartupPolicy(lws.LeaderReadyStartupPolicy)
 
 	workload.WithSpec(spec)
-	return workload
+	return workload, nil
 }
 
-func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service) {
+func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateApplyConfiguration, models []*coreapi.OpenModel, service *inferenceapi.Service, configs *helper.GlobalConfigs) {
 	isMultiNodesInference := template.LeaderTemplate != nil
 
 	for i, model := range models {
 		source := modelSource.NewModelSourceProvider(model)
-		if isMultiNodesInference {
-			source.InjectModelLoader(template.LeaderTemplate, i)
+		// Skip model-loader initContainer if llmaz.io/skip-model-loader annotation is set.
+		if !helper.SkipModelLoader(service) {
+			if isMultiNodesInference {
+				source.InjectModelLoader(template.LeaderTemplate, i, configs.InitContainerImage)
+			}
+			source.InjectModelLoader(template.WorkerTemplate, i, configs.InitContainerImage)
+		} else {
+			if isMultiNodesInference {
+				source.InjectModelEnvVars(template.LeaderTemplate)
+			}
+			source.InjectModelEnvVars(template.WorkerTemplate)
 		}
-		source.InjectModelLoader(template.WorkerTemplate, i)
+	}
+
+	// If model-loader initContainer is injected, we should mount the model-volume to the model-runner container.
+	if !helper.SkipModelLoader(service) {
+		if isMultiNodesInference {
+			modelSource.InjectModelVolume(template.LeaderTemplate)
+		}
+		modelSource.InjectModelVolume(template.WorkerTemplate)
 	}
 
 	// We only consider the main model's requirements for now.
@@ -192,14 +290,14 @@ func injectModelProperties(template *applyconfigurationv1.LeaderWorkerTemplateAp
 	}
 }
 
-func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenModel, service *inferenceapi.Service) {
+func injectModelFlavor(template *coreapplyv1.PodTemplateSpecApplyConfiguration, model *coreapi.OpenModel, service *inferenceapi.Service) {
 	if model.Spec.InferenceConfig == nil || len(model.Spec.InferenceConfig.Flavors) == 0 {
 		return
 	}
 
-	container := &corev1.Container{}
+	container := &coreapplyv1.ContainerApplyConfiguration{}
 	for i, c := range template.Spec.Containers {
-		if c.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
+		if *c.Name == modelSource.MODEL_RUNNER_CONTAINER_NAME {
 			container = &template.Spec.Containers[i]
 		}
 	}
@@ -214,17 +312,20 @@ func injectModelFlavor(template *corev1.PodTemplateSpec, model *coreapi.OpenMode
 		if flavor.Name == flavorName {
 			limits := model.Spec.InferenceConfig.Flavors[i].Limits
 			for k, v := range limits {
+				if container.Resources == nil {
+					container.WithResources(coreapplyv1.ResourceRequirements())
+				}
 				if container.Resources.Requests == nil {
-					container.Resources.Requests = map[corev1.ResourceName]resource.Quantity{}
+					container.Resources.WithRequests(corev1.ResourceList{})
 				}
 				// overwrite the requests and limits.
-				container.Resources.Requests[k] = v
+				(*container.Resources.Requests)[k] = v
 
 				if container.Resources.Limits == nil {
-					container.Resources.Limits = map[corev1.ResourceName]resource.Quantity{}
+					container.Resources.WithLimits(corev1.ResourceList{})
 				}
 				// overwrite the requests and limits.
-				container.Resources.Limits[k] = v
+				(*container.Resources.Limits)[k] = v
 			}
 			break
 		}
@@ -254,6 +355,12 @@ func modelAnnotations(service *inferenceapi.Service) map[string]string {
 		}
 	}
 	return nil
+}
+
+func activatorAnnotations(model *coreapi.OpenModel) map[string]string {
+	return map[string]string{
+		coreapi.ModelActivatorAnnoKey: model.Name,
+	}
 }
 
 func setServiceCondition(service *inferenceapi.Service, workload *lws.LeaderWorkerSet) {
@@ -318,7 +425,7 @@ func setControllerReferenceForWorkload(owner metav1.Object, lws *applyconfigurat
 	return nil
 }
 
-func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service) error {
+func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Scheme *runtime.Scheme, service *inferenceapi.Service, model []*coreapi.OpenModel) error {
 	log := ctrl.LoggerFrom(ctx)
 	// The load balancing service name.
 	svcName := service.Name + "-lb"
@@ -332,6 +439,8 @@ func CreateServiceIfNotExists(ctx context.Context, k8sClient client.Client, Sche
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      svcName,
 				Namespace: service.Namespace,
+				// For activator service, we can ignore it if serverless config is not enabled.
+				Annotations: activatorAnnotations(model[0]),
 			},
 			Spec: corev1.ServiceSpec{
 				Ports: []corev1.ServicePort{

@@ -17,9 +17,10 @@ limitations under the License.
 package modelSource
 
 import (
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
+
 	coreapi "github.com/inftyai/llmaz/api/core/v1alpha1"
 	"github.com/inftyai/llmaz/pkg/util"
-	corev1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -40,20 +41,28 @@ const (
 	MODEL_SOURCE_MODEL_OBJ_STORE = "objstore"
 
 	// secrets
-	MODELHUB_SECRET_NAME  = "modelhub-secret"
-	HUGGINGFACE_TOKEN_KEY = "HF_TOKEN"
+	MODELHUB_SECRET_NAME   = "modelhub-secret"
+	HUGGING_FACE_TOKEN_KEY = "HF_TOKEN"
+	HUGGING_FACE_HUB_TOKEN = "HUGGING_FACE_HUB_TOKEN"
 
 	OSS_ACCESS_SECRET_NAME = "oss-access-secret"
 	OSS_ACCESS_KEY_ID      = "OSS_ACCESS_KEY_ID"
 	OSS_ACCESS_KEY_SECRET  = "OSS_ACCESS_KEY_SECRET"
+
+	AWS_ACCESS_SECRET_NAME = "aws-access-secret"
+	AWS_ACCESS_KEY_ID      = "AWS_ACCESS_KEY_ID"
+	AWS_ACCESS_KEY_SECRET  = "AWS_SECRET_ACCESS_KEY"
 )
 
 type ModelSourceProvider interface {
 	ModelName() string
-	ModelPath() string
+	ModelPath(skipModelLoader bool) string
 	// InjectModelLoader will inject the model loader to the spec,
 	// index refers to the suffix of the initContainer name, like model-loader, model-loader-1.
-	InjectModelLoader(spec *corev1.PodTemplateSpec, index int)
+	InjectModelLoader(spec *coreapplyv1.PodTemplateSpecApplyConfiguration, index int, initContainerImage string)
+	// InjectModelEnvVars will inject the model credentials env to the model-runner container.
+	// This is used when the model-loader initContainer is not injected, and the model loading is handled by the model-runner container.
+	InjectModelEnvVars(spec *coreapplyv1.PodTemplateSpecApplyConfiguration)
 }
 
 func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
@@ -72,11 +81,13 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	if model.Spec.Source.URI != nil {
 		// We'll validate the format in the webhook, so generally no error should happen here.
 		protocol, value, _ := util.ParseURI(string(*model.Spec.Source.URI))
-		provider := &URIProvider{modelName: model.Name, protocol: protocol}
+		provider := &URIProvider{modelName: model.Name, protocol: protocol, uri: string(*model.Spec.Source.URI)}
 
 		switch protocol {
 		case OSS:
 			provider.endpoint, provider.bucket, provider.modelPath, _ = util.ParseOSS(value)
+		case S3, GCS:
+			provider.bucket, provider.modelPath, _ = util.ParseS3(value)
 		case HostPath:
 			provider.modelPath = value
 		case Ollama:
@@ -90,4 +101,23 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 	}
 	// Should not reach here, it will be validated at webhook in prior.
 	return nil
+}
+
+// InjectModelVolume mounts the model-volume to the pod template
+// The logic for mounting model-volume to model-runner container is identical in both ModelHubProvider and URIProvider,
+// so this function can be reused and only needs to be configured once
+func InjectModelVolume(template *coreapplyv1.PodTemplateSpecApplyConfiguration) {
+	// Handle container.
+	for i, container := range template.Spec.Containers {
+		// We only consider this container.
+		if *container.Name == MODEL_RUNNER_CONTAINER_NAME {
+			template.Spec.Containers[i].WithVolumeMounts(coreapplyv1.VolumeMount().WithName(MODEL_VOLUME_NAME).WithMountPath(CONTAINER_MODEL_PATH).WithReadOnly(true))
+		}
+	}
+
+	// Handle spec.
+	template.Spec.WithVolumes(coreapplyv1.Volume().WithName(MODEL_VOLUME_NAME).WithEmptyDir(coreapplyv1.EmptyDirVolumeSource()))
+
+	// TODO: support OCI image volume
+	// template.Spec.WithVolumes(coreapplyv1.Volume().WithName(MODEL_VOLUME_NAME).WithImage(coreapplyv1.ImageVolumeSource().WithReference(url).WithPullPolicy(corev1.PullIfNotPresent)))
 }

@@ -1,12 +1,18 @@
 dependencies:
+- name: lws
+  repository: oci://registry.k8s.io/lws/charts
+  version: 0.6.2
+- name: kube-scheduler
+  repository: oci://registry-1.docker.io/inftyai
+  version: 0.0.1
 - name: open-webui
-  repository: https://helm.openwebui.com/
+  repository: https://helm.openwebui.com
   version: 6.4.0
 - name: gateway-helm
-  repository: oci://registry-1.docker.io/envoyproxy/
-  version: 0.0.0-latest
+  repository: oci://registry-1.docker.io/envoyproxy
+  version: v1.4.0
 - name: ai-gateway-helm
-  repository: oci://registry-1.docker.io/envoyproxy/
-  version: v0.0.0-latest
-digest: sha256:c7b1aa22097a6a1a6f4dd04beed3287ab8ef2ae1aec8a9a4ec7a71251be23e4c
-generated: "2025-04-22T20:15:43.343515+08:00"
+  repository: oci://registry-1.docker.io/envoyproxy
+  version: v0.1.5
+digest: sha256:d4ca67d95b86b66af01991f1a2eab307db36ebd9a627f06581c0292e10cad259
+generated: "2025-06-17T11:08:57.411227+08:00"

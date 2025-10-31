@@ -79,7 +79,7 @@ var (
 		mismatchDetection: parseBool(os.Getenv("KUBE_PATCH_CONVERSION_DETECTOR")),
 		comparison: conversion.EqualitiesOrDie(
 			func(a, b time.Time) bool {
-				return a.UTC() == b.UTC()
+				return a.UTC().Equal(b.UTC())
 			},
 		),
 	}

@@ -1,0 +1,25 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-0--5b
+spec:
+  familyName: qwen2
+  source:
+    modelHub:
+      modelID: Qwen/Qwen2-0.5B-Instruct
+  inferenceConfig:
+    flavors:
+      - name: a10 # GPU type
+        limits:
+          nvidia.com/gpu: 1
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen2-0--5b
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen2-0--5b
+  backendRuntimeConfig:
+    backendName: tensorrt-llm

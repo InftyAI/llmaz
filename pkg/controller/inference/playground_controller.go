@@ -201,6 +201,15 @@ func buildServiceApplyConfiguration(models []*coreapi.OpenModel, playground *inf
 	// Build metadata
 	serviceApplyConfiguration := inferenceclientgo.Service(playground.Name, playground.Namespace)
 
+	if annotations := playground.GetAnnotations(); annotations != nil {
+		// Propagate llmaz.io/skip-model-loader annotation to Inference Service.
+		if value, exists := annotations[inferenceapi.SkipModelLoaderAnnoKey]; exists {
+			serviceApplyConfiguration.WithAnnotations(map[string]string{
+				inferenceapi.SkipModelLoaderAnnoKey: value,
+			})
+		}
+	}
+
 	// Build spec.
 	spec := inferenceclientgo.ServiceSpec()
 
@@ -330,6 +339,9 @@ func buildTemplate(models []*coreapi.OpenModel, playground *inferenceapi.Playgro
 
 	template := corev1.PodTemplateSpec{
 		Spec: corev1.PodSpec{
+			// TODO: The timeout is mainly quoted from https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v0.3.0/config/manifests/vllm/gpu-deployment.yaml#L170-L226.
+			// We should support this in the upstream inference engines in the future.
+			TerminationGracePeriodSeconds: ptr.To[int64](130),
 			// TODO: should we support image pull secret here?
 			Containers: []corev1.Container{
 				{
@@ -542,8 +554,8 @@ func setControllerReferenceForScalingConfiguration(owner metav1.Object, hpa *aut
 			Kind:               gvk.Kind,
 			Name:               owner.GetName(),
 			UID:                owner.GetUID(),
-			BlockOwnerDeletion: ptr.To[bool](true),
-			Controller:         ptr.To[bool](true),
+			BlockOwnerDeletion: ptr.To(true),
+			Controller:         ptr.To(true),
 		},
 	}
 	return nil

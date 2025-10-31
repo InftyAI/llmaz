@@ -19,9 +19,11 @@ package webhook
 import (
 	"context"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
@@ -47,7 +49,9 @@ func SetupOpenModelWebhook(mgr ctrl.Manager) error {
 var _ webhook.CustomDefaulter = &OpenModelWebhook{}
 
 var SUPPORTED_OBJ_STORES = map[string]struct{}{
+	modelSource.GCS:      {},
 	modelSource.OSS:      {},
+	modelSource.S3:       {},
 	modelSource.Ollama:   {},
 	modelSource.HostPath: {},
 }
@@ -59,6 +63,8 @@ func (w *OpenModelWebhook) Default(ctx context.Context, obj runtime.Object) erro
 		model.Labels = map[string]string{}
 	}
 	model.Labels[coreapi.ModelFamilyNameLabelKey] = string(model.Spec.FamilyName)
+	createdAt := ptr.Deref[metav1.Time](model.Spec.CreatedAt, metav1.Now().Rfc3339Copy())
+	model.Spec.CreatedAt = &createdAt
 	return nil
 }
 
@@ -111,6 +117,10 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 					if _, _, _, err := util.ParseOSS(address); err != nil {
 						allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
 					}
+				case modelSource.S3, modelSource.GCS:
+					if _, _, err := util.ParseS3(address); err != nil {
+						allErrs = append(allErrs, field.Invalid(sourcePath.Child("uri"), *model.Spec.Source.URI, "URI with wrong address"))
+					}
 				}
 			}
 		}
@@ -118,7 +128,7 @@ func (w *OpenModelWebhook) generateValidate(obj runtime.Object) field.ErrorList 
 
 	if model.Spec.Source.ModelHub != nil {
 		if model.Spec.Source.ModelHub.Filename != nil && model.Spec.Source.ModelHub.Name != nil && *model.Spec.Source.ModelHub.Name == coreapi.MODEL_SCOPE {
-			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modeHub is Huggingface"))
+			allErrs = append(allErrs, field.Invalid(sourcePath.Child("modelHub.filename"), *model.Spec.Source.ModelHub.Filename, "Filename can only set once modelHub is Huggingface"))
 		}
 	}
 

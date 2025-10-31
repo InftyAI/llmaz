@@ -87,6 +87,13 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 			},
 			failed: true,
 		}),
+		ginkgo.Entry("both model claim and claims be set", &testValidatingCase{
+			playground: func() *inferenceapi.Playground {
+				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").
+					ModelClaims([]string{"llama3-405b", "llama3-2b"}, []string{"main", "draft", "draft"}).Obj()
+			},
+			failed: true,
+		}),
 		ginkgo.Entry("any kind of backendRuntime should be supported", &testValidatingCase{
 			playground: func() *inferenceapi.Playground {
 				return wrapper.MakePlayground("playground", ns.Name).Replicas(1).ModelClaim("llama3-8b").BackendRuntime(string("unknown")).Obj()
@@ -141,7 +148,7 @@ var _ = ginkgo.Describe("Playground default and validation", func() {
 		playground     func() *inferenceapi.Playground
 		wantPlayground func() *inferenceapi.Playground
 	}
-	ginkgo.DescribeTable("test validating",
+	ginkgo.DescribeTable("test Defaulting",
 		func(tc *testDefaultingCase) {
 			playground := tc.playground()
 			gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())

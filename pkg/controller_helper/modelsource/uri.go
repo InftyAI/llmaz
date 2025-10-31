@@ -20,16 +20,15 @@ import (
 	"strconv"
 	"strings"
 
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/utils/ptr"
-
-	"github.com/inftyai/llmaz/pkg"
+	coreapplyv1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
 var _ ModelSourceProvider = &URIProvider{}
 
 const (
+	GCS      = "GCS"
 	OSS      = "OSS"
+	S3       = "S3"
 	Ollama   = "OLLAMA"
 	HostPath = "HOST"
 )
@@ -40,6 +39,7 @@ type URIProvider struct {
 	bucket    string
 	endpoint  string
 	modelPath string
+	uri       string
 }
 
 func (p *URIProvider) ModelName() string {
@@ -58,13 +58,18 @@ func (p *URIProvider) ModelName() string {
 // Example 2:
 //   - uri: bucket.endpoint/modelPath/model.gguf
 //     modelPath: /workspace/models/model.gguf
-func (p *URIProvider) ModelPath() string {
+func (p *URIProvider) ModelPath(skipModelLoader bool) string {
 	if p.protocol == HostPath {
 		return p.modelPath
 	}
 
-	// protocol is oss.
+	// Skip the model loader to allow the inference engine to handle loading models directly from remote storage (e.g., S3, OSS).
+	// In this case, the remote model path should be returned (e.g., s3://bucket/modelPath).
+	if skipModelLoader {
+		return p.uri
+	}
 
+	// protocol is oss.
 	splits := strings.Split(p.modelPath, "/")
 
 	if strings.Contains(p.modelPath, ".gguf") {
@@ -73,129 +78,121 @@ func (p *URIProvider) ModelPath() string {
 	return CONTAINER_MODEL_PATH + "models--" + splits[len(splits)-1]
 }
 
-func (p *URIProvider) InjectModelLoader(template *corev1.PodTemplateSpec, index int) {
+func (p *URIProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApplyConfiguration, index int, initContainerImage string) {
 	// We don't have additional operations for Ollama, just load in runtime.
 	if p.protocol == Ollama {
 		return
 	}
 
 	if p.protocol == HostPath {
-		template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-			Name: MODEL_VOLUME_NAME,
-			VolumeSource: corev1.VolumeSource{
-				HostPath: &corev1.HostPathVolumeSource{
-					Path: p.modelPath,
-				},
-			},
-		})
+		template.Spec.WithVolumes(
+			coreapplyv1.Volume().
+				WithName(MODEL_VOLUME_NAME).
+				WithHostPath(coreapplyv1.HostPathVolumeSource().
+					WithPath(p.modelPath)),
+		)
 
 		for i, container := range template.Spec.Containers {
 			// We only consider this container.
-			if container.Name == MODEL_RUNNER_CONTAINER_NAME {
-				template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-					Name:      MODEL_VOLUME_NAME,
-					MountPath: p.modelPath,
-					ReadOnly:  true,
-				})
+			if *container.Name == MODEL_RUNNER_CONTAINER_NAME {
+				template.Spec.Containers[i].WithVolumeMounts(coreapplyv1.VolumeMount().
+					WithName(MODEL_VOLUME_NAME).
+					WithMountPath(p.modelPath).
+					WithReadOnly(true),
+				)
 			}
 		}
 		return
 	}
 
 	// Other protocols.
-
 	initContainerName := MODEL_LOADER_CONTAINER_NAME
 	if index != 0 {
 		initContainerName += "-" + strconv.Itoa(index)
 	}
+
 	// Handle initContainer.
-	initContainer := &corev1.Container{
-		Name:  initContainerName,
-		Image: pkg.LOADER_IMAGE,
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      MODEL_VOLUME_NAME,
-				MountPath: CONTAINER_MODEL_PATH,
-			},
-		},
-	}
+	initContainer := coreapplyv1.Container().
+		WithName(initContainerName).
+		WithImage(initContainerImage).
+		WithVolumeMounts(
+			coreapplyv1.VolumeMount().
+				WithName(MODEL_VOLUME_NAME).
+				WithMountPath(CONTAINER_MODEL_PATH),
+		)
 
 	// We have exactly one container in the template.Spec.Containers.
 	spreadEnvToInitContainer(template.Spec.Containers[0].Env, initContainer)
 
 	switch p.protocol {
 	case OSS:
-		initContainer.Env = append(
-			initContainer.Env,
-			corev1.EnvVar{Name: "MODEL_SOURCE_TYPE", Value: MODEL_SOURCE_MODEL_OBJ_STORE},
-			corev1.EnvVar{Name: "PROVIDER", Value: OSS},
-			corev1.EnvVar{Name: "ENDPOINT", Value: p.endpoint},
-			corev1.EnvVar{Name: "BUCKET", Value: p.bucket},
-			corev1.EnvVar{Name: "MODEL_PATH", Value: p.modelPath},
-			corev1.EnvVar{
-				Name: OSS_ACCESS_KEY_ID,
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
-						},
-						Key:      OSS_ACCESS_KEY_ID,
-						Optional: ptr.To[bool](true),
-					},
-				},
-			},
-			corev1.EnvVar{
-				Name: OSS_ACCESS_KEY_SECRET,
-				ValueFrom: &corev1.EnvVarSource{
-					SecretKeyRef: &corev1.SecretKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: OSS_ACCESS_SECRET_NAME, // if secret not exists, the env is empty.
-						},
-						Key:      OSS_ACCESS_KEY_SECRET,
-						Optional: ptr.To[bool](true),
-					},
-				},
-			},
+		initContainer.WithEnv(
+			coreapplyv1.EnvVar().WithName("MODEL_SOURCE_TYPE").WithValue(MODEL_SOURCE_MODEL_OBJ_STORE),
+			coreapplyv1.EnvVar().WithName("PROVIDER").WithValue(OSS),
+			coreapplyv1.EnvVar().WithName("ENDPOINT").WithValue(p.endpoint),
+			coreapplyv1.EnvVar().WithName("BUCKET").WithValue(p.bucket),
+			coreapplyv1.EnvVar().WithName("MODEL_PATH").WithValue(p.modelPath),
+			coreapplyv1.EnvVar().WithName(OSS_ACCESS_KEY_ID).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(OSS_ACCESS_SECRET_NAME).WithKey(OSS_ACCESS_KEY_ID).WithOptional(true))),
+			coreapplyv1.EnvVar().WithName(OSS_ACCESS_KEY_SECRET).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(OSS_ACCESS_SECRET_NAME).WithKey(OSS_ACCESS_KEY_SECRET).WithOptional(true))),
 		)
 	}
 
-	template.Spec.InitContainers = append(template.Spec.InitContainers, *initContainer)
+	template.Spec.WithInitContainers(initContainer)
+}
 
-	// Return once not the main model, because all the below has already been injected.
-	if index != 0 {
-		return
-	}
+func (p *URIProvider) InjectModelEnvVars(template *coreapplyv1.PodTemplateSpecApplyConfiguration) {
+	switch p.protocol {
+	case S3, GCS:
+		for i := range template.Spec.Containers {
+			if *template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+				// Check if AWS credentials already exist
+				awsKeyIDExists := false
+				awsKeySecretExists := false
+				for _, env := range template.Spec.Containers[i].Env {
+					if *env.Name == AWS_ACCESS_KEY_ID {
+						awsKeyIDExists = true
+					}
+					if *env.Name == AWS_ACCESS_KEY_SECRET {
+						awsKeySecretExists = true
+					}
+				}
 
-	// Handle container.
+				// Add AWS_ACCESS_KEY_ID if it doesn't exist
+				if !awsKeyIDExists {
+					template.Spec.Containers[i].WithEnv(coreapplyv1.EnvVar().WithName(AWS_ACCESS_KEY_ID).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(AWS_ACCESS_SECRET_NAME).WithKey(AWS_ACCESS_KEY_ID).WithOptional(true))))
+				}
 
-	for i, container := range template.Spec.Containers {
-		// We only consider this container.
-		if container.Name == MODEL_RUNNER_CONTAINER_NAME {
-			template.Spec.Containers[i].VolumeMounts = append(template.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-				Name:      MODEL_VOLUME_NAME,
-				MountPath: CONTAINER_MODEL_PATH,
-				ReadOnly:  true,
-			})
+				// Add AWS_ACCESS_KEY_SECRET if it doesn't exist
+				if !awsKeySecretExists {
+					template.Spec.Containers[i].WithEnv(coreapplyv1.EnvVar().WithName(AWS_ACCESS_KEY_SECRET).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(AWS_ACCESS_SECRET_NAME).WithKey(AWS_ACCESS_KEY_SECRET).WithOptional(true))))
+				}
+			}
+		}
+	case OSS:
+		for i := range template.Spec.Containers {
+			if *template.Spec.Containers[i].Name == MODEL_RUNNER_CONTAINER_NAME {
+				// Check if OSS credentials already exist
+				ossKeyIDExists := false
+				ossKeySecretExists := false
+				for _, env := range template.Spec.Containers[i].Env {
+					if *env.Name == OSS_ACCESS_KEY_ID {
+						ossKeyIDExists = true
+					}
+					if *env.Name == OSS_ACCESS_KEY_SECRET {
+						ossKeySecretExists = true
+					}
+				}
+
+				// Add OSS_ACCESS_KEY_ID if it doesn't exist
+				if !ossKeyIDExists {
+					template.Spec.Containers[i].WithEnv(coreapplyv1.EnvVar().WithName(OSS_ACCESS_KEY_ID).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(OSS_ACCESS_SECRET_NAME).WithKey(OSS_ACCESS_KEY_ID).WithOptional(true))))
+				}
+
+				// Add OSS_ACCESS_KEY_SECRET if it doesn't exist
+				if !ossKeySecretExists {
+					template.Spec.Containers[i].WithEnv(coreapplyv1.EnvVar().WithName(OSS_ACCESS_KEY_SECRET).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(OSS_ACCESS_SECRET_NAME).WithKey(OSS_ACCESS_KEY_SECRET).WithOptional(true))))
+				}
+			}
 		}
 	}
-
-	// Handle spec.
-
-	template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-		Name: MODEL_VOLUME_NAME,
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
-		},
-	})
-
-	// TODO: support OCI image volume
-	// template.Spec.Volumes = append(template.Spec.Volumes, corev1.Volume{
-	// 	Name: MODEL_VOLUME_NAME,
-	// 	VolumeSource: corev1.VolumeSource{
-	// 		Image: &corev1.ImageVolumeSource{
-	// 			Reference:  url,
-	// 			PullPolicy: corev1.PullIfNotPresent,
-	// 		},
-	// 	},
-	// })
 }

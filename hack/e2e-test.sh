@@ -40,7 +40,7 @@ function deploy {
     $KUSTOMIZE build $CWD/test/e2e/config | $KUBECTL apply --server-side -f -
 }
 function deploy_lws {
-    $KUBECTL apply --server-side -f https://github.com/kubernetes-sigs/lws/releases/download/$ENVTEST_LWS_VERSION/manifests.yaml
+    $KUBECTL apply --server-side -f $CWD/test/config/lws/
 }
 trap cleanup EXIT
 startup

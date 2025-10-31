@@ -55,7 +55,7 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 			Image("ollama/ollama").Version("latest").
 			Command([]string{"sh", "-c"}).
 			Arg("default", []string{"ollama serve & while true;do output=$(ollama list 2>&1);if ! echo $output | grep -q 'could not connect to ollama app' && echo $output | grep -q 'NAME';then echo 'ollama is running';break; else echo 'Waiting for the ollama to be running...';sleep 1;fi;done;ollama run {{.ModelName}};while true;do sleep 60;done"}).
-			Request("default", "cpu", "2").Request("default", "memory", "4Gi").Limit("default", "cpu", "4").Limit("default", "memory", "4Gi").Obj()
+			Request("default", "cpu", "1").Request("default", "memory", "2Gi").Limit("default", "cpu", "2").Limit("default", "memory", "4Gi").Obj()
 		gomega.Expect(k8sClient.Create(ctx, backendRuntime)).To(gomega.Succeed())
 
 		model := wrapper.MakeModel("qwen2-0--5b").FamilyName("qwen2").ModelSourceWithURI("ollama://qwen2:0.5b").Obj()
@@ -142,32 +142,87 @@ var _ = ginkgo.Describe("playground e2e tests", func() {
 		hpa := &autoscalingv2.HorizontalPodAutoscaler{}
 		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, hpa)).To(gomega.Succeed())
 	})
-	// TODO: add e2e tests.
-	// ginkgo.It("SpeculativeDecoding with llama.cpp", func() {
-	// 	targetModel := wrapper.MakeModel("llama2-7b-q8-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q8_0.gguf", "", nil, nil).Obj()
-	// 	gomega.Expect(k8sClient.Create(ctx, targetModel)).To(gomega.Succeed())
-	// 	defer func() {
-	// 		gomega.Expect(k8sClient.Delete(ctx, targetModel)).To(gomega.Succeed())
-	// 	}()
-	// 	draftModel := wrapper.MakeModel("llama2-7b-q2-k-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q2_K.gguf", "", nil, nil).Obj()
-	// 	gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
-	// 	defer func() {
-	// 		gomega.Expect(k8sClient.Delete(ctx, draftModel)).To(gomega.Succeed())
-	// 	}()
+	ginkgo.It("SpeculativeDecoding with llama.cpp", func() {
+		targetModel := wrapper.MakeModel("llama2-7b-q8-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q8_0.gguf", "", nil, nil).Obj()
+		gomega.Expect(k8sClient.Create(ctx, targetModel)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, targetModel)).To(gomega.Succeed())
+		}()
+		draftModel := wrapper.MakeModel("llama2-7b-q2-k-gguf").FamilyName("llama2").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("TheBloke/Llama-2-7B-GGUF", "llama-2-7b.Q2_K.gguf", "", nil, nil).Obj()
+		gomega.Expect(k8sClient.Create(ctx, draftModel)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, draftModel)).To(gomega.Succeed())
+		}()
 
-	// 	playground := wrapper.MakePlayground("llamacpp-speculator", ns.Name).
-	// 		MultiModelsClaim([]string{"llama2-7b-q8-gguf", "llama2-7b-q2-k-gguf"}, coreapi.SpeculativeDecoding).
-	// 		BackendRuntime("llamacpp").BackendLimit("cpu", "4").BackendRequest("memory", "8Gi").
-	// 		Replicas(1).
-	// 		Obj()
-	// 	gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
-	// 	validation.ValidatePlayground(ctx, k8sClient, playground)
-	// 	validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+		playground := wrapper.MakePlayground("llamacpp-speculator", ns.Name).
+			ModelClaims([]string{"llama2-7b-q8-gguf", "llama2-7b-q2-k-gguf"}, []string{"main", "draft"}).
+			BackendRuntime("llamacpp").Replicas(1).Obj()
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
 
-	// 	service := &inferenceapi.Service{}
-	// 	gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
-	// 	validation.ValidateService(ctx, k8sClient, service)
-	// 	validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
-	// 	validation.ValidateServicePods(ctx, k8sClient, service)
-	// })
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateService(ctx, k8sClient, service)
+		validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		validation.ValidateServicePods(ctx, k8sClient, service)
+	})
+
+	ginkgo.It("Deploy huggingface model with llmaz.io/skip-model-loader annotation", func() {
+		model := wrapper.MakeModel("opt-125m").FamilyName("opt").ModelSourceWithModelHub("Huggingface").ModelSourceWithModelID("facebook/opt-125m", "", "", nil, nil).Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		playground := wrapper.MakePlayground("opt-125m", ns.Name).
+			ModelClaim("opt-125m").
+			BackendRuntime("vllm").Replicas(1).Obj()
+
+		if playground.Annotations == nil {
+			playground.Annotations = make(map[string]string)
+		}
+		playground.Annotations["llmaz.io/skip-model-loader"] = "true"
+
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		//validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateService(ctx, k8sClient, service)
+		// Revisit this when we have GPU resources for e2e test
+		//validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		//validation.ValidateServicePods(ctx, k8sClient, service)
+		//gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
+	})
+
+	ginkgo.It("Deploy S3 model with llmaz.io/skip-model-loader annotation", func() {
+		model := wrapper.MakeModel("opt-125m").FamilyName("opt").ModelSourceWithURI("s3://test-bucket/opt-125m").Obj()
+		gomega.Expect(k8sClient.Create(ctx, model)).To(gomega.Succeed())
+		defer func() {
+			gomega.Expect(k8sClient.Delete(ctx, model)).To(gomega.Succeed())
+		}()
+
+		playground := wrapper.MakePlayground("opt-125m", ns.Name).
+			ModelClaim("opt-125m").
+			BackendRuntime("vllm").Replicas(1).Obj()
+
+		if playground.Annotations == nil {
+			playground.Annotations = make(map[string]string)
+		}
+		playground.Annotations["llmaz.io/skip-model-loader"] = "true"
+
+		gomega.Expect(k8sClient.Create(ctx, playground)).To(gomega.Succeed())
+		validation.ValidatePlayground(ctx, k8sClient, playground)
+		//validation.ValidatePlaygroundStatusEqualTo(ctx, k8sClient, playground, inferenceapi.PlaygroundAvailable, "PlaygroundReady", metav1.ConditionTrue)
+
+		service := &inferenceapi.Service{}
+		gomega.Expect(k8sClient.Get(ctx, types.NamespacedName{Name: playground.Name, Namespace: playground.Namespace}, service)).To(gomega.Succeed())
+		validation.ValidateService(ctx, k8sClient, service)
+		// Revisit this when we have GPU resources for e2e test
+		//validation.ValidateServiceStatusEqualTo(ctx, k8sClient, service, inferenceapi.ServiceAvailable, "ServiceReady", metav1.ConditionTrue)
+		//validation.ValidateServicePods(ctx, k8sClient, service)
+		//gomega.Expect(validation.ValidateServiceAvaliable(ctx, k8sClient, cfg, service, validation.CheckServiceAvaliable)).To(gomega.Succeed())
+	})
 })

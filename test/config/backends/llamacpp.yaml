@@ -22,6 +22,7 @@ spec:
         - "0.0.0.0"
         - --port
         - "8080"
+        - --metrics
       resources:
         requests:
           cpu: 1
@@ -29,21 +30,21 @@ spec:
         limits:
           cpu: 2
           memory: 4Gi
-    # TODO: not supported yet, see https://github.com/InftyAI/llmaz/issues/240.
-    # - name: speculative-decoding
-    #   args:
-    #     - -m
-    #     - "{{ .ModelPath }}"
-    #     - -md
-    #     - "{{ .DraftModelPath }}"
-    #     - --host
-    #     - "0.0.0.0"
-    #     - --port
-    #     - "8080"
-    #     - --draft-max
-    #     - "16"
-    #     - --draft-min
-    #     - "5"
+    - name: speculative-decoding
+      args:
+        - -m
+        - "{{ .ModelPath }}"
+        - -md
+        - "{{ .DraftModelPath }}"
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "8080"
+        - --draft-max
+        - "16"
+        - --draft-min
+        - "5"
+        - --metrics
   startupProbe:
     periodSeconds: 10
     failureThreshold: 30
