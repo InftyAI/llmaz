@@ -1,0 +1,76 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-0--5b
+spec:
+  familyName: qwen2
+  source:
+    modelHub:
+      modelID: Qwen/Qwen2-0.5B-Instruct-GGUF
+      filename: qwen2-0_5b-instruct-q5_k_m.gguf
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen2-0--5b
+spec:
+  replicas: 0
+  modelClaim:
+    modelName: qwen2-0--5b
+  backendRuntimeConfig:
+    backendName: llamacpp
+    configName: default
+    args:
+      - -fa # use flash attention
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: default-envoy-ai-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: default-envoy-ai-gateway
+spec:
+  gatewayClassName: default-envoy-ai-gateway
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIGatewayRoute
+metadata:
+  name: default-envoy-ai-gateway
+spec:
+  schema:
+    name: OpenAI
+  targetRefs:
+    - name: default-envoy-ai-gateway
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  rules:
+    - matches:
+        - headers:
+            - type: Exact
+              name: x-ai-eg-model
+              value: qwen2-0--5b
+      backendRefs:
+        - name: qwen2-0--5b
+---
+apiVersion: aigateway.envoyproxy.io/v1alpha1
+kind: AIServiceBackend
+metadata:
+  name: qwen2-0--5b
+spec:
+  timeouts:
+    request: 3m
+  schema:
+    name: OpenAI
+  backendRef:
+    name: qwen2-0--5b-lb
+    kind: Service
+    port: 8080

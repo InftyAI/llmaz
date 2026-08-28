@@ -302,6 +302,15 @@ install-prometheus:
 uninstall-prometheus:
 	kubectl delete -k config/prometheus
 
+.PHONY: install-keda
+install-keda:
+	helm repo add kedacore https://kedacore.github.io/charts
+	helm install keda kedacore/keda --namespace keda --create-namespace
+
+.PHONY: uninstall-keda
+uninstall-keda:
+	helm uninstall keda -n keda
+
 ##@Release
 
 .PHONY: artifacts
