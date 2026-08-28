@@ -12,6 +12,7 @@ We provide a set of examples to help you serve large language models, by default
 - [Deploy models via TensorRT-LLM](#deploy-models-via-tensorrt-llm)
 - [Deploy models via text-generation-inference](#deploy-models-via-text-generation-inference)
 - [Deploy models via ollama](#deploy-models-via-ollama)
+- [Deploy models via vLLM CPU](#deploy-models-via-vllm-cpu)
 - [Speculative Decoding with llama.cpp](#speculative-decoding-with-llamacpp)
 - [Speculative Decoding with vLLM](#speculative-decoding-with-vllm)
 - [Multi-Host Inference](#multi-host-inference)
@@ -63,6 +64,11 @@ By default, we use [vLLM](https://github.com/vllm-project/vllm) as the inference
 ### Speculative Decoding with llama.cpp
 
 llama.cpp supports speculative decoding to significantly improve inference performance, see [example](./speculative-decoding/llamacpp/) here.
+
+### Deploy models via vLLM CPU
+
+[vLLM](https://github.com/vllm-project/vllm) is an efficient and high-throughput LLM inference engine. It also provides a **CPU version** for environments without GPU support. see [example](./vllm-cpu/) here.
+
 
 ### Speculative Decoding with vLLM
 
