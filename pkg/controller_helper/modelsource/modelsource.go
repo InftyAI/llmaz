@@ -39,6 +39,7 @@ const (
 	// model source type
 	MODEL_SOURCE_MODELHUB        = "modelhub"
 	MODEL_SOURCE_MODEL_OBJ_STORE = "objstore"
+	MODEL_SOURCE_OCI             = "oci"
 
 	// secrets
 	MODELHUB_SECRET_NAME   = "modelhub-secret"
@@ -52,6 +53,13 @@ const (
 	AWS_ACCESS_SECRET_NAME = "aws-access-secret"
 	AWS_ACCESS_KEY_ID      = "AWS_ACCESS_KEY_ID"
 	AWS_ACCESS_KEY_SECRET  = "AWS_SECRET_ACCESS_KEY"
+
+	// Address of the `llmman serve` daemon the model loader pulls oci://
+	// sources through. Defaults to llmman's own default; override with the
+	// LLMAZ_LLMMAN_HOST env var on the controller to point at a shared
+	// daemon (a DaemonSet Service, say) instead of a pod-local one.
+	LLMMAN_HOST_ENV     = "LLMMAN_HOST"
+	DEFAULT_LLMMAN_HOST = "127.0.0.1:17434"
 )
 
 type ModelSourceProvider interface {
@@ -91,6 +99,10 @@ func NewModelSourceProvider(model *coreapi.OpenModel) ModelSourceProvider {
 		case HostPath:
 			provider.modelPath = value
 		case Ollama:
+			provider.modelPath = value
+		case OCI:
+			// The whole address is the registry reference; there is no bucket or
+			// endpoint to split out.
 			provider.modelPath = value
 		default:
 			// This should be validated at webhooks.

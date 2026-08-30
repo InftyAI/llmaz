@@ -54,6 +54,7 @@ var SUPPORTED_OBJ_STORES = map[string]struct{}{
 	modelSource.S3:       {},
 	modelSource.Ollama:   {},
 	modelSource.HostPath: {},
+	modelSource.OCI:      {},
 }
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type

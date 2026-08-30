@@ -20,6 +20,7 @@ from datetime import datetime
 from llmaz.model_loader.constant import *
 
 from llmaz.model_loader.objstore.objstore import model_download
+from llmaz.model_loader.oci.oci import model_download as oci_model_download
 from llmaz.model_loader.model_hub.hub_factory import HubFactory
 from llmaz.model_loader.model_hub.huggingface import HUB_HUGGING_FACE
 from llmaz.util.logger import Logger
@@ -58,6 +59,14 @@ if __name__ == "__main__":
         src = os.getenv(ENV_OBJ_MODEL_PATH)
 
         model_download(provider=provider, endpoint=endpoint, bucket=bucket, src=src)
+    elif model_source_type == "oci":
+        reference = os.getenv(ENV_OCI_REFERENCE)
+        if not reference:
+            raise EnvironmentError(
+                f"Environment variable '{ENV_OCI_REFERENCE}' not found."
+            )
+
+        oci_model_download(reference=reference)
     else:
         raise EnvironmentError(f"unknown model source type {model_source_type}")
 
