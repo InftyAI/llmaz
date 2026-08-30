@@ -17,6 +17,7 @@ limitations under the License.
 package modelSource
 
 import (
+	"os"
 	"strconv"
 	"strings"
 
@@ -31,6 +32,9 @@ const (
 	S3       = "S3"
 	Ollama   = "OLLAMA"
 	HostPath = "HOST"
+	// OCI addresses a model published as a CNCF ModelPack artifact in a
+	// container registry, e.g. oci://ghcr.io/org/model:tag.
+	OCI = "OCI"
 )
 
 type URIProvider struct {
@@ -67,6 +71,13 @@ func (p *URIProvider) ModelPath(skipModelLoader bool) string {
 	// In this case, the remote model path should be returned (e.g., s3://bucket/modelPath).
 	if skipModelLoader {
 		return p.uri
+	}
+
+	// An OCI artifact is unpacked as a whole into the model directory: its layer
+	// filepaths already name the files, so there is no bucket key to derive a
+	// models--<name> directory or a .gguf filename from.
+	if p.protocol == OCI {
+		return CONTAINER_MODEL_PATH
 	}
 
 	// protocol is oss.
@@ -135,9 +146,29 @@ func (p *URIProvider) InjectModelLoader(template *coreapplyv1.PodTemplateSpecApp
 			coreapplyv1.EnvVar().WithName(OSS_ACCESS_KEY_ID).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(OSS_ACCESS_SECRET_NAME).WithKey(OSS_ACCESS_KEY_ID).WithOptional(true))),
 			coreapplyv1.EnvVar().WithName(OSS_ACCESS_KEY_SECRET).WithValueFrom(coreapplyv1.EnvVarSource().WithSecretKeyRef(coreapplyv1.SecretKeySelector().WithName(OSS_ACCESS_SECRET_NAME).WithKey(OSS_ACCESS_KEY_SECRET).WithOptional(true))),
 		)
+	case OCI:
+		initContainer.WithEnv(
+			coreapplyv1.EnvVar().WithName("MODEL_SOURCE_TYPE").WithValue(MODEL_SOURCE_OCI),
+			// The loader receives the reference without the scheme, matching how
+			// the other protocols pass an already-parsed address.
+			coreapplyv1.EnvVar().WithName("OCI_REFERENCE").WithValue(p.modelPath),
+			// Registry work is done by an llmman daemon, not the loader itself,
+			// so it needs to know where that daemon is. Registry credentials
+			// are configured on the daemon rather than injected here.
+			coreapplyv1.EnvVar().WithName(LLMMAN_HOST_ENV).WithValue(llmmanHost()),
+		)
 	}
 
 	template.Spec.WithInitContainers(initContainer)
+}
+
+// llmmanHost is the address the model loader talks to, overridable so a
+// cluster can point every loader at one shared daemon.
+func llmmanHost() string {
+	if host := strings.TrimSpace(os.Getenv("LLMAZ_LLMMAN_HOST")); host != "" {
+		return host
+	}
+	return DEFAULT_LLMMAN_HOST
 }
 
 func (p *URIProvider) InjectModelEnvVars(template *coreapplyv1.PodTemplateSpecApplyConfiguration) {

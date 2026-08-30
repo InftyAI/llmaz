@@ -1,0 +1,25 @@
+apiVersion: llmaz.io/v1alpha1
+kind: OpenModel
+metadata:
+  name: qwen2-0--5b
+spec:
+  familyName: qwen2
+  source:
+    # A model published as a CNCF ModelPack artifact (https://github.com/modelpack/model-spec)
+    # in any OCI registry, following the protocol:
+    # oci://<registry>/<repository>[:<tag>|@<digest>]
+    uri: oci://ghcr.io/inftyai/qwen2-0.5b:latest
+  inferenceConfig:
+    flavors:
+      - name: t4 # GPU type
+        limits:
+          nvidia.com/gpu: 1
+---
+apiVersion: inference.llmaz.io/v1alpha1
+kind: Playground
+metadata:
+  name: qwen2-0--5b
+spec:
+  replicas: 1
+  modelClaim:
+    modelName: qwen2-0--5b

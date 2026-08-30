@@ -77,6 +77,30 @@ func TestModelSourceProvider(t *testing.T) {
 			wantModelPath:   "/workspace/models/weight.gguf",
 			skipModelLoader: false,
 		},
+		{
+			// An OCI artifact unpacks as a whole: its layer filepaths name the
+			// files, so no models--<name> directory is derived from the reference.
+			name:            "model with OCI URI configured",
+			model:           wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oci://ghcr.io/org/model:tag").Obj(),
+			wantModelName:   "test-7b",
+			wantModelPath:   "/workspace/models/",
+			skipModelLoader: false,
+		},
+		{
+			name:            "model with OCI URI configured and skipModelLoader is true",
+			model:           wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oci://ghcr.io/org/model:tag").Obj(),
+			wantModelName:   "test-7b",
+			wantModelPath:   "oci://ghcr.io/org/model:tag",
+			skipModelLoader: true,
+		},
+		{
+			// A tag containing a dot must not be mistaken for a GGUF filename.
+			name:            "OCI URI whose tag contains a dot",
+			model:           wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oci://ghcr.io/org/model:v1.2.gguf").Obj(),
+			wantModelName:   "test-7b",
+			wantModelPath:   "/workspace/models/",
+			skipModelLoader: false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -225,4 +249,39 @@ func TestInjectModelEnvVars(t *testing.T) {
 			assert.True(t, secretRefFound, "expected secret reference %s not found", tt.expectSecretRef)
 		})
 	}
+}
+
+func TestOCIInjectModelLoader(t *testing.T) {
+	provider := NewModelSourceProvider(
+		wrapper.MakeModel("test-7b").FamilyName("test").ModelSourceWithURI("oci://ghcr.io/org/model:tag").Obj(),
+	)
+
+	template := coreapplyv1.PodTemplateSpec().WithSpec(
+		coreapplyv1.PodSpec().WithContainers(
+			coreapplyv1.Container().WithName(MODEL_RUNNER_CONTAINER_NAME).WithImage("vllm:test"),
+		),
+	)
+	provider.InjectModelLoader(template, 0, "loader:test")
+
+	assert.Len(t, template.Spec.InitContainers, 1)
+	envs := map[string]string{}
+	for _, env := range template.Spec.InitContainers[0].Env {
+		if env.Value != nil {
+			envs[*env.Name] = *env.Value
+		}
+	}
+	assert.Equal(t, MODEL_SOURCE_OCI, envs["MODEL_SOURCE_TYPE"])
+	// The scheme is stripped: the daemon receives the bare registry reference.
+	assert.Equal(t, "ghcr.io/org/model:tag", envs["OCI_REFERENCE"])
+	// The loader pulls through an llmman daemon, so it must know where it is.
+	assert.Equal(t, DEFAULT_LLMMAN_HOST, envs[LLMMAN_HOST_ENV])
+}
+
+func TestOCILlmmanHostIsOverridable(t *testing.T) {
+	// A cluster can point every loader at one shared daemon.
+	t.Setenv("LLMAZ_LLMMAN_HOST", "llmman.llmaz-system.svc:17434")
+	assert.Equal(t, "llmman.llmaz-system.svc:17434", llmmanHost())
+
+	t.Setenv("LLMAZ_LLMMAN_HOST", "   ")
+	assert.Equal(t, DEFAULT_LLMMAN_HOST, llmmanHost())
 }
