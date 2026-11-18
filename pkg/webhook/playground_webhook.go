@@ -110,7 +110,7 @@ func (w *PlaygroundWebhook) generateValidate(obj runtime.Object) field.ErrorList
 		mainModelCount := 0
 
 		for _, model := range playground.Spec.ModelClaims.Models {
-			if model.Name == coreapi.ModelName(coreapi.MainRole) {
+			if model.Role == nil || *model.Role == coreapi.MainRole {
 				mainModelCount += 1
 			}
 		}
